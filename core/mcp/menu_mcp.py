@@ -1,9 +1,9 @@
-from fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP
 from fastmcp.server.dependencies import get_http_headers
 from typing import List
 from models.base.agent import Agent
-from services.auth_service import AgentAuth
-from services.menu.menu_sevice_resolver import MenuServiceResolver
+from core.services.auth_service import AgentAuth
+from core.services.menu.menu_sevice_resolver import MenuServiceResolver
 
 
 mcp = FastMCP(
@@ -12,10 +12,11 @@ mcp = FastMCP(
         This server provides menu data to the order taking AI agent.
         It should be used to fetch accurate menu details, including categories, items, sizes, prices, ingredients, and specials.
     """,
+    streamable_http_path='/'
 )
 
 
-@mcp.tool
+@mcp.add_tool
 async def get_categories(orderType: str) -> List[str]:
     """
     Purpose:
@@ -48,7 +49,9 @@ async def get_categories(orderType: str) -> List[str]:
     """
 
     headers = get_http_headers()
-    auth_header = headers.get("Authorization")
+    print("Headers in get_categories:", headers)
+    auth_header = headers.get("authorization")
+    print("Authorization header in get_categories:", auth_header)
 
     if auth_header is None:
         raise PermissionError("Not authorized: Missing Authorization header")
@@ -57,4 +60,3 @@ async def get_categories(orderType: str) -> List[str]:
 
     menu_service = MenuServiceResolver(agent=agent).resolve()
     return await menu_service.get_categories(orderType)
-

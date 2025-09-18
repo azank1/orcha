@@ -1,4 +1,4 @@
-from services.menu.menu_service import MenuService
+from core.services.menu.menu_service import MenuService
 from models.base.menu_models import MenuItem, OrderType, Special
 from typing import List
 from core.api_clients.api_client_ft import ApiClientFT

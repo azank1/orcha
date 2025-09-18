@@ -24,7 +24,8 @@ APP_DESCRIPTION = "Restaurant POS Agent Adapter MCP Server"
 @contextlib.asynccontextmanager
 async def lifespan(app: Starlette):
     async with contextlib.AsyncExitStack() as stack:
-        # await stack.enter_async_context(menu_mcp.session_manager.run())
+        await stack.enter_async_context(menu_mcp.session_manager.run())
+        await stack.enter_async_context(order_mcp.session_manager.run())
         yield
 
 
