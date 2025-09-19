@@ -25,7 +25,7 @@ async def main():
         # prompts = await client.list_prompts()
 
         # Execute operations
-        result = await client.call_tool("get_categories", {"orderType": "Delivery"})
+        result = await client.call_tool("get_order_types")
         print(result)
 
 
