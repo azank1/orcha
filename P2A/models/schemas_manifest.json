@@ -1,0 +1,42 @@
+{
+  "engine_schemas_dir": "D:\\dev\\orcha-1\\engine\\schemas\\json",
+  "generated_dir": "D:\\dev\\orcha-1\\P2A\\models\\schemas",
+  "entries": [
+    {
+      "source": "menu.export.req.json",
+      "source_sha256": "b192ac218fff224a6225447ef81237463804a2c2fba5b8be676cab12b0a355ae",
+      "generated": "menu_export_req.py",
+      "class": "MenuExportRequest"
+    },
+    {
+      "source": "menu.export.res.json",
+      "source_sha256": "96f013e27ac01e00be66375c6b23e54d3d197387d7844506ef2efc9c5b7c0098",
+      "generated": "menu_export_res.py",
+      "class": "MenuExportResponse"
+    },
+    {
+      "source": "order.validate.req.json",
+      "source_sha256": "607330f76892d8fe882a2a6425e06b14d0878381dfe527262fd2543c7b22872d",
+      "generated": "order_validate_req.py",
+      "class": "OrderValidateRequest"
+    },
+    {
+      "source": "order.validate.res.json",
+      "source_sha256": "f9f3e89e60ba27b1d58ec7779ebfb3001b5eb9efde1edd94ce79bc4a2dace919",
+      "generated": "order_validate_res.py",
+      "class": "OrderValidateResponse"
+    },
+    {
+      "source": "order.accept.req.json",
+      "source_sha256": "7d0f51ce334f4202984d41efbdc57af2e30d6aabccbc803755a40f20799e571c",
+      "generated": "order_accept_req.py",
+      "class": "OrderAcceptRequest"
+    },
+    {
+      "source": "order.accept.res.json",
+      "source_sha256": "d9114b1d08dd7d70e501c1de7973c4a71dd447dcc19d0fad572ba366d1a5e0fc",
+      "generated": "order_accept_res.py",
+      "class": "OrderAcceptResponse"
+    }
+  ]
+}
