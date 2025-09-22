@@ -1,0 +1,31 @@
+{
+  "additionalProperties": false,
+  "description": "Order acceptance response",
+  "type": "object",
+  "properties": {
+    "ok": {
+      "description": "Order acceptance status",
+      "type": "boolean"
+    },
+    "order_id": {
+      "minLength": 1,
+      "description": "Generated order identifier",
+      "type": "string"
+    },
+    "eta": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z$",
+      "description": "Estimated completion time (ISO 8601 format)",
+      "type": "string"
+    },
+    "idem": {
+      "minLength": 8,
+      "description": "Idempotency key used for this order",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ok",
+    "order_id",
+    "idem"
+  ]
+}

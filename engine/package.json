@@ -1,0 +1,22 @@
+{
+  "name": "@orcha/schemas",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc -p schemas/tsconfig.json",
+    "build:schemas": "npx tsx scripts/build-schemas.ts",
+    "dev:mcp": "npx tsx mcp/index.ts"
+  },
+  "devDependencies": {
+    "@sinclair/typebox": "^0.32.35",
+    "@types/uuid": "^10.0.0",
+    "tsx": "^4.7.0"
+  },
+  "dependencies": {
+    "@types/express": "^5.0.3",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "express": "^5.1.0",
+    "typescript": "^5.9.2"
+  }
+}

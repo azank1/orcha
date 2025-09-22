@@ -1,0 +1,10 @@
+{
+  "jsonrpc": "2.0",
+  "id": "example-1",
+  "method": "menu.export",
+  "params": {
+    "store_id": "store_123",
+    "page": 1,
+    "page_size": 50
+  }
+}

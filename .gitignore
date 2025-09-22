@@ -1,3 +1,26 @@
+<<<<<<< HEAD
 .venv
 .env
 __pycache__   
+=======
+# Node
+node_modules/
+dist/
+*.log
+
+# Python
+P2A/.venv/
+__pycache__/
+pycache/
+*.pyc
+
+# Env/Secrets
+.env
+.env.local
+*.key
+*.secret
+
+# Misc
+.DS_Store
+Thumbs.db
+>>>>>>> 6a3aa0b (Milestone 2 Step 2: Full loop MCP  Proxy  P2A mock working, scripts and README)
