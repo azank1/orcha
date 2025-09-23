@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-.venv
-.env
-__pycache__   
-=======
 # Node
 node_modules/
 dist/
@@ -20,7 +15,14 @@ pycache/
 *.key
 *.secret
 
+# Test scripts (keep only essential service management)
+scripts/test-*.ps1
+scripts/run-*.ps1
+scripts/wire-*.ps1
+scripts/quickstart.ps1
+scripts/setup.ps1
+scripts/hash-check.ps1
+
 # Misc
 .DS_Store
 Thumbs.db
->>>>>>> 6a3aa0b (Milestone 2 Step 2: Full loop MCP  Proxy  P2A mock working, scripts and README)
