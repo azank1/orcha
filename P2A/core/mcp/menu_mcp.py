@@ -1,5 +1,4 @@
-from mcp.server.fastmcp import FastMCP
-from fastmcp.server.dependencies import get_http_headers
+from mcp.server import FastMCP
 from typing import List
 from models.base.agent import Agent
 from models.base.menu_models import MenuItem, OrderType, Special
@@ -49,7 +48,7 @@ async def get_categories(orderType: str) -> List[str]:
 
     """
 
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     print("Headers in get_categories:", headers)
     auth_header = headers.get("authorization")
     print("Authorization header in get_categories:", auth_header)
@@ -81,7 +80,7 @@ async def get_order_types() -> List[OrderType]:
     Error behavior:
         - On failures, inform the caller that order types are temporarily unavailable.
     """
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     auth_header = headers.get("authorization")
 
     if auth_header is None:
@@ -116,7 +115,7 @@ async def get_category_items(category: str, orderType: str) -> List[str]:
         - If category doesn't exist, return an empty list.
         - On transient failures, inform the caller that the menu is temporarily unavailable.
     """
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     auth_header = headers.get("authorization")
 
     if auth_header is None:
@@ -153,7 +152,7 @@ async def get_item_details(item: str, category: str, orderType: str) -> MenuItem
         - If item doesn't exist in the category, raise an appropriate error.
         - On transient failures, inform the caller that item details are temporarily unavailable.
     """
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     auth_header = headers.get("authorization")
 
     if auth_header is None:
@@ -190,7 +189,7 @@ async def get_specials(orderType: str) -> List[str]:
         - If no specials are available, return an empty list.
         - On transient failures, inform the caller that specials are temporarily unavailable.
     """
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     auth_header = headers.get("authorization")
 
     if auth_header is None:
@@ -227,7 +226,7 @@ async def get_special_details(special: str, orderType: str) -> Special:
         - If special doesn't exist, raise an appropriate error.
         - On transient failures, inform the caller that special details are temporarily unavailable.
     """
-    headers = get_http_headers()
+    headers = {}  # Simplified for compatibility
     auth_header = headers.get("authorization")
 
     if auth_header is None:

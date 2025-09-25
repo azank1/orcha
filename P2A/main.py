@@ -1,3 +1,8 @@
+import asyncio
+import sys
+if sys.platform.startswith("win"):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 import contextlib
 import os
 import time
@@ -56,17 +61,23 @@ def _rpc_err(_id: Any, code: int, message: str, data: Any | None = None) -> Dict
 
 async def rpc(request: Request):
     try:
-        body = await request.json()
-    except Exception:
-        return JSONResponse(_rpc_err(None, -32700, "Parse error"), status_code=400)
+        try:
+            body = await request.json()
+        except Exception:
+            return JSONResponse(_rpc_err(None, -32700, "Parse error"), status_code=400)
 
-    # Support only single-call objects for this lightweight mock
-    if not isinstance(body, dict) or body.get("jsonrpc") != "2.0":
-        return JSONResponse(_rpc_err(body.get("id") if isinstance(body, dict) else None, -32600, "Invalid Request"), status_code=400)
+        # Support only single-call objects for this lightweight mock
+        if not isinstance(body, dict) or body.get("jsonrpc") != "2.0":
+            return JSONResponse(_rpc_err(body.get("id") if isinstance(body, dict) else None, -32600, "Invalid Request"), status_code=400)
 
-    _id = body.get("id")
-    method = body.get("method")
-    params = body.get("params") or {}
+        _id = body.get("id")
+        method = body.get("method")
+        params = body.get("params") or {}
+
+        logger.info(f"[P2A] Received RPC call: {method} with params: {params}")
+    except Exception as exc:
+        logger.exception(f"[P2A] FATAL ERROR in RPC handler: {exc}")
+        return JSONResponse(_rpc_err(None, -32000, f"Internal server error: {str(exc)}"), status_code=500)
 
     # FoodTec contract methods bridged via P2A services
     if method == "foodtec.export_menu":
@@ -85,9 +96,8 @@ async def rpc(request: Request):
                 else:
                     result = maybe
             else:
-                # Fallback: build export shape from mock menu service
-                from menu_service_mock_export import MenuServiceExportMock
-                result = await MenuServiceExportMock().export_menu(store_id=store_id, page=page, page_size=page_size, q=q)
+                # No longer supporting mock fallback - removed mock service files
+                return JSONResponse(_rpc_err(_id, -32601, "Export not available - use 'foodtec' vendor"), status_code=404)
             return JSONResponse(_rpc_ok(_id, result))
         except Exception as exc:
             return JSONResponse(_rpc_err(_id, -32000, "EXPORT_FAILED", {"message": str(exc)}), status_code=500)
@@ -98,11 +108,15 @@ async def rpc(request: Request):
         if order_service is None:
             return JSONResponse(_rpc_err(_id, -32601, "Method not available for mock vendor"), status_code=404)
         payload = params or {}
-        result = order_service.validate_order(payload)
-        # map error status to HTTP 422 when ok:false and upstream indicates validation
-        if not result.get("ok", False):
-            return JSONResponse(_rpc_err(_id, -32000, result.get("message", "Validation failed"), result), status_code=422)
-        return JSONResponse(_rpc_ok(_id, result))
+        try:
+            result = order_service.validate_order(payload)
+            # map error status to HTTP 422 when ok:false and upstream indicates validation
+            if not result.get("ok", False):
+                return JSONResponse(_rpc_err(_id, -32000, result.get("message", "Validation failed"), result), status_code=422)
+            return JSONResponse(_rpc_ok(_id, result))
+        except Exception as exc:
+            logger.exception(f"[P2A] Order validation failed: {exc}")
+            return JSONResponse(_rpc_err(_id, -32000, "VALIDATE_FAILED", {"message": str(exc)}), status_code=500)
 
     if method == "foodtec.accept_order":
         vendor = os.getenv("P2A_VENDOR", "mock")
@@ -111,11 +125,15 @@ async def rpc(request: Request):
             return JSONResponse(_rpc_err(_id, -32601, "Method not available for mock vendor"), status_code=404)
         idem = (params or {}).get("idem") or request.headers.get("Idempotency-Key") or uuid.uuid4().hex
         payload = (params or {}).get("draft") or params or {}
-        result = order_service.accept_order(payload, idem=idem)
-        if not result.get("ok", False):
-            return JSONResponse(_rpc_err(_id, -32000, result.get("message", "Accept failed"), result), status_code=400)
-        # honor idempotency echo in response; header is optional at this layer (Engine validates headers deeply)
-        return JSONResponse(_rpc_ok(_id, result), headers={"Idempotency-Key": idem})
+        try:
+            result = order_service.accept_order(payload, idem=idem)
+            if not result.get("ok", False):
+                return JSONResponse(_rpc_err(_id, -32000, result.get("message", "Accept failed"), result), status_code=400)
+            # honor idempotency echo in response; header is optional at this layer (Engine validates headers deeply)
+            return JSONResponse(_rpc_ok(_id, result), headers={"Idempotency-Key": idem})
+        except Exception as exc:
+            logger.exception(f"[P2A] Order acceptance failed: {exc}")
+            return JSONResponse(_rpc_err(_id, -32000, "ACCEPT_FAILED", {"message": str(exc)}), status_code=500)
 
     # Fallback to mock idempotent accept used for local testing
     if method != "order.accept":
@@ -166,11 +184,10 @@ app = Starlette(
 if __name__ == "__main__":
     import uvicorn
 
-    # Get configuration from environment
-    host = os.getenv("HOST", "0.0.0.0")
+    # Force Windows-friendly configuration
+    host = "127.0.0.1"
     port = int(os.getenv("PORT", 8000))
-    debug = os.getenv("DEBUG", "false").lower() == "true"
-
+    
     logger.info(f"Starting server on {host}:{port}")
 
-    uvicorn.run("main:app", host=host, port=port, reload=debug, log_level="info")
+    uvicorn.run("main:app", host=host, port=port, reload=False, log_level="info")

@@ -1,7 +1,8 @@
-fastmcp
+fastmcp>=1.0,<2.0
 PyJWT
 pydantic>=1.10,<3
-starlette>=0.36
-uvicorn>=0.30
-httpx>=0.27
+starlette==0.37.2
+uvicorn==0.23.2
+anyio>=4.6,<5
+httpx==0.27.0
 python-dotenv>=1.0

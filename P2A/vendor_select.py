@@ -6,16 +6,13 @@ from typing import Optional
 from core.api_clients.api_client_ft import ApiClientFT
 from core.services.menu_service_ft import MenuServiceFT
 from core.services.order_service_ft import OrderServiceFT
-from order_service_mock import OrderServiceMock
-from menu_service_mock_export import MenuServiceExportMock
 
 logger = logging.getLogger(__name__)
 
-# Mock fallbacks (if available)
-try:
-    from core.services.menu.menu_service_mock import MenuServiceMock  # type: ignore
-except Exception:  # pragma: no cover
-    MenuServiceMock = None
+# All mock services have been removed - using FoodTec with fallbacks only
+
+# Global service cache for idempotency support
+_service_cache = {}
 
 
 def _validate_foodtec_config() -> bool:
@@ -59,8 +56,13 @@ def _validate_foodtec_config() -> bool:
 
 
 def get_services(vendor: Optional[str] = None):
-    """Get menu and order services based on vendor selection with proper validation"""
+    """Get menu and order services based on vendor selection with proper validation. Cached for idempotency."""
     vendor = (vendor or os.getenv("P2A_VENDOR", "mock")).lower()
+    
+    # Check cache first
+    if vendor in _service_cache:
+        logger.debug(f"[P2A] Returning cached services for vendor: {vendor}")
+        return _service_cache[vendor]
     
     if vendor == "foodtec":
         logger.info("[P2A] Attempting to initialize FoodTec vendor services")
@@ -73,20 +75,34 @@ def get_services(vendor: Optional[str] = None):
             try:
                 client = ApiClientFT()
                 logger.info("[P2A] FoodTec services initialized successfully")
-                return MenuServiceFT(client), OrderServiceFT(client)
+                services = (MenuServiceFT(client), OrderServiceFT(client))
+                _service_cache[vendor] = services
+                return services
             except Exception as e:
                 logger.error("[P2A] Failed to initialize FoodTec services: %s", e)
-                logger.warning("[P2A] Falling back to mock services")
-                vendor = "mock"
+                logger.error("[P2A] Mock services no longer available - using FoodTec with fallbacks")
+                # Try to initialize FoodTec anyway, it will use internal fallbacks
+                try:
+                    client = ApiClientFT()
+                    services = (MenuServiceFT(client), OrderServiceFT(client))
+                    _service_cache[vendor] = services
+                    return services
+                except Exception as e2:
+                    logger.error("[P2A] Complete failure to initialize services: %s", e2)
+                    raise RuntimeError("Cannot initialize any service provider") from e2
     
     elif vendor != "mock":
-        logger.warning("[P2A] Unknown vendor '%s', falling back to mock", vendor)
-        vendor = "mock"
+        logger.warning("[P2A] Unknown vendor '%s', falling back to FoodTec with fallbacks", vendor)
+        vendor = "foodtec"
+        # Use FoodTec with internal fallbacks
+        client = ApiClientFT()
+        services = (MenuServiceFT(client), OrderServiceFT(client))
+        _service_cache[vendor] = services
+        return services
     
-    # Default to mock services
-    logger.info("[P2A] Using mock vendor services")
-    if MenuServiceMock is None:
-        # Use export-shaped mock for menu export contract
-        return MenuServiceExportMock(), OrderServiceMock()
-    
-    return MenuServiceExportMock(), OrderServiceMock()
+    # Mock vendor no longer supported - use FoodTec with fallbacks
+    logger.warning("[P2A] Mock vendor no longer supported, using FoodTec with fallbacks")
+    client = ApiClientFT()
+    services = (MenuServiceFT(client), OrderServiceFT(client))
+    _service_cache["foodtec"] = services
+    return services
