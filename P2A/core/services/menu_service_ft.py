@@ -56,15 +56,19 @@ class MenuServiceFT:
                    store_id, page, page_size)
         
         try:
-            # Step 3.A: FoodTec Menu Export API validation
-            # Method: GET
-            # URL: ${FOODTEC_BASE}/${FOODTEC_MENU_PATH}
-            # Auth: Basic (apiclient:FOODTEC_MENU_PASS)
-            # Query params: orderType (REQUIRED), page, pageSize
-            # No request body
+            # 🎯 EXACT POSTMAN CONFIGURATION REPLICATION
+            # Method: GET  
+            # URL: {FOODTEC_BASE}/menu/categories
+            # Required Query: orderType=Pickup
+            # Headers: Content-Type: application/json, Accept: application/json
+            # Auth: Basic apiclient:FOODTEC_MENU_PASS
             
+            # Build exact URL as per Postman
+            url = f"{self.client.base}/menu/categories"
+            
+            # Required query params (orderType is mandatory)
             params = {
-                "orderType": "Pickup"  # Required parameter per FoodTec API v1 docs
+                "orderType": "Pickup"  # Required per FoodTec API spec
             }
             
             # Add pagination parameters  
@@ -76,24 +80,49 @@ class MenuServiceFT:
             # Add search filter if provided
             if q:
                 params["q"] = q
+                
+            # Exact headers as used in Postman
+            headers = {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
             
-            # Log full request URL and response status for debugging
-            full_url = f"{self.client.base.rstrip('/')}/{self.menu_path.lstrip('/')}"
-            logger.info("[FoodTec] GET %s with params: %s", full_url, params)
+            # Basic auth as per Postman config
+            auth = (self.client.user, self.client.menu_pass)  # apiclient:FOODTEC_MENU_PASS
             
-            # Add temporary debug logging of headers and query string sent
+            # 📝 Debug logging before request
             from urllib.parse import urlencode
             query_string = urlencode(params)
-            logger.info("[FoodTec] Query string: %s", query_string)
-            logger.info("[FoodTec] Auth: Basic %s:***MENU_PASS***", self.client.user)
+            full_url_with_params = f"{url}?{query_string}"
             
-            status, body = self.client.get(self.menu_path, params=params, password=self.menu_pass)
+            logger.info("[FoodTec] GET %s", full_url_with_params)
+            logger.info("[FoodTec] Headers: %s", {k: v for k, v in headers.items()})
+            logger.info("[FoodTec] Auth User: %s (password masked)", self.client.user)
+            logger.info("[FoodTec] Query Params: %s", params)
             
+            # Make HTTP request with exact Postman configuration
+            import httpx
+            with httpx.Client(timeout=15.0) as client:
+                response = client.get(
+                    url=url,
+                    params=params,
+                    headers=headers,
+                    auth=auth
+                )
+                
+                status = response.status_code
+                try:
+                    body = response.json()
+                except Exception:
+                    body = response.text
+                    
             logger.info("[FoodTec] Menu API response: status=%d", status)
             
-            # Log response body for debugging (truncated if large)
+            # Log response details for debugging
             if isinstance(body, dict):
                 logger.debug("[FoodTec] Response keys: %s", list(body.keys()))
+            elif isinstance(body, list):
+                logger.debug("[FoodTec] Response: list with %d items", len(body))
             else:
                 logger.debug("[FoodTec] Response type: %s, length: %d", type(body), len(str(body)))
                 
@@ -103,21 +132,27 @@ class MenuServiceFT:
             logger.info("[FoodTec] Exception occurred, falling back to sample data")
             return self._fallback_to_sample(store_id, page, page_size, q)
 
-        # If FoodTec still returns 400, fallback to mock if response status >= 400
-        if status >= 400:
-            logger.error("[FoodTec] Menu export failed with status %d: %s", status, body)
-            logger.info("[FoodTec] Status >= 400, falling back to sample data")
-            return self._fallback_to_sample(store_id, page, page_size, q)
-
-        # Normalize response structure
-        # FoodTec API returns an array of categories directly, not wrapped in an object
-        if isinstance(body, list):
-            raw_categories = body
-        elif isinstance(body, dict) and "categories" in body:
-            raw_categories = body.get("categories", [])
+        # 🎯 FALLBACK HANDLING as per instruction
+        if status == 200:
+            # ✅ SUCCESS: Parse categories → Engine schema
+            logger.info("[FoodTec] ✅ SUCCESS: Got 200 response from FoodTec API")
+            
+            # Normalize response structure
+            # FoodTec API returns an array of categories directly, not wrapped in an object
+            if isinstance(body, list):
+                raw_categories = body
+            elif isinstance(body, dict) and "categories" in body:
+                raw_categories = body.get("categories", [])
+            else:
+                logger.error("[FoodTec] Invalid response format, expected list or dict with categories, got %s", type(body))
+                logger.info("[FoodTec] Invalid response format, falling back to sample data")
+                return self._fallback_to_sample(store_id, page, page_size, q)
+                
         else:
-            logger.error("[FoodTec] Invalid response format, expected list or dict with categories, got %s", type(body))
-            logger.info("[FoodTec] Invalid response format, falling back to sample data")
+            # ❌ NOT 200: Log status + response body and fallback to sample
+            logger.error("[FoodTec] Menu export failed with status %d", status)
+            logger.error("[FoodTec] Response body: %s", str(body)[:500])  # Log first 500 chars
+            logger.info("[FoodTec] Non-200 status, falling back to sample_categories_res.json")
             return self._fallback_to_sample(store_id, page, page_size, q)
 
         if not isinstance(raw_categories, list):

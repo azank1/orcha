@@ -1,5 +1,4 @@
-from mcp.server.fastmcp import FastMCP
-from fastmcp.server.dependencies import get_http_headers
+from mcp.server import FastMCP
 from typing import List
 from models.base.agent import Agent
 from core.services.auth_service import AgentAuth
