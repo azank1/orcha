@@ -1,20 +1,16 @@
-"""
-Direct HTTP client for FoodTec API endpoints.
-No translation layers, no abstractions - direct API contract adherence.
-"""
+import httpx
 import os
 import base64
-import httpx
-from typing import Tuple, Any, Dict
+from typing import Dict, Any, Optional, Tuple
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
 
-class FoodTecClient:
-    """Direct HTTP client for FoodTec API endpoints."""
+class FoodTecAPIClient:
+    """HTTP client for FoodTec API - exact copy of working client.py"""
     
     def __init__(self):
+        load_dotenv()
+        
         self.base_url = os.getenv('FOODTEC_BASE', '').rstrip('/')
         if not self.base_url:
             raise ValueError("FOODTEC_BASE environment variable required")
@@ -34,6 +30,7 @@ class FoodTecClient:
         ]:
             if not password:
                 raise ValueError(f"Missing required environment variable: {name}")
+    
     
     def _auth_header(self, password: str) -> str:
         """Generate Basic Auth header."""

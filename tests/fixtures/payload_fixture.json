@@ -1,0 +1,82 @@
+{
+  "test_data": {
+    "menu_export": {
+      "orderType": "Pickup"
+    },
+    "validation": {
+      "type": "To Go",
+      "source": "Voice", 
+      "externalRef": "ext-1732669000-4821",
+      "customer": {
+        "name": "Walk-in",
+        "phone": "410-555-1234"
+      },
+      "items": [{
+        "item": "3pcs Chicken Strips w/ FF",
+        "category": "Appetizer",
+        "size": "Lg",
+        "quantity": 1,
+        "externalRef": "ext-1732669000-4821-i1",
+        "sellingPrice": 6.99
+      }]
+    },
+    "acceptance": {
+      "type": "Pickup",
+      "source": "Voice",
+      "externalRef": "ext-1732669000-4821",
+      "customer": {
+        "name": "Walk-in", 
+        "phone": "410-555-1234"
+      },
+      "items": [{
+        "item": "3pcs Chicken Strips w/ FF",
+        "category": "Appetizer",
+        "size": "Lg",
+        "quantity": 1,
+        "externalRef": "ext-1732669000-4821-i1",
+        "sellingPrice": 6.99
+      }],
+      "price": 7.41
+    }
+  },
+  "json_rpc_tests": {
+    "menu_export": {
+      "jsonrpc": "2.0",
+      "id": "test-menu-001",
+      "method": "foodtec.export_menu",
+      "params": {
+        "orderType": "Pickup"
+      }
+    },
+    "validate_order": {
+      "jsonrpc": "2.0", 
+      "id": "test-validate-001",
+      "method": "foodtec.validate_order",
+      "params": {
+        "category": "Appetizer",
+        "item": "3pcs Chicken Strips w/ FF",
+        "size": "Lg",
+        "price": 6.99,
+        "customer": {
+          "name": "Walk-in",
+          "phone": "410-555-1234"
+        }
+      }
+    },
+    "accept_order": {
+      "jsonrpc": "2.0",
+      "id": "test-accept-001", 
+      "method": "foodtec.accept_order",
+      "params": {
+        "category": "Appetizer",
+        "item": "3pcs Chicken Strips w/ FF", 
+        "size": "Lg",
+        "price": 6.99,
+        "customer": {
+          "name": "Walk-in",
+          "phone": "410-555-1234"
+        }
+      }
+    }
+  }
+}

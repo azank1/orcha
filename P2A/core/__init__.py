@@ -1,0 +1,1 @@
+# Core package for P2A FoodTec integration# Core package

@@ -1,28 +1,17 @@
-# Node
-node_modules/
-dist/
-*.log
-
 # Python
-P2A/.venv/
 __pycache__/
-pycache/
 *.pyc
+.venv/
 
-# Env/Secrets
+# Environment
 .env
-.env.local
 *.key
 *.secret
 
-# Test scripts (keep only essential service management)
-scripts/test-*.ps1
-scripts/run-*.ps1
-scripts/wire-*.ps1
-scripts/quickstart.ps1
-scripts/setup.ps1
-scripts/hash-check.ps1
-
-# Misc
+# Documentation (local only)
+docs/
+assets/
+# IDE
+.vscode/
 .DS_Store
 Thumbs.db
