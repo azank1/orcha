@@ -1,63 +1,91 @@
-// ------------------------------------------------
-// Minimal JSON-RPC router (stub handlers for now)
-// MCP uses JSON-RPC 2.0 messages; either result or error.
-// ------------------------------------------------
-import type { Request, Response } from 'express';
-import { z } from 'zod';
-import type { JsonRpcRequest, JsonRpcResponse } from './types.js';
+// orcha-1/mcp/src/rpc.ts
+import type { Request, Response } from "express";
+import { z } from "zod";
+import type { JsonRpcRequest, JsonRpcResponse } from "./types.js";
+import { callProxyRpc } from "./proxyClient.js";
 
+// JSON-RPC request schema
 const RpcRequestSchema = z.object({
-  jsonrpc: z.literal('2.0'),
+  jsonrpc: z.literal("2.0"),
   id: z.union([z.string(), z.number()]),
   method: z.string(),
-  params: z.record(z.string(), z.unknown()).optional()
+  params: z.record(z.string(), z.unknown()).optional(),
 });
 
-// Helper to emit JSON-RPC error
-function jerr(id: JsonRpcRequest['id'] | null, code: number, message: string, data?: unknown): JsonRpcResponse {
-  return { jsonrpc: '2.0', id, error: { code, message, data } } as any;
+// Helper: JSON-RPC error envelope
+function jerr(
+  id: JsonRpcRequest["id"] | null,
+  code: number,
+  message: string,
+  data?: unknown
+): JsonRpcResponse {
+  return { jsonrpc: "2.0", id, error: { code, message, data } };
 }
 
-// Stub handlers (to be wired to Proxy later)
-async function handleExportMenu(_params: any) {
-  return { ok: true, note: 'stub export', categories: [] };
-}
-async function handleValidate(_params: any) {
-  return { ok: true, note: 'stub validate' };
-}
-async function handleAccept(_params: any) {
-  return { ok: true, note: 'stub accept', idem: 'demo' };
-}
+// Optional: basic guardrail (allowed tool names)
+const ALLOWED_METHODS = new Set([
+  "foodtec.export_menu",
+  "foodtec.validate_order",
+  "foodtec.accept_order",
+]);
 
-export async function rpcHandler(req: Request, res: Response) {
+export async function rpcHandler(req: Request, res: Response): Promise<void> {
+  // Forward Idempotency-Key and Request-Id if present
+  const fwdHeaders: Record<string, string> = {};
+  const idem = req.header("Idempotency-Key");
+  if (idem) fwdHeaders["Idempotency-Key"] = idem;
+  const rid = req.header("X-Request-ID");
+  if (rid) fwdHeaders["X-Request-ID"] = rid;
+
+  // Require JSON body
+  if (!req.is("application/json")) {
+    res.status(200).json(jerr(null, -32600, "Invalid Request: expected application/json"));
+    return;
+  }
+
+  // Parse JSON-RPC envelope
+  const parsed = RpcRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(200)
+      .json(jerr(null, -32600, "Invalid Request", parsed.error.flatten()));
+    return;
+  }
+  const r = parsed.data;
+
+  // Method allowlist (prevent accidental exposure)
+  if (!ALLOWED_METHODS.has(r.method)) {
+  res.status(200).json(jerr(r.id, -32601, "Method not found"));
+  return;
+  }
+
   try {
-    const parsed = RpcRequestSchema.safeParse(req.body);
-    if (!parsed.success) {
-      const resp = jerr(null, -32600, 'Invalid Request', parsed.error.flatten());
-      return res.status(200).json(resp);
+    // Call Proxy JSON-RPC (pass-through)
+  const proxyResp = await callProxyRpc(r.method, (r.params ?? {}) as any, fwdHeaders);
+
+    // Proxy should always return JSON-RPC envelope
+    // We propagate Proxy’s result/error as-is (same jsonrpc/id semantics)
+    const data = proxyResp.data;
+
+    // Propagate Proxy idempotency replay header to MCP response (nice-to-have)
+    const replay = proxyResp.headers["x-idempotency-replay"];
+    if (replay) res.setHeader("X-Idempotency-Replay", String(replay));
+    const proxyIdem = proxyResp.headers["idempotency-key"];
+    if (proxyIdem) res.setHeader("Idempotency-Key", String(proxyIdem));
+
+    // Defensive: if Proxy didn’t return a JSON-RPC envelope, wrap it
+    if (!data || data.jsonrpc !== "2.0" || (data.result === undefined && data.error === undefined)) {
+      res
+        .status(200)
+        .json(jerr(r.id, -32000, "Upstream returned non-JSON-RPC payload", { status: proxyResp.status, data }));
+      return;
     }
-    const r = parsed.data;
-    try {
-      let result: unknown;
-      switch (r.method) {
-        case 'foodtec.export_menu':
-          result = await handleExportMenu(r.params);
-          break;
-        case 'foodtec.validate_order':
-          result = await handleValidate(r.params);
-          break;
-        case 'foodtec.accept_order':
-          result = await handleAccept(r.params);
-          break;
-        default:
-          return res.status(200).json(jerr(r.id, -32601, 'Method not found'));
-      }
-      const out: JsonRpcResponse = { jsonrpc: '2.0', id: r.id, result } as any;
-      return res.status(200).json(out);
-    } catch (e: any) {
-      return res.status(200).json(jerr(r.id, -32000, e?.message ?? 'Server error'));
-    }
+
+    // Everything good → just pass it through
+    res.status(200).json(data);
+    return;
   } catch (e: any) {
-    return res.status(200).json(jerr(null, -32603, 'Internal error'));
+    // Network/transport failure → implementation-defined error
+    res.status(200).json(jerr(r.id, -32000, e?.message ?? "Proxy call failed"));
+    return;
   }
 }
