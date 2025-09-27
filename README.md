@@ -45,22 +45,12 @@ python main.py
 ```powershell
 Invoke-WebRequest -Uri "http://127.0.0.1:8080/healthz" -Method GET
 ```
-**Bash:**
-```bash
-curl -X GET http://127.0.0.1:8080/healthz
-```
 
 ### 1. Menu Export
 **PowerShell:**
 ```powershell
 $menuBody = '{"jsonrpc":"2.0","id":"menu-001","method":"foodtec.export_menu","params":{"order_type":"D"}}'
 Invoke-WebRequest -Uri "http://127.0.0.1:8080/rpc" -Method POST -Body $menuBody -ContentType "application/json"
-```
-**Bash:**
-```bash
-curl -X POST http://127.0.0.1:8080/rpc \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":"menu-001","method":"foodtec.export_menu","params":{"order_type":"D"}}'
 ```
 
 ### 2. Order Validation
@@ -69,12 +59,6 @@ curl -X POST http://127.0.0.1:8080/rpc \
 $validateBody = '{"jsonrpc":"2.0","id":"validate-001","method":"foodtec.validate_order","params":{"phone":"410-555-1234","category":"Appetizer","item_name":"3pcs Chicken Strips w/ FF","size_name":"Lg","original_price":6.99,"external_ref":"test-ref-123"}}'
 Invoke-WebRequest -Uri "http://127.0.0.1:8080/rpc" -Method POST -Body $validateBody -ContentType "application/json"
 ```
-**Bash:**
-```bash
-curl -X POST http://127.0.0.1:8080/rpc \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":"validate-001","method":"foodtec.validate_order","params":{"phone":"410-555-1234","category":"Appetizer","item_name":"3pcs Chicken Strips w/ FF","size_name":"Lg","original_price":6.99,"external_ref":"test-ref-123"}}'
-```
 
 ### 3. Order Acceptance
 **PowerShell:**
@@ -82,20 +66,11 @@ curl -X POST http://127.0.0.1:8080/rpc \
 $acceptBody = '{"jsonrpc":"2.0","id":"accept-001","method":"foodtec.accept_order","params":{"phone":"410-555-1234","category":"Appetizer","item_name":"3pcs Chicken Strips w/ FF","size_name":"Lg","canonical_price":7.41,"external_ref":"test-ref-456"}}'
 Invoke-WebRequest -Uri "http://127.0.0.1:8080/rpc" -Method POST -Body $acceptBody -ContentType "application/json"
 ```
-**Bash:**
-```bash
-curl -X POST http://127.0.0.1:8080/rpc \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":"accept-001","method":"foodtec.accept_order","params":{"phone":"410-555-1234","category":"Appetizer","item_name":"3pcs Chicken Strips w/ FF","size_name":"Lg","canonical_price":7.41,"external_ref":"test-ref-456"}}'
-```
 
 ## Test Direct P2A (Bypass Proxy)
 ```powershell
 cd P2A
 python smoke_foodtec.py
-```
-```bash
-cd P2A && python smoke_foodtec.py
 ```
 
 **Note**: Use the `canonical_price` returned from validation in the acceptance call.
