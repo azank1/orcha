@@ -1,0 +1,108 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
+}
+
+.header {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.header h1 {
+    color: #2c3e50;
+    margin: 0 0 10px 0;
+}
+
+.tool-info {
+    background: #e8f4fd;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #3498db;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.error {
+    background: #ffeaea;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #e74c3c;
+    color: #c0392b;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.category-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+.category-card h3 {
+    background: #34495e;
+    color: white;
+    margin: 0;
+    padding: 15px;
+    font-size: 18px;
+}
+
+.item-count {
+    padding: 10px 15px;
+    background: #ecf0f1;
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.items {
+    padding: 15px;
+}
+
+.item {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.item-name {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.item-price {
+    color: #27ae60;
+    font-size: 14px;
+}
+
+.no-data {
+    background: #fff3cd;
+    color: #856404;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.nav-links {
+    margin-top: 30px;
+    text-align: center;
+    padding: 20px;
+}
+
+.nav-links a {
+    color: #3498db;
+    text-decoration: none;
+    margin: 0 10px;
+}

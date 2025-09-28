@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "hbs": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/hbs": "^4.0.5"
+  }
+}

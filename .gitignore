@@ -16,6 +16,9 @@ assets/
 .DS_Store
 Thumbs.db
 
+# MCP Configuration (local only)
+.mcp.json
+
 # Node / TypeScript
 node_modules/
 dist/

@@ -1,5 +1,5 @@
 import express from 'express';
-import { rpcHandler } from './rpc.js';
+import { rpcHandler } from './rpc/dispatcher.js';
 import { tools } from './tools.js';
 
 const app = express();
