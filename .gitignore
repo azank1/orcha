@@ -2,15 +2,12 @@
 __pycache__/
 *.pyc
 .venv/
+*.egg-info/
 
 # Environment
 .env
 *.key
 *.secret
-
-# Documentation (local only)
-docs/
-assets/
 # IDE
 .vscode/
 .DS_Store

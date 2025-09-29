@@ -1,61 +1,54 @@
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { engine } from "express-handlebars";
 import axios from "axios";
 
+// Recreate __dirname in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const MCP_URL = "http://127.0.0.1:9090/rpc";
+const PORT = 3001; // UI runs here
 
-// Setup view engine
+// Configure Handlebars
+app.engine("hbs", engine({ extname: ".hbs", defaultLayout: false }));
 app.set("view engine", "hbs");
 app.set("views", path.join(__dirname, "views"));
 
-// Static files (CSS/JS)
+// Serve static files (CSS, JS)
 app.use(express.static(path.join(__dirname, "public")));
 
-// Root route - simple landing page
-app.get("/", (req, res) => {
+// Add JSON parsing middleware
+app.use(express.json());
+
+// Render menu
+app.get("/", async (req, res) => {
+  // Just render the UI without loading menu data on initial page load
+  // This makes the initial page load fast and prevents crashes
   res.render("menu", { 
-    message: "MCP-UI Ready",
-    instructions: "Visit /menu to see agent's eye view"
+    loadDataOnDemand: true,
+    categories: []
   });
 });
 
-// Menu route - fetches real data from MCP
-app.get("/menu", async (req, res) => {
+// Add middleware to parse JSON requests
+app.use(express.json());
+
+// Add /mcp endpoint to proxy requests to MCP
+app.post('/mcp', async (req, res) => {
   try {
-    console.log("Calling MCP server at", MCP_URL);
-    const response = await axios.post(MCP_URL, {
-      jsonrpc: "2.0",
-      id: "ui-menu-request",
-      method: "foodtec.export_menu", 
-      params: { orderType: "Pickup" }
+    const response = await axios.post('http://127.0.0.1:9090/rpc', req.body, {
+      headers: { 'Content-Type': 'application/json' }
     });
-    
-    console.log("MCP Response received, status:", response.status);
-    const menu = response.data.result;
-    
-    res.render("menu", {
-      message: "Agent's Eye: FoodTec Menu",
-      menu: menu,
-      categories: menu.data || [],
-      status: menu.status,
-      success: menu.success
-    });
-  } catch (error) {
-    console.error("MCP Error:", error);
-    res.render("menu", {
-      message: "❌ MCP Connection Error",
-      error: error instanceof Error ? error.message : String(error),
-      helpText: "Make sure MCP server is running on :9090"
-    });
+    const data = response.data;
+    res.json(data);
+  } catch (err: any) {
+    console.error("Error calling MCP:", err);
+    res.status(500).json({ error: "Failed to reach MCP", message: err.message });
   }
 });
 
-// Start server
-app.listen(3000, () => {
-  console.log("MCP-UI running at http://127.0.0.1:3000");
+app.listen(PORT, () => {
+  console.log(`MCP-UI running on http://127.0.0.1:${PORT}`);
 });

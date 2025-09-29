@@ -1,64 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>MCP-UI: Agent's Eye</title>
-    <link rel="stylesheet" href="/style.css">
+  <title>MCP Agent Eye</title>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-    <div class="header">
-        <h1>{{message}}</h1>
-        {{#if instructions}}
-        <p>{{instructions}}</p>
-        {{else}}
-        <p>This shows what the agent "sees" from MCP tools</p>
-        {{/if}}
+  <h1>Agent View: Menu Export</h1>
+
+  {{#if error}}
+    <div class="error">{{error}}</div>
+  {{/if}}
+  
+  {{#if debug}}
+    <div class="debug">
+      <details>
+        <summary>Debug Info</summary>
+        <pre>{{debug}}</pre>
+      </details>
+    </div>
+  {{/if}}
+  
+  <div class="container">
+    <div class="buttons" id="actions">
+      <button id="btn-export">Export Menu</button>
+      <button id="btn-validate">Validate Order</button>
+      <button id="btn-accept">Accept Order</button>
     </div>
 
-    {{#if error}}
-    <div class="error">
-        <h2>Connection Error</h2>
-        <p>{{error}}</p>
-        <p>{{helpText}}</p>
-    </div>
-    {{else}}
-    
-    {{#if menu}}
-    <div class="tool-info">
-        <strong>Tool:</strong> foodtec.export_menu<br>
-        <strong>Status:</strong> {{status}}<br>
-        <strong>Success:</strong> {{success}}<br>
-        <strong>Categories:</strong> {{categories.length}}
-    </div>
+    <pre id="output">Click one of the buttons above to perform an action...</pre>
+  </div>
 
-    {{#if categories}}
-    <div class="menu-grid">
-        {{#each categories}}
-        <div class="category-card">
-            <h3>{{this.category}}</h3>
-            <div class="item-count">{{this.items.length}} items</div>
-            <div class="items">
-                {{#each this.items}}
-                <div class="item">
-                    <div class="item-name">{{this.item}}</div>
-                    {{#each this.sizePrices}}
-                    <div class="item-price">{{this.size}}: ${{this.price}}</div>
-                    {{/each}}
-                </div>
+  {{#if categories.length}}
+    <ul>
+      {{#each categories}}
+        <li>
+          <h2>{{this.category}}</h2>
+          <ul>
+            {{#each this.items}}
+              <li>{{this.item}} - 
+                {{#each this.sizePrices}}
+                  {{this.size}} (${{this.price}})
                 {{/each}}
-            </div>
-        </div>
-        {{/each}}
-    </div>
-    {{else}}
-    <div class="no-data">No menu categories found</div>
-    {{/if}}
-    {{/if}}
-    
-    {{/if}}
-
-    <div class="nav-links">
-        <a href="/">Home</a> | 
-        <a href="/menu">Refresh Menu</a>
-    </div>
+              </li>
+            {{/each}}
+          </ul>
+        </li>
+      {{/each}}
+    </ul>
+  {{else}}
+    <p>No menu data available.</p>
+  {{/if}}
+  
+  <script src="/app.js"></script>
 </body>
 </html>
