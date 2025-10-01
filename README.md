@@ -24,7 +24,7 @@ The project includes a web-based UI for interacting with the MCP server.
 ### Install & Run UI
 ```
 cd MCP/ui && npm install
-cd MCP/ui && npx ts-node server.ts
+cd MCP/ui && npx ts-node --esm server.ts
 ```
 
 The UI will be available at http://localhost:3001
