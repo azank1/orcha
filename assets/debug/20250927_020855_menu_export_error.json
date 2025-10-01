@@ -1,0 +1,6 @@
+{
+  "success": false,
+  "error": "Client error '400 ' for url 'https://pizzabolis-lab.foodtecsolutions.com/ws/store/v1/menu/categories'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\dev\\orcha-1\\smoke_foodtec.py\", line 45, in test_menu_export\n    menu = menu_service.export_menu()\n  File \"D:\\dev\\orcha-1\\P2A\\core\\menu_service.py\", line 16, in export_menu\n    response = self.api_client.get_menu()\n  File \"D:\\dev\\orcha-1\\P2A\\core\\api_client.py\", line 78, in get_menu\n    return self._request(\"GET\", \"/menu/categories\", self.menu_password)\n           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"D:\\dev\\orcha-1\\P2A\\core\\api_client.py\", line 59, in _request\n    response.raise_for_status()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\n  File \"C:\\Users\\Azan Hyder\\AppData\\Local\\Programs\\Python\\Python313\\Lib\\site-packages\\httpx\\_models.py\", line 761, in raise_for_status\n    raise HTTPStatusError(message, request=request, response=self)\nhttpx.HTTPStatusError: Client error '400 ' for url 'https://pizzabolis-lab.foodtecsolutions.com/ws/store/v1/menu/categories'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400\n",
+  "test": "menu_export"
+}

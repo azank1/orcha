@@ -10,7 +10,8 @@ from datetime import datetime
 from pathlib import Path
 
 # Add parent directory to path for P2A package imports
-sys.path.insert(0, str(Path(__file__).parent.parent))
+parent_dir = str(Path(__file__).parent.parent.parent)
+sys.path.insert(0, parent_dir)
 
 from P2A.core.menu_service import MenuService
 from P2A.core.order_service import OrderService
@@ -38,15 +39,20 @@ def test_p2a_integration():
         
         # Find a valid item for testing
         test_item = None
+        print(f"DEBUG: Menu structure: {json.dumps(menu_result['data'][0], indent=2)[:200]}...")
+        
+        # Let's examine the actual structure of the menu data
         for category in menu_result["data"]:
+            print(f"Category: {category.get('category', 'Unknown')}")
             if category.get("items"):
                 for item in category["items"]:
-                    if item.get("sizes"):
+                    # Check different possible structures
+                    if item.get("sizePrices") and len(item.get("sizePrices", [])) > 0:
                         test_item = {
-                            "category": category["name"],
-                            "item": item["name"],
-                            "size": item["sizes"][0]["name"],
-                            "price": item["sizes"][0]["price"]
+                            "category": category.get("category", ""),
+                            "item": item.get("item", ""),
+                            "size": item["sizePrices"][0].get("size", ""),
+                            "price": item["sizePrices"][0].get("price", 0)
                         }
                         break
                 if test_item:
@@ -60,12 +66,15 @@ def test_p2a_integration():
         
         # Test 2: Order Validation
         print("[2] Testing order validation...")
+        # Let's print out the test item to see what we're working with
+        print(f"Debug - Test Item: {json.dumps(test_item)}")
+        
         validation_result = order_service.validate_order({
             "phone": "410-555-1234",
+            "item": test_item["item"],  # Using "item" instead of "item_name"
             "category": test_item["category"],
-            "item_name": test_item["item"],
-            "size_name": test_item["size"],
-            "original_price": test_item["price"],
+            "size": test_item["size"],  # Using "size" instead of "size_name"
+            "price": test_item["price"],  # Using "price" instead of "original_price"
             "external_ref": f"smoke-test-{datetime.now().timestamp()}"
         })
         
@@ -80,14 +89,24 @@ def test_p2a_integration():
         print("[3] Testing order acceptance...")
         external_ref = f"smoke-test-accept-{datetime.now().timestamp()}"
         
-        acceptance_result = order_service.accept_order({
-            "phone": "410-555-1234", 
-            "category": test_item["category"],
-            "item_name": test_item["item"],
-            "size_name": test_item["size"],
-            "canonical_price": canonical_price,
-            "external_ref": external_ref
-        })
+        # Build validation payload for reuse in acceptance
+        validation_payload = {
+            "type": "To Go",
+            "source": "Voice",
+            "externalRef": external_ref,
+            "customer": {"name": "Test Customer", "phone": "410-555-1234"},
+            "items": [{
+                "item": test_item["item"],
+                "category": test_item["category"],
+                "size": test_item["size"],
+                "quantity": 1,
+                "externalRef": f"{external_ref}-i1",
+                "sellingPrice": test_item["price"]
+            }]
+        }
+        
+        # Call accept_order with the expected parameters
+        acceptance_result = order_service.accept_order(validation_payload, canonical_price)
         
         if not acceptance_result["success"]:
             print(f"FAIL: Order acceptance failed: Status {acceptance_result['status']}")
