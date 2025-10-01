@@ -3,52 +3,97 @@
 <head>
   <title>MCP Agent Eye</title>
   <link rel="stylesheet" href="/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-  <h1>Agent View: Menu Export</h1>
+  <h1>Agent Eye - FoodTec Integration</h1>
 
   {{#if error}}
-    <div class="error">{{error}}</div>
+    <div class="error-banner">{{error}}</div>
   {{/if}}
   
+  <div class="app-container">
+    <!-- Left Panel - Menu Display -->
+    <div class="menu-panel">
+      <h2>Menu Data</h2>
+      {{#if categories.length}}
+        <div class="menu-list">
+          {{#each categories}}
+            <div class="menu-category">
+              <h3>{{this.category}}</h3>
+              <ul>
+                {{#each this.items}}
+                  <li class="menu-item" data-category="{{../category}}" data-item="{{this.item}}">
+                    <span class="item-name">{{this.item}}</span> 
+                    <span class="item-sizes">
+                      {{#each this.sizes}}
+                        <span class="size-price" data-size="{{this.size}}" data-price="{{this.price}}">
+                          {{this.size}} (${{this.price}})
+                        </span>
+                      {{/each}}
+                    </span>
+                  </li>
+                {{/each}}
+              </ul>
+            </div>
+          {{/each}}
+        </div>
+      {{else}}
+        <p class="no-data">No menu data available.</p>
+      {{/if}}
+    </div>
+    
+    <!-- Center Panel - Action Controls -->
+    <div class="control-panel">
+      <div class="button-group">
+        <h2>Manual Actions</h2>
+        <button id="btn-export" class="primary-button">Export Menu</button>
+        <button id="btn-validate" class="primary-button">Validate Order</button>
+        <button id="btn-accept" class="primary-button">Accept Order</button>
+      </div>
+      
+      <div class="separator"></div>
+      
+      <div class="llm-input">
+        <h2>LLM Automation</h2>
+        <div class="input-group">
+          <input type="text" id="user-input" placeholder="Example: 2 large chicken strips for pickup" />
+          <button id="btn-process-order" class="action-button">Process Order</button>
+        </div>
+      </div>
+      
+      <div class="json-preview">
+        <h3>JSON Preview</h3>
+        <div class="tabs">
+          <button class="tab active" data-target="payload-tab">Payload</button>
+          <button class="tab" data-target="response-tab">Response</button>
+        </div>
+        <div class="tab-content">
+          <pre id="payload-tab" class="active">No payload generated yet.</pre>
+          <pre id="response-tab">No response received yet.</pre>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Right Panel - Agent Flow Console -->
+    <div class="flow-console">
+      <h2>Agent Flow Console</h2>
+      <div id="flow-steps">
+        <div class="console-intro">
+          <p>Agent flow will appear here when actions are taken.</p>
+          <p>Click a button or use the LLM input to start.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   {{#if debug}}
-    <div class="debug">
+    <div class="debug-panel">
       <details>
-        <summary>Debug Info</summary>
+        <summary>Debug Information</summary>
         <pre>{{debug}}</pre>
       </details>
     </div>
-  {{/if}}
-  
-  <div class="container">
-    <div class="buttons" id="actions">
-      <button id="btn-export">Export Menu</button>
-      <button id="btn-validate">Validate Order</button>
-      <button id="btn-accept">Accept Order</button>
-    </div>
-
-    <pre id="output">Click one of the buttons above to perform an action...</pre>
-  </div>
-
-  {{#if categories.length}}
-    <ul>
-      {{#each categories}}
-        <li>
-          <h2>{{this.category}}</h2>
-          <ul>
-            {{#each this.items}}
-              <li>{{this.item}} - 
-                {{#each this.sizePrices}}
-                  {{this.size}} (${{this.price}})
-                {{/each}}
-              </li>
-            {{/each}}
-          </ul>
-        </li>
-      {{/each}}
-    </ul>
-  {{else}}
-    <p>No menu data available.</p>
   {{/if}}
   
   <script src="/app.js"></script>

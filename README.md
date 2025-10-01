@@ -36,6 +36,25 @@ The UI will be available at http://localhost:3001
 - Validate orders
 - Accept orders
 
+## Automation Component
+
+The project includes an LLM-powered automation component for processing natural language orders.
+
+### Install & Run Automation
+```
+cd automation && npm install
+cd automation && cp .env.example .env
+# Add your OpenAI API key to the .env file
+```
+
+### Features
+- Natural language order processing
+- Integration with UI
+- LLM-powered order extraction
+- Automated order workflow
+
+See `automation/README.md` for more details.
+
 ## Test Entire Loop
 ```
 cd tests && .\run_all.ps1

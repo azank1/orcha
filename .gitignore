@@ -19,6 +19,7 @@ Thumbs.db
 
 # Node / TypeScript
 docs/
+automation/
 node_modules/
 dist/
 *.tsbuildinfo
