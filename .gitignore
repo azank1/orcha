@@ -13,10 +13,12 @@ __pycache__/
 .DS_Store
 Thumbs.db
 
+
 # MCP Configuration (local only)
 .mcp.json
 
 # Node / TypeScript
+docs/
 node_modules/
 dist/
 *.tsbuildinfo
