@@ -1,12 +1,12 @@
-# Orcha-1# Orcha-1: FoodTec Integration System# Orcha-1
+# Orcha-1# Orcha-1# Orcha-1: FoodTec Integration System# Orcha-1
 
 
 
-MCP → Proxy → API
+Restaurant ordering system: MCP → Proxy → FoodTec API
 
 
 
-## Quick Start## OverviewMCP → Proxy → API
+## SetupMCP → Proxy → API
 
 
 
@@ -14,55 +14,121 @@ MCP → Proxy → API
 
 
 
-```bashA Model Context Protocol (MCP) based system for integrating with FoodTec's ordering API. The architecture follows a three-layer design:## Install
+```bash## Quick Start## OverviewMCP → Proxy → API
 
 # MCP Server
 
-cd MCP```
+cd MCP
 
 npm install
 
-npm run build```cd MCP && npm install && npm run build
+npm run build### 1. Install Dependencies
 
 
+
+# P2A (Python API Client)
+
+cd P2A
+
+pip install -r requirements.txt```bashA Model Context Protocol (MCP) based system for integrating with FoodTec's ordering API. The architecture follows a three-layer design:## Install
+
+
+
+# Proxy Server# MCP Server
+
+cd proxy
+
+pip install -r requirements.txtcd MCP```
+
+
+
+# UI (optional)npm install
+
+cd MCP/ui
+
+npm installnpm run build```cd MCP && npm install && npm run build
+
+```
+
+
+
+### 2. Configure Environment
 
 # Python Services (P2A + Proxy)UI (Express/TypeScript) → MCP Server (TypeScript) → Proxy (FastAPI/Python) → P2A (Python) → FoodTec APIcd P2A && pip install -r requirements.txt  
 
-cd ../P2A
+```bash
 
-pip install -r requirements.txt```cd proxy && pip install -r requirements.txt
+# Copy template and add FoodTec credentialscd ../P2A
+
+cp P2A/.env.template P2A/.env
+
+# Edit P2A/.env with your API credentialspip install -r requirements.txt```cd proxy && pip install -r requirements.txt
+
+```
 
 
+
+### 3. Start Servers
 
 cd ../proxy```
 
+Open 3 terminals:
+
 pip install -r requirements.txt
 
-## Architecture
+```bash
 
-# UI
+# Terminal 1: Proxy (port 8080)## Architecture
 
-cd ../MCP/ui## Start Servers
+cd proxy
 
-npm install
-
-```### Components```
+python main.py# UI
 
 
+
+# Terminal 2: MCP (port 9090)cd ../MCP/ui## Start Servers
+
+cd MCP
+
+node dist/index.jsnpm install
+
+
+
+# Terminal 3: UI (port 3001)```### Components```
+
+cd MCP/ui
+
+npx ts-node --esm server.ts
+
+```
 
 ### 2. Configure Environmentcd proxy && python main.py
 
-
-
-Copy `.env.template` to `.env` and add your FoodTec credentials.1. **UI Layer** (`MCP/ui/`)```
-
-
-
-### 3. Start Servers   - Express server serving web interface```
+### 4. Test
 
 
 
-**Terminal 1 - Proxy:**   - Interactive menu browsing and order placementcd MCP && node dist/index.js
+Open http://localhost:3001
+
+- Export Menu → Validate Order → Accept OrderCopy `.env.template` to `.env` and add your FoodTec credentials.1. **UI Layer** (`MCP/ui/`)```
+
+
+
+## Structure
+
+
+
+```### 3. Start Servers   - Express server serving web interface```
+
+MCP/          # TypeScript MCP server (port 9090)
+
+proxy/        # FastAPI proxy (port 8080)
+
+P2A/          # Python FoodTec client
+
+automation/   # LLM workflows (optional)**Terminal 1 - Proxy:**   - Interactive menu browsing and order placementcd MCP && node dist/index.js
+
+```
 
 ```bash
 
