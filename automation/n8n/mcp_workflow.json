@@ -1,0 +1,75 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:9090/rpc",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\"jsonrpc\":\"2.0\",\"id\":\"1\",\"method\":\"foodtec.export_menu\",\"params\":{\"orderType\":\"Pickup\"}}",
+        "headersJson": "{\"Content-Type\":\"application/json\"}"
+      },
+      "id": "1",
+      "name": "Export Menu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const menu = JSON.parse(items[0].json.body).result;\n\n// Pick first appetizer item for testing\nconst firstCategory = menu.categories[0];\nconst firstItem = firstCategory.items[0];\n\nreturn [{\n  json: {\n    draft: {\n      type: \"To Go\",\n      source: \"Voice\",\n      externalRef: ext-${Date.now()},\n      customer: {\n        name: \"Test User\",\n        phone: \"410-555-1234\"\n      },\n      items: [\n        {\n          item: firstItem.item,\n          category: firstCategory.category,\n          size: firstItem.sizes[0].size,\n          quantity: 1,\n          externalRef: ext-${Date.now()}-i1,\n          sellingPrice: firstItem.sizes[0].price\n        }\n      ]\n    }\n  }\n}];"
+      },
+      "id": "2",
+      "name": "Build Draft Order",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:9090/rpc",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"jsonrpc\":\"2.0\",\"id\":\"2\",\"method\":\"foodtec.validate_order\",\"params\":$json}",
+        "headersJson": "{\"Content-Type\":\"application/json\"}"
+      },
+      "id": "3",
+      "name": "Validate Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [750, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "const validation = JSON.parse(items[0].json.body).result;\nconst canonicalPrice = validation.canonical_price || 7.41;\n\nconst payload = validation.payload;\npayload.type = \"Pickup\";\npayload.price = canonicalPrice;\n\nreturn [{ json: { draft: payload, idem: order-${Date.now()} } }];"
+      },
+      "id": "4",
+      "name": "Prepare Acceptance",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "url": "http://127.0.0.1:9090/rpc",
+        "method": "POST",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\"jsonrpc\":\"2.0\",\"id\":\"3\",\"method\":\"foodtec.accept_order\",\"params\":$json}",
+        "headersJson": "{\"Content-Type\":\"application/json\"}"
+      },
+      "id": "5",
+      "name": "Accept Order",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [1250, 300]
+    }
+  ],
+  "connections": {
+    "Export Menu": { "main": [[{ "node": "Build Draft Order", "type": "main", "index": 0 }]] },
+    "Build Draft Order": { "main": [[{ "node": "Validate Order", "type": "main", "index": 0 }]] },
+    "Validate Order": { "main": [[{ "node": "Prepare Acceptance", "type": "main", "index": 0 }]] },
+    "Prepare Acceptance": { "main": [[{ "node": "Accept Order", "type": "main", "index": 0 }]] }
+  }
+}

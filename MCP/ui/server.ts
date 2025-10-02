@@ -28,53 +28,13 @@ app.use(express.static(path.join(__dirname, "public")));
 // Add JSON parsing middleware
 app.use(express.json());
 
-// Render menu
+// Render menu - DO NOT call MCP on page load, let the button do it
 app.get("/", async (req, res) => {
-  try {
-    console.log("Calling MCP server for menu data...");
-    const response = await axios.post("http://127.0.0.1:9090/rpc", {
-      jsonrpc: "2.0",
-      id: "ui-1",
-      method: "foodtec.export_menu",
-      params: { orderType: "Pickup" }
-    });
-    
-    // Debug output to see the structure
-    console.log("MCP response received:", JSON.stringify(response.data).substring(0, 300) + "...");
-    
-    // Extract the menu data - the structure should be response.data.result.data (or raw)
-    let categories = [];
-    
-    if (response.data && response.data.result) {
-      // Check if data is directly in result
-      if (Array.isArray(response.data.result.data)) {
-        categories = response.data.result.data;
-      }
-      // Otherwise check if it might be in raw as a JSON string
-      else if (response.data.result.raw) {
-        try {
-          const rawData = response.data.result.raw;
-          categories = typeof rawData === 'string' ? JSON.parse(rawData) : rawData;
-        } catch (e) {
-          console.error("Failed to parse raw data:", e);
-        }
-      }
-    }
-    
-    console.log(`Found ${categories.length} menu categories`);
-    
-    res.render("menu", { 
-      categories: categories,
-      debug: JSON.stringify({
-        resultKeys: Object.keys(response.data.result || {}),
-        dataType: response.data.result ? typeof response.data.result.data : 'undefined',
-        rawType: response.data.result ? typeof response.data.result.raw : 'undefined'
-      })
-    });
-  } catch (err: any) {
-    console.error("Failed to fetch from MCP:", err);
-    res.render("menu", { categories: [], error: "Could not fetch menu: " + (err.message || String(err)) });
-  }
+  // Just render empty page, let the Export Menu button populate it
+  res.render("menu", { 
+    categories: [],
+    initialLoad: true
+  });
 });
 
 // Add middleware to parse JSON requests

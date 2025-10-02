@@ -1,45 +1,79 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+.Python
 .venv/
+venv/
+ENV/
+env/
 *.egg-info/
+*.egg
+.pytest_cache/
 
-# Environment
+# Environment & Secrets
 .env
+.env.local
 *.key
 *.secret
-# IDE
+*.pem
+
+# IDE & Editor
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
 Thumbs.db
-
 
 # MCP Configuration (local only)
 .mcp.json
 
 # Node / TypeScript
-docs/
-automation/
 node_modules/
 dist/
+build/
 *.tsbuildinfo
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# Coverage / build artifacts
+# Coverage & Testing
 coverage/
 .nyc_output/
+*.lcov
+.coverage
+htmlcov/
+
+# Build artifacts
+*.so
+*.dylib
+*.dll
 
 # Local tool caches
 .eslintcache
 .parcel-cache
 .turbo/
 .vite/
+.cache/
 
-# Optional lockfile ignores (uncomment if you decide not to commit)
+# Debug & Temporary files
+assets/debug/
+*.tmp
+*.temp
+.DS_Store
+desktop.ini
+
+# Logs
+logs/
+*.log
+
+# Optional: Uncomment to ignore lockfiles
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml

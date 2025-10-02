@@ -26,11 +26,20 @@
                   <li class="menu-item" data-category="{{../category}}" data-item="{{this.item}}">
                     <span class="item-name">{{this.item}}</span> 
                     <span class="item-sizes">
-                      {{#each this.sizes}}
-                        <span class="size-price" data-size="{{this.size}}" data-price="{{this.price}}">
-                          {{this.size}} (${{this.price}})
-                        </span>
-                      {{/each}}
+                      {{#if this.sizes}}
+                        {{#each this.sizes}}
+                          <span class="size-price" data-size="{{this.size}}" data-price="{{this.price}}">
+                            {{this.size}} (${{this.price}})
+                          </span>
+                        {{/each}}
+                      {{/if}}
+                      {{#if this.sizePrices}}
+                        {{#each this.sizePrices}}
+                          <span class="size-price" data-size="{{this.size}}" data-price="{{this.price}}">
+                            {{this.size}} (${{this.price}})
+                          </span>
+                        {{/each}}
+                      {{/if}}
                     </span>
                   </li>
                 {{/each}}
@@ -39,7 +48,11 @@
           {{/each}}
         </div>
       {{else}}
-        <p class="no-data">No menu data available.</p>
+        {{#if initialLoad}}
+          <p class="no-data">👆 Click "Export Menu" to load the menu from FoodTec</p>
+        {{else}}
+          <p class="no-data">No menu data available.</p>
+        {{/if}}
       {{/if}}
     </div>
     

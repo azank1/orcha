@@ -1,210 +1,106 @@
-# Orcha-1# Orcha-1: FoodTec Integration System# Orcha-1
+# Orcha-1: FoodTec Integration System# Orcha-1
 
 
 
-MCP → Proxy → API
+## OverviewMCP → Proxy → API
 
 
 
-## Quick Start## OverviewMCP → Proxy → API
+A Model Context Protocol (MCP) based system for integrating with FoodTec's ordering API. The architecture follows a three-layer design:## Install
 
+```
 
+```cd MCP && npm install && npm run build
 
-### 1. Install Dependencies
+UI (Express/TypeScript) → MCP Server (TypeScript) → Proxy (FastAPI/Python) → P2A (Python) → FoodTec APIcd P2A && pip install -r requirements.txt  
 
+```cd proxy && pip install -r requirements.txt
 
-
-```bashA Model Context Protocol (MCP) based system for integrating with FoodTec's ordering API. The architecture follows a three-layer design:## Install
-
-# MCP Server
-
-cd MCP```
-
-npm install
-
-npm run build```cd MCP && npm install && npm run build
-
-
-
-# Python Services (P2A + Proxy)UI (Express/TypeScript) → MCP Server (TypeScript) → Proxy (FastAPI/Python) → P2A (Python) → FoodTec APIcd P2A && pip install -r requirements.txt  
-
-cd ../P2A
-
-pip install -r requirements.txt```cd proxy && pip install -r requirements.txt
-
-
-
-cd ../proxy```
-
-pip install -r requirements.txt
+```
 
 ## Architecture
 
-# UI
+## Start Servers
 
-cd ../MCP/ui## Start Servers
+### Components```
 
-npm install
+cd proxy && python main.py
 
-```### Components```
+1. **UI Layer** (`MCP/ui/`)```
 
+   - Express server serving web interface```
 
+   - Interactive menu browsing and order placementcd MCP && node dist/index.js
 
-### 2. Configure Environmentcd proxy && python main.py
-
-
-
-Copy `.env.template` to `.env` and add your FoodTec credentials.1. **UI Layer** (`MCP/ui/`)```
+   - Real-time validation and acceptance flow```
 
 
-
-### 3. Start Servers   - Express server serving web interface```
-
-
-
-**Terminal 1 - Proxy:**   - Interactive menu browsing and order placementcd MCP && node dist/index.js
-
-```bash
-
-cd proxy   - Real-time validation and acceptance flow```
-
-python main.py
-
-# Runs on http://localhost:8080
-
-```
 
 2. **MCP Server** (`MCP/`)## UI Interface (MCPUI)
 
-**Terminal 2 - MCP:**
+   - JSON-RPC endpoint for tool invocation
 
-```bash   - JSON-RPC endpoint for tool invocation
+   - Three main tools:The project includes a web-based UI for interacting with the MCP server.
 
-cd MCP
+     - `foodtec.export_menu` - Retrieve menu data
 
-node dist/index.js   - Three main tools:The project includes a web-based UI for interacting with the MCP server.
+     - `foodtec.validate_order` - Validate order and get final price### Install & Run UI
 
-# Runs on http://localhost:9090
+     - `foodtec.accept_order` - Submit order to FoodTec```
 
-```     - `foodtec.export_menu` - Retrieve menu data
-
-
-
-**Terminal 3 - UI:**     - `foodtec.validate_order` - Validate order and get final price### Install & Run UI
-
-```bash
-
-cd MCP/ui     - `foodtec.accept_order` - Submit order to FoodTec```
-
-npx ts-node --esm server.ts
-
-# Runs on http://localhost:3001cd MCP/ui && npm install
-
-```
+cd MCP/ui && npm install
 
 3. **Proxy Layer** (`proxy/`)cd MCP/ui && npx ts-node --esm server.ts
 
-## Test the System
-
    - FastAPI server routing MCP requests```
 
-1. Open http://localhost:3001
+   - Handles vendor-specific translation
 
-2. Click **Export Menu** → Loads FoodTec menu (38 categories)   - Handles vendor-specific translation
-
-3. Select category → item → size
-
-4. Click **Validate Order** → Returns price with tax   - Price validation and invariant enforcementThe UI will be available at http://localhost:3001
-
-5. Click **Accept Order** → Submits to FoodTec ✅
+   - Price validation and invariant enforcementThe UI will be available at http://localhost:3001
 
 
-
-## Architecture
 
 4. **P2A Layer** (`P2A/`)**Note:** The UI may crash when requesting menu export from MCP due to lack of caching at this stage. This will be addressed in a future update.
 
-```
-
-UI (3001) → MCP Server (9090) → Proxy (8080) → P2A → FoodTec API   - Python client for FoodTec API
-
-```
+   - Python client for FoodTec API
 
    - Menu and order service abstractions### Features
 
-- **UI**: Web interface for menu browsing and ordering
+   - API v1 and v2 format handling- View and export menu data
 
-- **MCP**: JSON-RPC server exposing FoodTec tools   - API v1 and v2 format handling- View and export menu data
+- Validate orders
 
-- **Proxy**: FastAPI server handling vendor translation
-
-- **P2A**: Python client for FoodTec API- Validate orders
+## Getting Started- Accept orders
 
 
 
-## Documentation## Getting Started- Accept orders
+### Prerequisites## Automation Component
 
 
-
-See `docs/` folder for:
-
-- `ACCEPTANCE_FIX.md` - Price handling details
-
-- `VENDOR_AGNOSTIC_API.md` - Future architecture### Prerequisites## Automation Component
-
-- `HARDENING_CHECKLIST.md` - Security checklist
-
-
-
-## Testing
 
 - Python 3.11+The project includes an LLM-powered automation component for processing natural language orders.
 
-```bash
+- Node.js 18+
 
-# Run regression test- Node.js 18+
-
-powershell -ExecutionPolicy Bypass -File .\scripts\test-accept.ps1
-
-```- FoodTec API credentials### Install & Run Automation
-
-
-
-## Project Structure```
-
-
-
-```### Installationcd automation && npm install
-
-orcha-1/
-
-├── MCP/                 # MCP Server & UIcd automation && cp .env.example .env
-
-│   ├── src/            # TypeScript source
-
-│   ├── ui/             # Web UI1. **Clone and setup Python environment:**# Add your OpenAI API key to the .env file
-
-│   └── MCP_tests/      # Tests
-
-├── proxy/              # FastAPI proxy```bash```
-
-├── P2A/                # FoodTec client
-
-├── automation/         # LLM automation (optional)cd proxy
-
-├── scripts/            # Test scripts
-
-└── docs/               # Documentationpython -m venv .venv### Features
+- FoodTec API credentials### Install & Run Automation
 
 ```
 
+### Installationcd automation && npm install
+
+cd automation && cp .env.example .env
+
+1. **Clone and setup Python environment:**# Add your OpenAI API key to the .env file
+
+```bash```
+
+cd proxy
+
+python -m venv .venv### Features
+
 .venv\Scripts\activate  # Windows- Natural language order processing
 
-## License
-
 pip install -r requirements.txt- Integration with UI
-
-Internal use only.
 
 ```- LLM-powered order extraction
 
