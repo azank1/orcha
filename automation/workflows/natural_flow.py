@@ -42,45 +42,116 @@ class NaturalFlow:
         self.menu_cache = None
         self.last_validation = None
     
-    def process(self, user_input: str) -> Dict[str, Any]:
+    def process(self, user_input: str, max_iterations: int = 5) -> Dict[str, Any]:
         """
         Process natural language input and orchestrate actions
+        Uses multi-turn agent loop to complete complex tasks
         
         Args:
             user_input: User's natural language request
+            max_iterations: Maximum number of LLM turns (prevents infinite loops)
             
         Returns:
             Dict with response and any actions taken
         """
-        print(f"\n🤔 User: {user_input}")
+        print(f"\n👤 User: {user_input}")
         
-        # Build context
-        context = {}
-        if self.menu_cache:
-            context["menu_available"] = True
-            context["menu_categories"] = len(self.menu_cache)
-        if self.last_validation:
-            context["last_validation"] = self.last_validation
-        
-        # Get LLM decision
-        print("🧠 Asking LLM to interpret...")
-        llm_response = self.llm.chat(
-            prompt=user_input,
-            context=context,
-            tools=self.tools
-        )
-        
-        print(f"💭 LLM Response: {llm_response['content'][:100]}...")
-        
-        # Execute tool calls if any
         results = {
             "user_input": user_input,
-            "llm_response": llm_response["content"],
+            "llm_response": "",
             "actions": [],
             "success": True
         }
         
-        if llm_response["tool_calls"]:
+        # Agent loop - continue until LLM says it's done or max iterations reached
+        current_prompt = user_input
+        for iteration in range(max_iterations):
+            print(f"\n🔄 Agent iteration {iteration + 1}/{max_iterations}")
+            
+            # Build context with current state
+            context = {}
+            
+            # Include menu data if available (summarized to avoid token overflow)
+            if self.menu_cache:
+                # Send a summary of available items WITH PRICES
+                menu_summary = []
+                for cat in self.menu_cache[:10]:  # Limit to first 10 categories
+                    items = cat.get("items", [])[:3]  # First 3 items per category
+                    menu_summary.append({
+                        "category": cat.get("category"),
+                        "items": [
+                            {
+                                "name": item.get("name"), 
+                                "sizes": item.get("sizes", []),
+                                "price": item.get("price")  # Include price!
+                            } 
+                            for item in items
+                        ]
+                    })
+                context["menu"] = menu_summary
+                context["menu_note"] = f"Showing {len(menu_summary)} of {len(self.menu_cache)} categories. Menu already fetched - use this data with prices."
+            
+            if self.last_validation:
+                context["last_validation"] = {
+                    "category": self.last_validation.get("category"),
+                    "item": self.last_validation.get("item"),
+                    "size": self.last_validation.get("size"),
+                    "menuPrice": self.last_validation.get("base_price"),
+                    "canonicalPrice": self.last_validation.get("canonical_price"),
+                    "note": "IMPORTANT: For accept_order, you MUST include ALL these fields: category, item, size, menuPrice, canonicalPrice, customer (with name and phone), and externalRef. Do NOT omit any fields!"
+                }
+            
+            # Add previous actions to context so LLM knows what it already did
+            if results["actions"]:
+                context["completed_actions"] = [
+                    {"tool": a.get("tool"), "success": a.get("success"), "summary": a.get("summary", "")} 
+                    for a in results["actions"]
+                ]
+                context["note"] = "These actions are already completed. Do NOT repeat them. Move to the next step."
+            
+            # Get LLM decision
+            print("🧠 Asking LLM to interpret...")
+            llm_response = self.llm.chat(
+                prompt=current_prompt,
+                context=context,
+                tools=self.tools
+            )
+            
+            print(f"💭 LLM Response: {llm_response['content'][:100]}...")
+            
+            # Store the final response
+            results["llm_response"] = llm_response["content"]
+            
+            # If no tool calls, LLM is done
+            if not llm_response.get("tool_calls"):
+                print("✅ LLM has no more tools to call - task complete!")
+                break
+            
+            # Check if this is a browse query that already has menu data
+            is_browse = any(kw in user_input.lower() for kw in ['what', 'how much', 'show', 'list', 'price', 'browse', 'see'])
+            has_menu = self.menu_cache is not None
+            wants_export = any(tc["name"] in ["foodtec.export_menu", "export_menu"] for tc in llm_response.get("tool_calls", []))
+            wants_accept = any(tc["name"] in ["foodtec.accept_order", "accept_order"] for tc in llm_response.get("tool_calls", []))
+            
+            # Check if order was already accepted in previous actions
+            order_already_accepted = any(
+                action.get("tool") == "foodtec.accept_order" and action.get("success")
+                for action in results["actions"]
+            )
+            
+            # If it's a browse query with menu already fetched, and LLM wants to call export_menu again, force answer instead
+            if is_browse and has_menu and wants_export and iteration > 0:
+                print("⚠️ LLM trying to call export_menu again for browse query - forcing answer instead")
+                results["llm_response"] = "I have the menu data. Let me answer your question based on what we have."
+                break
+            
+            # If order was already accepted, don't accept again - just respond with confirmation
+            if order_already_accepted and wants_accept:
+                print("⚠️ Order already accepted - preventing duplicate acceptance")
+                results["llm_response"] = "Your order has been successfully placed!"
+                break
+            
+            # Execute tool calls
             print(f"🔧 LLM wants to call {len(llm_response['tool_calls'])} tool(s)")
             
             for tool_call in llm_response["tool_calls"]:
@@ -93,6 +164,15 @@ class NaturalFlow:
                 # Update success flag
                 if not action_result.get("success"):
                     results["success"] = False
+            
+            # Update prompt for next iteration
+            # Check if this was a browse/query request vs an order request
+            if any(keyword in user_input.lower() for keyword in ['what', 'how much', 'show', 'list', 'price', 'browse', 'see']):
+                # This is a query - instruct LLM to answer using the data
+                current_prompt = f"Now that you have the data, answer the user's question: {user_input}"
+            else:
+                # This is an order - continue the workflow
+                current_prompt = f"Previous action completed. Continue with: {user_input}"
         
         return results
     
@@ -111,6 +191,13 @@ class NaturalFlow:
         print(f"   Arguments: {json.dumps(arguments, indent=2)}")
         
         try:
+            # Fix tool name if missing namespace prefix
+            if not tool_name.startswith("foodtec."):
+                # Ollama native tool calling might strip the namespace
+                if tool_name in ["export_menu", "validate_order", "accept_order"]:
+                    tool_name = f"foodtec.{tool_name}"
+                    print(f"   ⚠️ Fixed tool name to: {tool_name}")
+            
             # Call the MCP server
             response = self.mcp_client.call(tool_name, arguments)
             
@@ -212,12 +299,15 @@ class NaturalFlow:
             
             print(f"✅ Validation successful: ${canonical_price}")
             
+            # Get menu price (support both 'price' and 'menuPrice' parameter names)
+            menu_price = arguments.get("price") or arguments.get("menuPrice") or 0
+            
             # Cache validation for next step
             self.last_validation = {
                 "category": arguments.get("category"),
                 "item": arguments.get("item"),
                 "size": arguments.get("size"),
-                "base_price": arguments.get("price"),
+                "base_price": menu_price,
                 "canonical_price": canonical_price,
                 "customer": arguments.get("customer")
             }
@@ -226,9 +316,10 @@ class NaturalFlow:
                 "tool": "foodtec.validate_order",
                 "success": True,
                 "canonical_price": canonical_price,
-                "base_price": arguments.get("price"),
-                "tax": canonical_price - arguments.get("price") if canonical_price else 0,
-                "validation_data": self.last_validation
+                "base_price": menu_price,
+                "tax": (canonical_price - menu_price) if (canonical_price and menu_price) else 0,
+                "validation_data": self.last_validation,
+                "summary": f"Validated: {arguments.get('item')} ({arguments.get('size')}) - Menu: ${menu_price}, Total: ${canonical_price}"
             }
         else:
             print(f"❌ Validation failed")

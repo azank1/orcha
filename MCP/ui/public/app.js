@@ -477,9 +477,10 @@ document.getElementById('btn-accept').addEventListener('click', async () => {
   }
 });
 
-// Process natural language orders
+// Process natural language orders with streaming
 document.getElementById('btn-process-order').addEventListener('click', async () => {
   const userInput = document.getElementById('user-input').value.trim();
+  const button = document.getElementById('btn-process-order');
   
   if (!userInput) {
     addFlowStep('error', 'Input Error', {
@@ -488,19 +489,21 @@ document.getElementById('btn-process-order').addEventListener('click', async () 
     return;
   }
   
+  // Disable button during processing
+  button.disabled = true;
+  button.textContent = 'Processing...';
+  
   try {
     // Log the user input
     addFlowStep('user-input', 'Natural Language Order', {
       input: userInput
     });
     
-    // Call the automation endpoint we created in server.ts
-    addFlowStep('tool-call', 'Calling LLM Orchestrator', {
-      action: 'Processing natural language with AI',
-      input: userInput
-    });
+    // Add a thinking bar container
+    const thinkingBar = createThinkingBar();
+    document.querySelector('.flow-console').appendChild(thinkingBar);
     
-    // Call the automation API endpoint
+    // Call the streaming automation API endpoint
     const response = await fetch('/api/automation/process-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -511,63 +514,176 @@ document.getElementById('btn-process-order').addEventListener('click', async () 
       throw new Error(`Server returned ${response.status}: ${response.statusText}`);
     }
     
-    const result = await response.json();
+    // Set up SSE reader
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
     
-    if (!result.success) {
-      throw new Error(result.error || 'Unknown error processing order');
-    }
-    
-    // Process and display each step from the response
-    if (result.steps && Array.isArray(result.steps)) {
-      // Process each step sequentially with a delay between steps
-      for (let i = 0; i < result.steps.length; i++) {
-        const step = result.steps[i];
-        await new Promise(resolve => setTimeout(resolve, 800)); // Delay between steps
+    // Process streaming responses
+    while (true) {
+      const { done, value } = await reader.read();
+      
+      if (done) {
+        removeThinkingBar();
+        break;
+      }
+      
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      
+      // Process complete lines
+      for (let i = 0; i < lines.length - 1; i++) {
+        const line = lines[i].trim();
         
-        // Display the step in the flow console
-        addFlowStep('response', step.title, {
-          ...step.data
-        });
-        
-        // If this is an extraction step, update the payload preview
-        if (step.type === 'extraction' && step.data.items) {
-          // Build draft order from extracted items
-          const orderDraft = {
-            draft: {
-              type: "Pickup", // Default, could be extracted from LLM
-              source: "Voice",
-              externalRef: `ext-${Date.now()}`,
-              customer: step.data.customerInfo || {
-                name: "Test Customer",
-                phone: "410-555-1234"
-              },
-              items: step.data.items.map((item, idx) => ({
-                item: item.name,
-                category: item.category || "Unknown",
-                size: item.size || "Reg",
-                quantity: item.quantity || 1,
-                externalRef: `ext-${Date.now()}-i${idx+1}`,
-                sellingPrice: item.price || 0.00,
-                options: item.options || []
-              }))
-            }
-          };
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
           
-          // Update the UI with the extracted order
-          updateJsonPreview('payload', orderDraft);
-          appState.currentPayload = orderDraft;
+          try {
+            const step = JSON.parse(data);
+            handleStreamingStep(step, thinkingBar);
+          } catch (e) {
+            console.error('Failed to parse SSE data:', e);
+          }
         }
       }
       
-      // Final success message
-      addFlowStep('response', 'Order Processing Complete', {
-        message: `Successfully processed order: "${userInput}"`
-      });
+      // Keep the last incomplete line in buffer
+      buffer = lines[lines.length - 1];
     }
+    
+    // Clear input on success
+    document.getElementById('user-input').value = '';
+    
   } catch (error) {
     console.error("Process order failed:", error);
+    removeThinkingBar();
     addFlowStep('error', 'Processing Error', {
       message: error.message
     });
+  } finally {
+    // Re-enable button
+    button.disabled = false;
+    button.textContent = 'Process Order';
   }
 });
+
+// Helper: Create thinking bar container
+function createThinkingBar() {
+  const container = document.createElement('div');
+  container.id = 'thinking-bar';
+  container.className = 'thinking-bar';
+  
+  const header = document.createElement('div');
+  header.className = 'thinking-header';
+  header.innerHTML = '<span>🧠 AI Agent Thinking...</span>';
+  
+  const content = document.createElement('div');
+  content.className = 'thinking-content';
+  content.id = 'thinking-content';
+  
+  container.appendChild(header);
+  container.appendChild(content);
+  
+  return container;
+}
+
+// Helper: Remove thinking bar
+function removeThinkingBar() {
+  const thinkingBar = document.getElementById('thinking-bar');
+  if (thinkingBar) {
+    thinkingBar.remove();
+  }
+}
+
+// Helper: Handle streaming step
+function handleStreamingStep(step, thinkingBar) {
+  const content = document.getElementById('thinking-content');
+  if (!content) return;
+  
+  const timestamp = new Date(step.timestamp).toLocaleTimeString();
+  
+  if (step.type === 'complete') {
+    // Processing complete - show summary
+    const completeDiv = document.createElement('div');
+    completeDiv.className = 'thinking-step complete';
+    completeDiv.innerHTML = `
+      <div class="step-header">
+        <span class="step-icon">🎉</span>
+        <span class="step-time">[${timestamp}]</span>
+        <span class="step-content"><strong>Processing Complete!</strong></span>
+      </div>
+    `;
+    content.appendChild(completeDiv);
+    
+    // Add a close button to the thinking bar
+    const header = thinkingBar.querySelector('.thinking-header');
+    if (header && !header.querySelector('.close-btn')) {
+      const closeBtn = document.createElement('button');
+      closeBtn.className = 'close-btn';
+      closeBtn.textContent = '×';
+      closeBtn.style.cssText = 'float: right; background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0 10px;';
+      closeBtn.onclick = () => removeThinkingBar();
+      header.appendChild(closeBtn);
+    }
+    
+    // Change header text and style
+    const headerSpan = header.querySelector('span');
+    headerSpan.textContent = '✅ AI Agent Complete';
+    headerSpan.style.fontWeight = 'bold';
+    
+    // Highlight the thinking bar
+    thinkingBar.style.borderColor = '#4caf50';
+    thinkingBar.style.boxShadow = '0 4px 20px rgba(76, 175, 80, 0.3)';
+    
+    // Don't auto-remove - let user dismiss manually
+    return;
+  }
+  
+  const stepDiv = document.createElement('div');
+  stepDiv.className = `thinking-step ${step.type}`;
+  
+  let icon = '💭';
+  if (step.type === 'tool_call') icon = '🔧';
+  if (step.type === 'result') icon = '✅';
+  if (step.type === 'error') icon = '❌';
+  
+  stepDiv.innerHTML = `
+    <div class="step-header">
+      <span class="step-icon">${icon}</span>
+      <span class="step-time">[${timestamp}]</span>
+      <span class="step-content">${step.content}</span>
+    </div>
+  `;
+  
+  // Add data if present
+  if (step.data) {
+    const dataDiv = document.createElement('div');
+    dataDiv.className = 'step-data';
+    dataDiv.textContent = JSON.stringify(step.data, null, 2);
+    stepDiv.appendChild(dataDiv);
+  }
+  
+  content.appendChild(stepDiv);
+  
+  // Auto-scroll to bottom
+  thinkingBar.scrollTop = thinkingBar.scrollHeight;
+  
+  // Also add to flow console for permanent record
+  if (step.type === 'thinking') {
+    // Check if this is an order confirmation (contains order details)
+    if (step.content.includes('order has been placed') || step.content.includes('Order #') || step.content.includes('🎉')) {
+      // Create a special order confirmation card
+      addFlowStep('order-confirmation', '🎉 Order Confirmed!', {
+        message: step.content,
+        timestamp: new Date().toLocaleTimeString()
+      });
+    } else {
+      // Add LLM's thinking/response to flow console
+      addFlowStep('llm-response', 'AI Response', {
+        message: step.content
+      });
+    }
+  } else if (step.type === 'result' || step.type === 'error') {
+    addFlowStep(step.type === 'error' ? 'error' : 'response', step.content, step.data || {});
+  }
+}

@@ -52,7 +52,7 @@ class LLMProvider:
             
         elif self.provider == "ollama":
             # Ollama runs locally, no API key needed
-            self.model = model or "llama3.2"
+            self.model = model or "gpt-oss:120b-cloud"
             self.api_url = os.getenv("OLLAMA_URL", "http://localhost:11434")
             
         else:
@@ -316,6 +316,136 @@ Always be helpful and confirm order details before finalizing."""
                     "input_schema": func["parameters"]
                 })
         return anthropic_tools
+    
+    def _chat_ollama(self, prompt: str, context: Optional[Dict], 
+                     tools: Optional[List[Dict]]) -> Dict[str, Any]:
+        """Ollama chat implementation (local models)"""
+        # Build the system message
+        system_msg = """You are a helpful restaurant ordering assistant for OrchaPOS.
+
+WORKFLOW for placing orders:
+1. If user wants to ORDER something:
+   Step 1: Call foodtec.export_menu to get the menu (if not already available in context)
+   Step 2: Find the matching item in the menu and NOTE ITS PRICE
+   Step 3: Call foodtec.validate_order with:
+           - category (from menu)
+           - item (exact name from menu)
+           - size (from menu)
+           - menuPrice (the price field from the menu item - REQUIRED!)
+   Step 4: After validation succeeds, call foodtec.accept_order with:
+           - category (from validation)
+           - item (from validation)
+           - size (from validation)
+           - menuPrice (from validation)
+           - canonicalPrice (from validation result)
+           - customer: {name, phone}
+           - externalRef (generate unique ID like "ORD-12345")
+   
+2. If user just browsing/asking questions (e.g., "What appetizers?", "How much is X?"):
+   - Check context: If "menu" key exists with data → ANSWER IMMEDIATELY, no tools needed!
+   - If NO "menu" in context → Call foodtec.export_menu ONCE only
+   - After export_menu completes → ANSWER conversationally, do NOT call more tools!
+   - NEVER call export_menu more than once for the same question!
+
+CRITICAL RULES:
+- If prompt contains "Now that you have the data" or "answer the user's question" → You MUST respond conversationally WITHOUT calling any tools!
+- If "completed_actions" shows a tool was already called successfully → DO NOT call it again!
+- NEVER call accept_order more than once - if it succeeded, just confirm to the user
+- NEVER call validate_order without the menuPrice from the menu
+- When validation succeeds, call accept_order ONCE, then stop
+- Phone format must be XXX-XXX-XXXX
+- If customer info is missing, ask for it
+
+RESPONSE FORMATS:
+- To call a tool: Use native Ollama tool calling (return tool_calls)
+- To answer without tools: Respond conversationally with content field
+- If prompt asks you to answer: DO NOT return tool_calls, just answer with text"""
+
+        if context:
+            system_msg += f"\n\nContext: {json.dumps(context)}"
+        
+        # Build the user message
+        user_msg = prompt
+        
+        # Make request to Ollama API
+        try:
+            # Build request payload
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": system_msg},
+                    {"role": "user", "content": user_msg}
+                ],
+                "stream": False
+            }
+            
+            # Add tools if provided (Ollama supports native tool calling)
+            if tools:
+                payload["tools"] = tools
+            
+            response = requests.post(
+                f"{self.api_url}/api/chat",
+                json=payload,
+                timeout=30
+            )
+            response.raise_for_status()
+            
+            result = response.json()
+            print(f"🔍 Ollama raw response: {json.dumps(result, indent=2)[:500]}")
+            message = result.get("message", {})
+            content = message.get("content", "")
+            
+            # Check for native Ollama tool_calls first
+            tool_calls = message.get("tool_calls", [])
+            
+            # If no native tool_calls, try to extract from text content
+            if not tool_calls and content:
+                try:
+                    # Look for JSON in the response text
+                    if "{" in content and "tool_calls" in content:
+                        # Extract JSON from markdown code blocks if present
+                        json_str = content
+                        if "```json" in content:
+                            json_str = content.split("```json")[1].split("```")[0].strip()
+                        elif "```" in content:
+                            json_str = content.split("```")[1].split("```")[0].strip()
+                        
+                        parsed = json.loads(json_str)
+                        if "tool_calls" in parsed:
+                            tool_calls = parsed["tool_calls"]
+                            # Clear content since it was just the JSON
+                            content = ""
+                except json.JSONDecodeError:
+                    pass
+            
+            # Convert Ollama's tool_calls format to our format if needed
+            if tool_calls and isinstance(tool_calls, list):
+                formatted_calls = []
+                for call in tool_calls:
+                    if isinstance(call, dict):
+                        # Ollama format: {"function": {"name": "...", "arguments": {...}}}
+                        if "function" in call:
+                            formatted_calls.append({
+                                "name": call["function"].get("name"),
+                                "arguments": call["function"].get("arguments", {})
+                            })
+                        # Our format: {"name": "...", "arguments": {...}}
+                        elif "name" in call:
+                            formatted_calls.append(call)
+                tool_calls = formatted_calls
+            
+            return {
+                "content": content,
+                "tool_calls": tool_calls
+            }
+            
+        except requests.exceptions.RequestException as e:
+            error_msg = f"Ollama API error: {str(e)}"
+            print(error_msg)
+            return {
+                "content": f"Error calling Ollama API: {str(e)}",
+                "tool_calls": []
+            }
 
 
 def get_foodtec_tools() -> List[Dict]:
@@ -350,7 +480,7 @@ def get_foodtec_tools() -> List[Dict]:
             "type": "function",
             "function": {
                 "name": "foodtec.validate_order",
-                "description": "Validate an order and get the canonical price (with tax). Must be called before accepting an order.",
+                "description": "Validate an order and get the canonical price (with tax). Must be called before accepting an order. Returns menuPrice and canonicalPrice.",
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -366,26 +496,12 @@ def get_foodtec_tools() -> List[Dict]:
                             "type": "string",
                             "description": "Size from menu (e.g., 'Sm', 'Reg', 'Lg')"
                         },
-                        "price": {
+                        "menuPrice": {
                             "type": "number",
-                            "description": "Base price from menu"
-                        },
-                        "customer": {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "Customer name"
-                                },
-                                "phone": {
-                                    "type": "string",
-                                    "description": "Customer phone with area code"
-                                }
-                            },
-                            "required": ["name", "phone"]
+                            "description": "Base price from menu (optional - will be looked up if not provided)"
                         }
                     },
-                    "required": ["category", "item", "size", "price", "customer"]
+                    "required": ["category", "item", "size"]
                 }
             }
         },
@@ -393,110 +509,51 @@ def get_foodtec_tools() -> List[Dict]:
             "type": "function",
             "function": {
                 "name": "foodtec.accept_order",
-                "description": "Accept and finalize an order. Must use the canonical price from validation.",
+                "description": "Accept and finalize an order. MUST call validate_order first to get menuPrice and canonicalPrice.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "category": {
                             "type": "string",
-                            "description": "Item category"
+                            "description": "Item category from menu"
                         },
                         "item": {
                             "type": "string",
-                            "description": "Item name"
+                            "description": "Exact item name from menu"
                         },
                         "size": {
                             "type": "string",
-                            "description": "Item size"
+                            "description": "Item size from menu"
                         },
-                        "price": {
+                        "menuPrice": {
                             "type": "number",
-                            "description": "MUST be the canonical price from validation (with tax)"
+                            "description": "Original menu price WITHOUT tax (get from validation response)"
+                        },
+                        "canonicalPrice": {
+                            "type": "number",
+                            "description": "Final price WITH tax (get from validation response)"
                         },
                         "customer": {
                             "type": "object",
                             "properties": {
-                                "name": {"type": "string"},
-                                "phone": {"type": "string"}
+                                "name": {
+                                    "type": "string",
+                                    "description": "Customer full name"
+                                },
+                                "phone": {
+                                    "type": "string",
+                                    "description": "Phone in format XXX-XXX-XXXX"
+                                }
                             },
                             "required": ["name", "phone"]
+                        },
+                        "externalRef": {
+                            "type": "string",
+                            "description": "Unique order reference ID (generate a random string like 'ORD-12345')"
                         }
                     },
-                    "required": ["category", "item", "size", "price", "customer"]
+                    "required": ["category", "item", "size", "menuPrice", "canonicalPrice", "customer", "externalRef"]
                 }
             }
         }
     ]
-
-    def _chat_ollama(self, prompt: str, context: Optional[Dict], 
-                     tools: Optional[List[Dict]]) -> Dict[str, Any]:
-        """Ollama chat implementation (local models)"""
-        # Build the system message
-        system_msg = """You are a helpful restaurant ordering assistant for OrchaPOS.
-You help customers browse the menu, validate orders, and place orders.
-
-Available tools:
-1. foodtec.export_menu - Get the restaurant menu
-2. foodtec.validate_order - Validate an order (category, item, size, price)
-3. foodtec.accept_order - Accept a validated order (includes customer info)
-
-When you need to call a tool, respond with a JSON object in this format:
-{"tool_calls": [{"name": "tool_name", "arguments": {...}}]}
-
-Otherwise, respond conversationally to help the user."""
-
-        if context:
-            system_msg += f"\n\nContext: {json.dumps(context)}"
-        
-        # Build the user message
-        user_msg = prompt
-        
-        # Make request to Ollama API
-        try:
-            response = requests.post(
-                f"{self.api_url}/api/chat",
-                json={
-                    "model": self.model,
-                    "messages": [
-                        {"role": "system", "content": system_msg},
-                        {"role": "user", "content": user_msg}
-                    ],
-                    "stream": False
-                },
-                timeout=30
-            )
-            response.raise_for_status()
-            
-            result = response.json()
-            content = result.get("message", {}).get("content", "")
-            
-            # Try to extract tool calls from the response
-            tool_calls = []
-            try:
-                # Look for JSON in the response
-                if "{" in content and "tool_calls" in content:
-                    # Extract JSON from markdown code blocks if present
-                    json_str = content
-                    if "```json" in content:
-                        json_str = content.split("```json")[1].split("```")[0].strip()
-                    elif "```" in content:
-                        json_str = content.split("```")[1].split("```")[0].strip()
-                    
-                    parsed = json.loads(json_str)
-                    if "tool_calls" in parsed:
-                        tool_calls = parsed["tool_calls"]
-            except json.JSONDecodeError:
-                pass
-            
-            return {
-                "content": content,
-                "tool_calls": tool_calls
-            }
-            
-        except requests.exceptions.RequestException as e:
-            error_msg = f"Ollama API error: {str(e)}"
-            print(error_msg)
-            return {
-                "content": f"Error calling Ollama API: {str(e)}",
-                "tool_calls": []
-            }

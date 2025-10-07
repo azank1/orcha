@@ -8,6 +8,9 @@ import axios from "axios";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Determine base directory (handles both src and dist)
+const baseDir = __dirname.endsWith('dist') ? path.join(__dirname, '..') : __dirname;
+
 // Configuration
 const app = express();
 const PORT = 3001; // UI runs here
@@ -20,10 +23,10 @@ const AUTOMATION_ENABLED = process.env.AUTOMATION_ENABLED !== "false"; // Enable
 // Configure Handlebars
 app.engine("hbs", engine({ extname: ".hbs", defaultLayout: false }));
 app.set("view engine", "hbs");
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(baseDir, "views"));
 
 // Serve static files (CSS, JS)
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(baseDir, "public")));
 
 // Add JSON parsing middleware
 app.use(express.json());
@@ -54,16 +57,9 @@ app.post('/mcp', async (req, res) => {
   }
 });
 
-// API Routes for automation
+// API Routes for automation - Proxy to Python automation service
 app.post("/api/automation/process-order", async (req, res) => {
   try {
-    if (!AUTOMATION_ENABLED) {
-      return res.status(403).json({ 
-        success: false, 
-        error: "Automation is disabled" 
-      });
-    }
-
     const { text } = req.body;
     if (!text || typeof text !== 'string') {
       return res.status(400).json({ 
@@ -74,74 +70,34 @@ app.post("/api/automation/process-order", async (req, res) => {
 
     console.log("Processing natural language order:", text);
 
-    /* INTEGRATION POINT
-     * In production, this would use the actual automation component:
-     * 
-     * // When automation is integrated, replace this mock with:
-     * import { processOrder } from "../../automation/orchestrator.js";
-     * 
-     * const result = await processOrder(text);
-     * // Format result for UI consumption using server-integration.ts
-     * const formattedResponse = formatResponseForUI(result);
-     * res.json(formattedResponse);
-     */
-    
-    // For demonstration, we'll use a simulated response
-    // Simulate processing delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    const mockResult = {
-      success: true,
-      steps: [
-        {
-          type: 'extraction',
-          title: 'Order Extraction',
-          data: {
-            items: [
-              { 
-                name: 'Pizza Margherita', 
-                quantity: 1, 
-                options: ['Extra cheese'] 
-              },
-              {
-                name: 'Coca Cola',
-                quantity: 2,
-                options: ['Cold']
-              }
-            ],
-            customerInfo: {
-              name: 'Demo Customer',
-              address: '123 Demo St',
-              phone: '555-1234'
-            }
-          }
-        },
-        {
-          type: 'validation',
-          title: 'Order Validation',
-          data: {
-            valid: true,
-            message: 'Order validated successfully',
-            details: {
-              estimatedDeliveryTime: '30-45 minutes',
-              totalPrice: '$24.99'
-            }
-          }
-        },
-        {
-          type: 'acceptance',
-          title: 'Order Acceptance',
-          data: {
-            accepted: true,
-            orderNumber: 'ORD-' + Math.floor(100000 + Math.random() * 900000),
-            timestamp: new Date().toISOString()
-          }
+    // Set up SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    try {
+      // Forward to Python automation service
+      const response = await axios.post('http://127.0.0.1:5000/process', 
+        { text },
+        { 
+          responseType: 'stream',
+          timeout: 60000
         }
-      ]
-    };
-    
-    res.json(mockResult);
-  } catch (error) {
+      );
+
+      // Pipe the stream
+      response.data.pipe(res);
+      
+    } catch (error: any) {
+      console.error('Automation service error:', error);
+      res.write(`data: ${JSON.stringify({ 
+        type: 'error', 
+        content: error.message || 'Automation service unavailable. Make sure it is running on port 5000.',
+        timestamp: Date.now()
+      })}\n\n`);
+      res.end();
+    }
+  } catch (error: any) {
     console.error('Automation API error:', error);
     res.status(500).json({
       success: false,
