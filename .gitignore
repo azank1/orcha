@@ -23,6 +23,8 @@ env/
 IMPLEMENTATION.md
 QUICKSTART.md
 CLEANUP_SUMMARY.md
+INTERVAL.md
+ROADMAP_FINAL.md
 
 # IDE & Editor
 .vscode/
@@ -77,7 +79,7 @@ D:\dev\orcha-1\IMPLEMENTATION.md#
 
 logs/
 *.log
-
+claude-flow/
 # Optional: Uncomment to ignore lockfiles
 # package-lock.json
 # yarn.lock
