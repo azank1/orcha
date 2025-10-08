@@ -7,7 +7,8 @@ from flask_cors import CORS
 import sys
 import os
 import json
-from typing import Generator
+import time
+import traceback
 
 # Add parent to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -59,7 +60,6 @@ def process_order():
     def generate():
         """Generator for SSE streaming"""
         try:
-            import time
             iteration = 0
             
             # Process the order with streaming
@@ -107,7 +107,6 @@ def process_order():
             yield f"data: {json.dumps({'type': 'complete', 'timestamp': int(time.time() * 1000)})}\n\n"
             
         except Exception as e:
-            import traceback
             error_detail = str(e)[:200]  # Truncate to prevent crashes
             print(f"Error in SSE stream: {traceback.format_exc()}")
             yield f"data: {json.dumps({'type': 'error', 'content': f'Error: {error_detail}', 'timestamp': int(time.time() * 1000)})}\n\n"
