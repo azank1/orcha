@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orcha-2 Chat Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            height: 80vh;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message.assistant {
+            justify-content: flex-start;
+        }
+        
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+        }
+        
+        .message.assistant .message-content {
+            background: white;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .search-results {
+            margin-top: 10px;
+        }
+        
+        .search-item {
+            background: #f1f3f4;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .search-item h4 {
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        
+        .search-item .price {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .search-item .category {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+        
+        .chat-input {
+            display: flex;
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e1e8ed;
+        }
+        
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e1e8ed;
+            border-radius: 25px;
+            outline: none;
+            font-size: 16px;
+        }
+        
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+        
+        .chat-input button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .session-info {
+            font-size: 0.8em;
+            color: #6c757d;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .llm-source {
+            font-size: 0.75em;
+            color: #6c757d;
+            margin-top: 5px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>🍕 Orcha-2 Assistant</h1>
+            <div class="session-info" id="sessionInfo">Starting new session...</div>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <div class="message assistant">
+                <div class="message-content">
+                    Hi! I'm your food ordering assistant. I can help you search for menu items like pizza, burgers, or salads. What are you looking for today?
+                </div>
+            </div>
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type your message..." autofocus>
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        class OrchaChat {
+            constructor() {
+                this.sessionId = null;
+                this.apiUrl = 'http://127.0.0.1:8000';
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.sessionInfo = document.getElementById('sessionInfo');
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+            
+            async sendMessage() {
+                const text = this.messageInput.value.trim();
+                if (!text) return;
+                
+                // Add user message to chat
+                this.addMessage('user', text);
+                this.messageInput.value = '';
+                this.setLoading(true);
+                
+                try {
+                    const response = await fetch(`${this.apiUrl}/automation/orchestrate`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            text: text,
+                            session_id: this.sessionId
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    this.handleResponse(data);
+                    
+                } catch (error) {
+                    this.addMessage('assistant', `Sorry, I encountered an error: ${error.message}`);
+                } finally {
+                    this.setLoading(false);
+                }
+            }
+            
+            handleResponse(data) {
+                // Update session ID if provided
+                if (data.data && data.data.session_id) {
+                    this.sessionId = data.data.session_id;
+                    this.sessionInfo.textContent = `Session: ${this.sessionId.slice(0, 8)}...`;
+                }
+                
+                if (data.event === 'search_results') {
+                    this.addSearchResults(data.data);
+                } else if (data.event === 'order_intent') {
+                    this.addMessage('assistant', data.data.message);
+                } else if (data.event === 'info') {
+                    this.addMessage('assistant', data.data.message);
+                } else if (data.event === 'error') {
+                    this.addMessage('assistant', `Error: ${data.message}`);
+                } else {
+                    this.addMessage('assistant', 'I received your message but I\'m not sure how to respond.');
+                }
+                
+                // Show LLM source if available
+                if (data.llm_source) {
+                    this.addLlmSource(data.llm_source);
+                }
+            }
+            
+            addMessage(sender, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = content;
+                
+                messageDiv.appendChild(contentDiv);
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            addSearchResults(data) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message assistant';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                const resultsCount = data.results ? data.results.length : 0;
+                contentDiv.innerHTML = `<strong>Found ${resultsCount} items for "${data.query}":</strong>`;
+                
+                if (data.results && data.results.length > 0) {
+                    const resultsDiv = document.createElement('div');
+                    resultsDiv.className = 'search-results';
+                    
+                    data.results.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'search-item';
+                        
+                        itemDiv.innerHTML = `
+                            <h4>${item.name}</h4>
+                            <div class="category">${item.category}</div>
+                            ${item.price ? `<div class="price">$${item.price}</div>` : ''}
+                        `;
+                        
+                        resultsDiv.appendChild(itemDiv);
+                    });
+                    
+                    contentDiv.appendChild(resultsDiv);
+                }
+                
+                messageDiv.appendChild(contentDiv);
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+            
+            addLlmSource(source) {
+                const sourceDiv = document.createElement('div');
+                sourceDiv.className = 'llm-source';
+                sourceDiv.textContent = `Powered by: ${source}`;
+                this.chatMessages.appendChild(sourceDiv);
+            }
+            
+            setLoading(loading) {
+                this.sendButton.disabled = loading;
+                this.sendButton.textContent = loading ? 'Sending...' : 'Send';
+                this.messageInput.disabled = loading;
+            }
+            
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+        
+        // Initialize chat when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new OrchaChat();
+        });
+    </script>
+</body>
+</html>

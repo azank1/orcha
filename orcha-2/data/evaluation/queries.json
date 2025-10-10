@@ -1,0 +1,56 @@
+{
+  "evaluation_dataset": {
+    "description": "Search quality evaluation dataset for Phase 3 metrics",
+    "version": "1.0",
+    "queries": [
+      {
+        "id": 1,
+        "query": "pizza",
+        "gold_labels": ["Margherita Pizza", "Pepperoni Pizza", "Hawaiian Pizza"],
+        "description": "Basic pizza search"
+      },
+      {
+        "id": 2,
+        "query": "spicy chicken",
+        "gold_labels": ["Buffalo Wings", "Spicy Chicken Sandwich", "Chicken Jalfrezi"],
+        "description": "Spicy chicken dishes"
+      },
+      {
+        "id": 3,
+        "query": "vegetarian pasta",
+        "gold_labels": ["Penne Arrabbiata", "Spaghetti Marinara", "Fettuccine Alfredo"],
+        "description": "Vegetarian pasta options"
+      },
+      {
+        "id": 4,
+        "query": "dessert chocolate",
+        "gold_labels": ["Chocolate Cake", "Chocolate Ice Cream", "Brownie"],
+        "description": "Chocolate desserts"
+      },
+      {
+        "id": 5,
+        "query": "healthy salad",
+        "gold_labels": ["Caesar Salad", "Greek Salad", "Garden Salad"],
+        "description": "Healthy salad options"
+      },
+      {
+        "id": 6,
+        "query": "burger beef",
+        "gold_labels": ["Classic Burger", "Cheeseburger", "Big Mac"],
+        "description": "Beef burgers"
+      },
+      {
+        "id": 7,
+        "query": "seafood grilled",
+        "gold_labels": ["Grilled Salmon", "Grilled Shrimp", "Fish & Chips"],
+        "description": "Grilled seafood dishes"
+      },
+      {
+        "id": 8,
+        "query": "breakfast eggs",
+        "gold_labels": ["Scrambled Eggs", "Benedict", "Omelette"],
+        "description": "Egg-based breakfast items"
+      }
+    ]
+  }
+}

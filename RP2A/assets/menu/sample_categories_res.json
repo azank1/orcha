@@ -1,0 +1,291 @@
+{
+    "categories": [
+        {
+            "category": "Pizza",
+            "items": [
+                {
+                    "item": "BBQ Chicken",
+                    "code": "15963285741",
+                    "sizePrices": [
+                        {
+                            "size": "10",
+                            "price": 11.95
+                        },
+                        {
+                            "size": "12",
+                            "price": 15.95
+                        },
+                        {
+                            "size": "14",
+                            "price": 19.95
+                        },
+                        {
+                            "size": "16",
+                            "price": 22.95
+                        },
+                        {
+                            "size": "18",
+                            "price": 25.95
+                        }
+                    ],
+                    "choices": [
+                        {
+                            "choice": "Toppinngs",
+                            "enforcedIngredients": 0,
+                            "ingredients": [
+                                {
+                                    "ingredient": "Cheese",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                },
+                                {
+                                    "ingredient": "Cheddar Cheese",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                },
+                                {
+                                    "ingredient": "Chicken",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                }
+                            ],
+                            "dependsOn": null
+                        },
+                        {
+                            "choice": "Crusts",
+                            "enforcedIngredients": 0,
+                            "ingredients": [
+                                {
+                                    "ingredient": "Regular Crust",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                },
+                                {
+                                    "ingredient": "Thin Crust",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                },
+                                {
+                                    "ingredient": "Thick Crust",
+                                    "sizePrices": [
+                                        {
+                                            "size": "12",
+                                            "price": 1.5
+                                        },
+                                        {
+                                            "size": "14",
+                                            "price": 2.0
+                                        },
+                                        {
+                                            "size": "16",
+                                            "price": 2.2
+                                        }
+                                    ],
+                                    "allowHalfs": false,
+                                    "isDefault": true,
+                                    "qualifiers": [
+                                        {
+                                            "name": "Light",
+                                            "priceFactor": 0.0,
+                                            "recipeFactor": 0.0,
+                                            "isDefault": true
+                                        },
+                                        {
+                                            "name": "Extra",
+                                            "priceFactor": 1.0,
+                                            "recipeFactor": 1.0,
+                                            "isDefault": false
+                                        },
+                                        {
+                                            "name": "XXtra",
+                                            "priceFactor": 2.0,
+                                            "recipeFactor": 2.0,
+                                            "isDefault": false
+                                        }
+                                    ],
+                                    "code": null
+                                }
+                            ],
+                            "dependsOn": null
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

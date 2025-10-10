@@ -1,0 +1,7 @@
+fastmcp
+PyJWT
+rank-bm25
+nltk
+python-dotenv
+starlette
+uvicorn
