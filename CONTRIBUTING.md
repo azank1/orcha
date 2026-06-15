@@ -1,0 +1,65 @@
+# Contributing to Orcha
+
+Thanks for your interest in Orcha — an orchestration runtime that plans, routes,
+and executes one natural-language goal across agents speaking **different**
+protocols (MCP, A2A, ACP) in a single run.
+
+We are building this in the open. Two kinds of contributions are **eagerly
+welcomed** and need no prior discussion:
+
+- **Bridges** — a new protocol handler so the runtime can orchestrate agents
+  that speak something we don't support yet (n8n, LangGraph, OpenAPI, …). This
+  is the contribution we most want. Start from
+  [`templates/your-first-bridge/`](templates/your-first-bridge/) and read
+  [`docs/bridges.md`](docs/bridges.md).
+- **Agents** — a new example agent that registers against the local registry.
+  Start from [`templates/your-first-agent/`](templates/your-first-agent/) and
+  [`docs/quickstart.md`](docs/quickstart.md).
+
+> **Core engine changes** (the SuperAgent execution pipeline, the registry
+> contract, the planner) need an issue **first**. Open one describing the
+> problem before sending a PR so we can agree on the approach — the
+> `emerge.yaml` spec in particular is treated as frozen-by-default (see below).
+
+## Ground rules
+
+- **The spec is the ERC-20.** `emerge.yaml` is versioned (`schema_version`) and
+  validated against [`docs/spec/emerge-yaml.schema.json`](docs/spec/emerge-yaml.schema.json).
+  Once external agents exist, breaking the spec breaks everyone. Spec changes
+  go through the RFC process in [`docs/spec/governance.md`](docs/spec/governance.md).
+- **Run in mock mode.** The public runtime runs fully with `PAYMENT_MODE=mock`
+  and no private dependency. PRs must not introduce a hard dependency on any
+  closed/hosted service.
+- **DID namespace is `did:orcha:agent:*`** (user agents) / `did:orcha:system:*`
+  (platform tools). Don't reintroduce other namespaces.
+
+## Development setup
+
+```bash
+git clone git@github.com:azank1/orcha.git
+cd orcha
+make install            # install Python + JS deps via uv / npm
+make prisma-generate
+make grpc-generate
+./scripts/run-all.sh    # bring the local stack up
+```
+
+See [`docs/quickstart.md`](docs/quickstart.md) for the full 5-minute path.
+
+## Before you open a PR
+
+- `make check` passes (lint + format + tests).
+- New code has tests. Bridges and agents include a minimal example + manifest.
+- No secrets, credentials, or client references in the diff.
+- Public-facing text says **Orcha**, not any internal brand.
+
+## Reporting bugs / requesting bridges
+
+Use the issue templates: **Bug report**, **Bridge request**, or
+**Agent submission**. For security issues, do **not** open a public issue —
+see [`SECURITY.md`](SECURITY.md).
+
+## License
+
+By contributing you agree your contributions are licensed under the
+[Apache License 2.0](LICENSE), the license of this project.

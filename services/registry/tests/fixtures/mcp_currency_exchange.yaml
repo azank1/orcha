@@ -1,7 +1,7 @@
 # mcp_currency_exchange.yaml
 # MCP agent for currency conversion and exchange rates
 identity:
-  id: "did:metaorcha:agent:forex-currency-exchange"
+  id: "did:orcha:agent:forex-currency-exchange"
   name: "ForexPro-CurrencyExchange"
   version: "1.0.3"
   description: "Provides real-time and historical currency exchange rates, budget conversion, and multi-currency breakdown. Supports 170+ currencies including major cryptocurrencies."

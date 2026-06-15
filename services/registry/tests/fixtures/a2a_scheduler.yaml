@@ -1,6 +1,6 @@
 # a2a-scheduler.yaml
 identity:
-  id: "did:metaorcha:agent:med-scheduler-v1"
+  id: "did:orcha:agent:med-scheduler-v1"
   name: "DrBookingAgent"
   version: "1.1.0"
   description: "HIPAA-compliant appointment scheduling assistant."

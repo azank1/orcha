@@ -11,14 +11,22 @@ class IdentityConfig(BaseModel):
     id: str = Field(
         ...,
         description=(
-            "DID: did:metaorcha:agent:* (user agents) or "
-            "did:metaorcha:system:* (platform MCP tools)"
+            "DID: did:orcha:agent:* (user agents) or "
+            "did:orcha:system:* (platform MCP tools)"
         ),
     )
     name: str
     version: str
     description: str
     tags: list[str] = Field(default_factory=list)
+    public_key: str | None = Field(
+        default=None,
+        description=(
+            "Optional Ed25519 public key (base64) for signed identity. "
+            "Reserved for emerge/1.1 signed-identity verification; "
+            "unused in mock OSS mode."
+        ),
+    )
 
 
 class TransportConfig(BaseModel):
@@ -98,6 +106,14 @@ class EmergeConfig(BaseModel):
     This is the schema that developers use to register their agents.
     """
 
+    schema_version: str = Field(
+        default="1.0",
+        description=(
+            "Version of the emerge.yaml schema. Defaults to '1.0' when absent. "
+            "Validated against docs/spec/emerge-yaml.schema.json. "
+            "The spec is frozen-by-default; changes go through the RFC process."
+        ),
+    )
     identity: IdentityConfig
     protocol: ProtocolConfig
     health_endpoint: str
@@ -105,9 +121,9 @@ class EmergeConfig(BaseModel):
     payment: PaymentConfig | None = None
 
     def validate_did_format(self) -> bool:
-        """Validate that ID follows Metaorcha DID format (user or platform)."""
+        """Validate that ID follows the Orcha DID format (user or platform)."""
         return self.identity.id.startswith(
-            ("did:metaorcha:agent:", "did:metaorcha:system:")
+            ("did:orcha:agent:", "did:orcha:system:")
         )
 
     def validate_protocol_type(self) -> bool:

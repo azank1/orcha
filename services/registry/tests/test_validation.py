@@ -53,14 +53,14 @@ class TestValidationService:
         assert is_valid is False
         assert error is not None
         assert error.field == "identity.id"
-        assert "did:metaorcha:agent:" in error.reason
-        assert "did:metaorcha:system:" in error.reason
+        assert "did:orcha:agent:" in error.reason
+        assert "did:orcha:system:" in error.reason
 
     def test_validate_valid_system_mcp_did(self):
-        """Platform MCP manifests use did:metaorcha:system:* (same shape as agent MCP)."""
+        """Platform MCP manifests use did:orcha:system:* (same shape as agent MCP)."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:system:web-search",
+                "id": "did:orcha:system:web-search",
                 "name": "Web Search",
                 "version": "1.0.0",
                 "description": "Test",
@@ -83,7 +83,7 @@ class TestValidationService:
         """Test validation fails for unsupported protocol type."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -108,7 +108,7 @@ class TestValidationService:
         """Test validation fails for unsupported transport type."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -136,7 +136,7 @@ class TestValidationService:
         """Test validation fails when endpoint is missing for SSE transport."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -164,7 +164,7 @@ class TestValidationService:
         """Test validation fails when command is missing for STDIO transport."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -192,7 +192,7 @@ class TestValidationService:
         """Test validation fails when mtls_config is missing for MTLS type."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -223,7 +223,7 @@ class TestValidationService:
         """Test validation fails for invalid health endpoint URL."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.0",
                 "description": "Test",
@@ -248,7 +248,7 @@ class TestValidationService:
         """Test validation fails for invalid semantic versioning."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0",  # Invalid - should be x.y.z
                 "description": "Test",
@@ -273,7 +273,7 @@ class TestValidationService:
         """Test validation fails when version contains non-numeric parts."""
         config_data = {
             "identity": {
-                "id": "did:metaorcha:agent:test",
+                "id": "did:orcha:agent:test",
                 "name": "TestAgent",
                 "version": "1.0.beta",  # Invalid - non-numeric
                 "description": "Test",

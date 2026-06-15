@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:notion-mcp"
+  id: "did:orcha:agent:notion-mcp"
   name: "Notion MCP"
   version: "2.0.0"
   description: "Notion workspace CRUD via MCP — search, create, update pages and query databases"

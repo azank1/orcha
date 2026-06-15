@@ -26,7 +26,7 @@ Registering an agent via `POST /v1/agents/register` to the Registry service uplo
 
 ```yaml
 identity:
-  id: "did:metaorcha:agent:<name>"   # Unique DID
+  id: "did:orcha:agent:<name>"   # Unique DID
   name: "Human-readable name"
   version: "1.0.0"
   description: "What the agent does"

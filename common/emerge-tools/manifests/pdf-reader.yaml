@@ -1,7 +1,7 @@
 # PDF reading via MCP — https://github.com/SylphxAI/pdf-reader-mcp
 # npm: @sylphx/pdf-reader-mcp (Node ≥22). Requires `npx` on the SuperAgent host.
 identity:
-  id: "did:metaorcha:system:pdf-reader"
+  id: "did:orcha:system:pdf-reader"
   name: "PDF Reader"
   version: "2.3.1"
   description: "PDF reader MCP — extract text, metadata, page counts, embedded images, and tables from local PDF files or remote PDF URLs. Accepts multiple sources in a single call with per-source page selection. Use stage_artifact to get a local path for session uploads, then pass that path via sources[].path."

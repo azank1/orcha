@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:ecommerce-automation"
+  id: "did:orcha:agent:ecommerce-automation"
   name: "E-commerce Automation"
   version: "1.0.0"
   description: "Autonomous e-commerce automation agent — manages Shopify product listings (create, publish, delete), publishes to Facebook Pages, and publishes to Instagram Business accounts. Send a natural language task describing what to do."

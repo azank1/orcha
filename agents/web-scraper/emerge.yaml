@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:web-scraper"
+  id: "did:orcha:agent:web-scraper"
   name: "Web Scraper"
   version: "0.2.0"
   description: "Fetches and extracts structured data from web URLs with optional OAuth-based authenticated scraping"

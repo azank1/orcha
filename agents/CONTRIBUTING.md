@@ -4,7 +4,7 @@
 
 Every agent must:
 
-1. Have an `emerge.yaml` at the root with a unique `did:metaorcha:agent:<name>` identity
+1. Have an `emerge.yaml` at the root with a unique `did:orcha:agent:<name>` identity
 2. Implement one of the supported protocols: **A2A** or **MCP**
 3. Pass a basic smoke test (health check or tool invocation)
 4. Include a `README.md` covering setup, environment variables, and usage

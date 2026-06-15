@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:lead-gen"
+  id: "did:orcha:agent:lead-gen"
   name: "Lead Gen Agent"
   version: "1.2.0"
   description: >

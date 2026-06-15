@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:search-agent"
+  id: "did:orcha:agent:search-agent"
   name: "Search Agent"
   version: "1.1.0"
   description: "Generic web search via Google Serper — searches any URL and returns extracted page text. The caller constructs the full query including any site: operators."

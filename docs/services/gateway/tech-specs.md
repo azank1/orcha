@@ -1378,13 +1378,13 @@ With these changes the FE receives events in this sequence for every tool call:
 1. checklist.created        → steps rendered as ○ pending, no agent assigned yet
 
 2. checklist.updated        → step N flips to ◐ in_progress
-                               metadata.agent_id = "did:metaorcha:agent:gmail-mcp"
+                               metadata.agent_id = "did:orcha:agent:gmail-mcp"
                                metadata.tool_name = "gmail-mcp__bulk_fetch_emails"
                                metadata.call_id = "call_abc123"
 
 3. invocation.start         → metadata.call_id = "call_abc123"  ← same call_id
                                metadata.tool_name = "gmail-mcp__bulk_fetch_emails"
-                               metadata.agent_id = "did:metaorcha:agent:gmail-mcp"
+                               metadata.agent_id = "did:orcha:agent:gmail-mcp"
    → FE joins on call_id: the invocation card in "Logs" panel highlights
      the corresponding task row in "Checklist" panel
 

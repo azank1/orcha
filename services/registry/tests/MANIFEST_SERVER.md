@@ -79,7 +79,7 @@ Response:
 
 ```yaml
 identity:
-  id: "did:metaorcha:agent:my-agent"
+  id: "did:orcha:agent:my-agent"
   name: "MyAgent"
   version: "1.0.0"
 
@@ -114,7 +114,7 @@ curl -X POST http://localhost:9000/upload \
 # 4. Create your agent manifest that references the custom manifest
 cat > my_agent.yaml << 'EOF'
 identity:
-  id: "did:metaorcha:agent:test"
+  id: "did:orcha:agent:test"
   name: "TestAgent"
   version: "1.0.0"
   description: "Test agent"
@@ -190,7 +190,7 @@ manifest = await registry.get_manifest("mcp")
 ```bash
 cat > services/registry/tests/fixtures/custom_emerge.yaml << 'EOF'
 identity:
-  id: "did:metaorcha:agent:custom"
+  id: "did:orcha:agent:custom"
   name: "CustomAgent"
   version: "1.0.0"
   description: "A custom test agent"
@@ -231,7 +231,7 @@ class DynamicManifestProvider(ManifestProvider):
     async def get_manifest(self) -> Dict[str, Any]:
         return {
             "identity": {
-                "id": f"did:metaorcha:agent:dynamic-{uuid4()}",
+                "id": f"did:orcha:agent:dynamic-{uuid4()}",
                 "name": "DynamicAgent",
                 "version": "1.0.0",
                 # ... rest of manifest

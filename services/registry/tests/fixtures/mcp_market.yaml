@@ -1,6 +1,6 @@
 # mcp-market-data.yaml
 identity:
-  id: "did:metaorcha:agent:alpha-feed-provider"
+  id: "did:orcha:agent:alpha-feed-provider"
   name: "AlphaDataFeed"
   version: "3.0.0"
   description: "Real-time aggregated order book data for DeFi assets."

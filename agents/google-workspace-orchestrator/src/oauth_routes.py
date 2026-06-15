@@ -19,7 +19,7 @@ def _parse_state(state: str) -> tuple[str | None, str | None]:
     """
     Parse the superagent OAuth state format: "<session_id>:<agent_id>:<nonce>".
 
-    agent_id is a DID that contains colons (e.g. did:metaorcha:agent:name), so we
+    agent_id is a DID that contains colons (e.g. did:orcha:agent:name), so we
     cannot use a fixed maxsplit.  Convention: session_id is the first segment,
     nonce is the last segment, and everything in between is the agent_id.
     """

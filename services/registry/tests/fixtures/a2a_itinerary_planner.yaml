@@ -1,7 +1,7 @@
 # a2a_itinerary_planner.yaml
 # A2A agent for AI-powered travel itinerary creation
 identity:
-  id: "did:metaorcha:agent:wandercraft-itinerary-planner"
+  id: "did:orcha:agent:wandercraft-itinerary-planner"
   name: "WanderCraft-ItineraryPlanner"
   version: "2.0.0"
   description: "AI-powered travel itinerary planner that creates detailed day-by-day plans based on destination, duration, interests, and budget. Incorporates local attractions, dining recommendations, transport links, and practical travel tips."

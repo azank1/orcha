@@ -1,7 +1,7 @@
 # Tavily MCP — https://github.com/tavily-ai/tavily-mcp
 # Tool names use underscores (tavily_search, …) as registered in src/index.ts ListToolsRequestSchema.
 identity:
-  id: "did:metaorcha:system:web-search"
+  id: "did:orcha:system:web-search"
   name: "Web Search"
   version: "1.1.0"
   description: "Real-time web search, extract, crawl, map, and research via Tavily MCP. Tool names must match the server (tavily_search, tavily_extract, tavily_crawl, tavily_map, tavily_research)."

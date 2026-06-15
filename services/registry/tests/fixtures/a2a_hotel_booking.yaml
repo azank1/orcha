@@ -1,7 +1,7 @@
 # a2a_hotel_booking.yaml
 # A2A agent for hotel search and booking
 identity:
-  id: "did:metaorcha:agent:staywise-hotel-booking"
+  id: "did:orcha:agent:staywise-hotel-booking"
   name: "StayWise-HotelBooking"
   version: "3.0.1"
   description: "Searches, compares, and books hotels worldwide. Supports filtering by location, amenities, price range, and guest rating. Returns confirmed reservations with cancellation policies."

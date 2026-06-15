@@ -2,7 +2,7 @@
 # Install: uvx mcp-document-converter (PyPI). Optional: --from git+https://github.com/xt765/mcp-document-converter
 # Converts using file paths; agents should read/write under /tmp/{session_id}/ (see SuperAgent staging).
 identity:
-  id: "did:metaorcha:system:doc-convert"
+  id: "did:orcha:system:doc-convert"
   name: "Document Converter"
   version: "2.0.0"
   description: "Convert documents between Markdown, HTML, DOCX, PDF, and plain text using the mcp-document-converter MCP server (WeasyPrint, python-docx, etc.). Prefer absolute paths under /tmp/{session_id}/ for inputs and outputs."

@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:test-mcp-agent"
+  id: "did:orcha:agent:test-mcp-agent"
   name: "TestMCPAgent"
   version: "1.0.0"
   description: "A test MCP agent for unit testing"

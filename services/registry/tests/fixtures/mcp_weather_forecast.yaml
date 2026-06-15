@@ -1,7 +1,7 @@
 # mcp_weather_forecast.yaml
 # MCP agent for weather forecasting and climate data
 identity:
-  id: "did:metaorcha:agent:clearsky-weather-forecast"
+  id: "did:orcha:agent:clearsky-weather-forecast"
   name: "ClearSky-WeatherForecast"
   version: "1.5.2"
   description: "Provides accurate weather forecasts and historical climate data for any location worldwide. Supports multi-day forecasts, hourly breakdowns, and travel-friendly climate summaries."

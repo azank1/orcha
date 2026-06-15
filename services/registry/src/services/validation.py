@@ -41,7 +41,7 @@ class ValidationService:
         if not config.validate_did_format():
             return False, ValidationError(
                 "identity.id",
-                "Must start with 'did:metaorcha:agent:' or 'did:metaorcha:system:'",
+                "Must start with 'did:orcha:agent:' or 'did:orcha:system:'",
             )
 
         # Validate protocol type

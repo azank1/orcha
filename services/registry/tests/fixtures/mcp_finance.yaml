@@ -4,7 +4,7 @@
 # mcp_currency_exchange.yaml (e.g. ticker_symbol vs currency code, net_value vs
 # converted_amount) so the IO resolver must use semantic matching.
 identity:
-  id: "did:metaorcha:agent:clearledger-finance"
+  id: "did:orcha:agent:clearledger-finance"
   name: "ClearLedger-Finance"
   version: "1.2.0"
   description: "Personal finance toolkit — real-time stock quotes, portfolio valuation, and expense categorisation. Supports equities, ETFs, and mutual funds across major exchanges."

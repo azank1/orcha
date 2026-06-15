@@ -2,7 +2,7 @@
 # pip/uvx: markitdown-mcp (Python ≥3.10). Requires `uvx` on the SuperAgent host.
 # Supports: Word, Excel, PowerPoint, HTML, CSV, JSON, XML, ZIP, audio, images, and more.
 identity:
-  id: "did:metaorcha:system:convert-to-markdown"
+  id: "did:orcha:system:convert-to-markdown"
   name: "MarkItDown"
   version: "1.0.0"
   description: "Convert any document to Markdown using Microsoft MarkItDown MCP. Accepts http:, https:, file:, or data: URIs. Handles Word (.docx), Excel (.xlsx), PowerPoint (.pptx), HTML, CSV, JSON, XML, ZIP archives, images, audio, and more. For session uploads: stage_artifact to get a local path, then pass as file:///tmp/{session_id}/filename."

@@ -205,7 +205,7 @@ def mock_agent_record():
     from datetime import datetime
 
     agent = MagicMock()
-    agent.id = "did:metaorcha:agent:test-agent"
+    agent.id = "did:orcha:agent:test-agent"
     agent.user_id = "test_user_123"
     agent.name = "TestAgent"
     agent.version = "1.0.0"

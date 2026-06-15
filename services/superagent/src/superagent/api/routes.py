@@ -293,7 +293,7 @@ async def store_agent_env(body: StoreAgentEnvRequest) -> None:
 
         {
           "user_id": "user-123",
-          "agent_id": "did:metaorcha:agent:notion-mcp",
+          "agent_id": "did:orcha:agent:notion-mcp",
           "credentials": { "NOTION_API_KEY": "secret_abc123" }
         }
     """

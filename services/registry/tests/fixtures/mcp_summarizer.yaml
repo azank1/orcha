@@ -1,6 +1,6 @@
 # mcp-summarizer.yaml
 identity:
-  id: "did:metaorcha:agent:ai-summarizer-v2"
+  id: "did:orcha:agent:ai-summarizer-v2"
   name: "SummarizerPro"
   version: "2.1.0"
   description: "High-fidelity text summarization and extraction agent."

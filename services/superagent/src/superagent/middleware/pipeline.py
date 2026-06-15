@@ -11,6 +11,7 @@ from typing import Any
 from langchain_core.runnables import RunnableConfig
 
 from .input_guard import InputGuard, InputGuardError
+from .observers import StepResult, emit_step_complete
 from .output_normalizer import OutputNormalizer
 from .preflight import PreFlightManager
 
@@ -151,6 +152,28 @@ class ExecutionMiddleware:
             or content_str.startswith("Unsupported protocol:")
         )
         self._auto_update_checklist(tool_name, call_id, content_str, success=success)
+
+        # Open/closed seam: emit the completed step to the installed observer.
+        # OSS ships NoOpObserver; hosted deployments inject a recorder
+        # server-side. emit_step_complete never raises out to the caller.
+        _latency_ms = int(
+            (datetime.now(UTC) - _call_start).total_seconds() * 1000
+        )
+        await emit_step_complete(
+            StepResult(
+                call_id=call_id,
+                agent_id=agent_id,
+                capability_id=capability_id,
+                protocol=protocol,
+                tool_name=tool_name,
+                success=success,
+                content=content_str,
+                user_id=self._state.get("user_id", ""),
+                session_id=self._state.get("session_id", ""),
+                latency_ms=_latency_ms,
+                base_fee=str(base_fee),
+            )
+        )
 
         # Step 6.5: PaymentSettlement — async, non-blocking for the caller.
         # Only runs for charged agents (A2A/ACP with base_fee > 0).

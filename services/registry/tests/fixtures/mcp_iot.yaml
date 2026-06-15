@@ -1,6 +1,6 @@
 # mcp-iot-controller.yaml
 identity:
-  id: "did:metaorcha:agent:building-hvac-control"
+  id: "did:orcha:agent:building-hvac-control"
   name: "BuildingOps-HVAC"
   version: "1.0.4"
   description: "Control interface for HVAC systems in Sector 7."

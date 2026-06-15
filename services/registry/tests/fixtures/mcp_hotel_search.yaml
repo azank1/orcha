@@ -16,7 +16,7 @@
 # can bridge the naming gap (e.g. accommodation_id → hotel_id) while also
 # correctly rejecting cross-domain mismatches (e.g. nightly_rate ≠ hotel_id).
 identity:
-  id: "did:metaorcha:agent:lodgefinder-hotel-search"
+  id: "did:orcha:agent:lodgefinder-hotel-search"
   name: "LodgeFinder-HotelSearch"
   version: "1.4.2"
   description: "Searches accommodation options (hotels, serviced apartments, ryokans) by destination, dates, and guest count. Returns ranked listings with pricing and availability. Does not perform bookings."

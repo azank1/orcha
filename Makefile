@@ -352,9 +352,9 @@ redis-down: ## Stop Redis
 # ── Test Agents (SuperAgent integration testing) ──────────────────────────────
 
 agents-dev: ## Start all agents with multiplexed logs (A2A: 3004/3005/3006/3011/4567; MCP stdio endpoints printed)
-	@printf '$(BLUE)Starting MetaOrcha test agents...$(RESET)\n'
-	@printf '$(YELLOW)A2A HTTP:$(RESET)  web-scraper:3004  data-analyzer:3005  notion-research:3006\n'
-	@printf '$(YELLOW)MCP stdio:$(RESET) code-executor  notion-mcp  (spawned on-demand by client)\n\n'
+	@printf '$(BLUE)Starting Orcha example agents...$(RESET)\n'
+	@printf '$(YELLOW)A2A HTTP:$(RESET)  web-scraper:3004  notion-research:3006  search-agent:3007  ecommerce-automation:3009  google-workspace-orchestrator:3011  lead-gen-agent:4567\n'
+	@printf '$(YELLOW)MCP stdio:$(RESET) notion-mcp  (spawned on-demand by client)\n\n'
 	@bash scripts/agents-dev.sh
 
 chat: ## Open SuperAgent CLI chat (requires sa-dev to be running)

@@ -1,0 +1,42 @@
+name: 🌉 Bridge request
+description: Request (or propose) a bridge so Orcha can orchestrate a new protocol/stack.
+labels: ["bridge", "good first issue"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Bridges are the contribution we most want. A bridge is a protocol handler
+        that lets the runtime orchestrate agents that speak something we don't
+        support yet. See [docs/bridges.md](../../docs/bridges.md) and
+        [templates/your-first-bridge/](../../templates/your-first-bridge/).
+  - type: input
+    id: target
+    attributes:
+      label: What do you want to bridge?
+      placeholder: n8n webhook / LangGraph server / OpenAPI service / ...
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: How does the target communicate?
+      description: Transport (HTTP/SSE/stdio/WebSocket), auth, request/response shape, streaming?
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: What would you orchestrate with it?
+      description: A concrete goal that would route through this bridge.
+    validations:
+      required: false
+  - type: dropdown
+    id: offer
+    attributes:
+      label: Are you offering to build it?
+      options:
+        - "Requesting — hoping someone builds it"
+        - "I'd like to build it (mentorship welcome)"
+        - "I have a draft / WIP"
+    validations:
+      required: true

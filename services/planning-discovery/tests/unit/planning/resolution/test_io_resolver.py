@@ -33,7 +33,7 @@ def _make_llm(
 
 def _flight_manifest() -> dict[str, Any]:
     return {
-        "id": "did:metaorcha:agent:skylink",
+        "id": "did:orcha:agent:skylink",
         "name": "Skylink Flight Search",
         "capabilities": [
             {
@@ -98,7 +98,7 @@ def _flight_task(task_id: str = "task_1") -> dict[str, Any]:
         "description": "Find flights from London to Tokyo on March 15th for 2 passengers",
         "depends_on": [],
         "inputs": {},
-        "agent_id": "did:metaorcha:agent:skylink",
+        "agent_id": "did:orcha:agent:skylink",
         "agent_manifest": _flight_manifest(),
     }
 
@@ -604,9 +604,9 @@ class TestPrerequisiteInsertion:
         """
         # Build mock search_pipeline that returns one fake agent candidate
         mock_agent = MagicMock()
-        mock_agent.agent_id = "did:metaorcha:agent:hotel-search"
+        mock_agent.agent_id = "did:orcha:agent:hotel-search"
         mock_agent.manifest = {
-            "id": "did:metaorcha:agent:hotel-search",
+            "id": "did:orcha:agent:hotel-search",
             "name": "Hotel Search",
             "capabilities": [
                 {
@@ -691,9 +691,9 @@ class TestPrerequisiteInsertion:
             "type": "agent_task",
             "description": "Book a hotel in Tokyo",
             "depends_on": [],
-            "agent_id": "did:metaorcha:agent:staywise",
+            "agent_id": "did:orcha:agent:staywise",
             "agent_manifest": {
-                "id": "did:metaorcha:agent:staywise",
+                "id": "did:orcha:agent:staywise",
                 "name": "StayWise",
                 "capabilities": [
                     {

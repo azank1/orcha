@@ -1,7 +1,7 @@
 # mcp_flight_search.yaml
 # MCP agent for searching and comparing flights
 identity:
-  id: "did:metaorcha:agent:skylink-flight-search"
+  id: "did:orcha:agent:skylink-flight-search"
   name: "SkyLink-FlightSearch"
   version: "2.1.0"
   description: "Searches and compares flight options across major airlines and OTAs. Returns sorted results by price, duration, or stops with real-time seat availability."

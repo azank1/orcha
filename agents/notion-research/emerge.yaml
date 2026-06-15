@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:notion-research"
+  id: "did:orcha:agent:notion-research"
   name: "Notion Research"
   version: "0.2.0"
   description: "Research agent that searches the web, analyses market data, and creates structured research notes in Notion"

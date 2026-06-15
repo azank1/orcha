@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:system:filesystem"
+  id: "did:orcha:system:filesystem"
   name: "Filesystem"
   version: "1.0.0"
   description: "Read and write files within the session's /tmp workspace. Scope-restricted to /tmp — cannot read or write outside this directory. SuperAgent session directories (/tmp/{session_id}/) are the only accessible workspace."

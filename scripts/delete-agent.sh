@@ -13,7 +13,7 @@
 #
 # Usage:
 #   ./scripts/delete-agent.sh <agent-did>
-#   ./scripts/delete-agent.sh did:metaorcha:agent:docs-search
+#   ./scripts/delete-agent.sh did:orcha:agent:docs-search
 #
 # DATABASE_URL is read from the environment or discovered from nearby .env files.
 
@@ -31,7 +31,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # ── Args ──────────────────────────────────────────────────────────────────────
 if [ $# -lt 1 ]; then
   printf "${RED}Usage: %s <agent-did>${RESET}\n" "$(basename "$0")"
-  printf "  Example: %s did:metaorcha:agent:docs-search\n" "$(basename "$0")"
+  printf "  Example: %s did:orcha:agent:docs-search\n" "$(basename "$0")"
   exit 1
 fi
 

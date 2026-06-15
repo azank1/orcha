@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:system:web-scraper"
+  id: "did:orcha:system:web-scraper"
   name: "Web Scraper"
   version: "1.0.0"
   description: "Firecrawl MCP — scrape, map, crawl, search, extract, and agentic research via Firecrawl cloud API. See https://docs.firecrawl.dev/mcp-server"

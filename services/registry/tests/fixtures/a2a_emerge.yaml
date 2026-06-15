@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:test-a2a-agent"
+  id: "did:orcha:agent:test-a2a-agent"
   name: "TestA2AAgent"
   version: "1.0.0"
   description: "A test A2A agent for unit testing"

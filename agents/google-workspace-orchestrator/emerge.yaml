@@ -1,5 +1,5 @@
 identity:
-  id: "did:metaorcha:agent:google-workspace-orchestrator"
+  id: "did:orcha:agent:google-workspace-orchestrator"
   name: "Google Workspace Orchestrator"
   version: "0.2.0"
   description: "Multi-step Google Workspace orchestration via workspace-mcp (12 services: Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms, Chat, Apps Script, Tasks, Contacts, Custom Search) with ADK + LiteLLM (OpenRouter) and DAG planning."

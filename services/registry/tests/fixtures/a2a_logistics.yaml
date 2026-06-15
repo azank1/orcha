@@ -1,6 +1,6 @@
 # a2a-logistics.yaml
 identity:
-  id: "did:metaorcha:agent:global-logistics-ops"
+  id: "did:orcha:agent:global-logistics-ops"
   name: "LogisticsCoordinator"
   version: "4.2.1"
   description: "Coordinates freight booking between regional warehouses."

@@ -1,0 +1,51 @@
+name: 🐞 Bug report
+description: Something in the runtime, registry, planner, or CLI isn't working.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for filing a bug. Please run in mock mode and include enough to reproduce.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. `make install && ./scripts/run-all.sh`
+        2. `emerge init my-agent && emerge run`
+        3. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      options:
+        - SuperAgent (execution pipeline)
+        - Registry
+        - Planning & Discovery
+        - Gateway
+        - emerge CLI / SDK
+        - Frontend
+        - Docs / quickstart
+        - Other / not sure
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python version, commit SHA, Docker version.
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      render: shell

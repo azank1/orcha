@@ -1,6 +1,6 @@
 # mcp-weather.yaml
 identity:
-  id: "did:metaorcha:agent:weather-oracle-v1"
+  id: "did:orcha:agent:weather-oracle-v1"
   name: "SkyCast-Oracle"
   version: "1.2.0"
   description: "Hyper-local weather forecasting and historical climate data."
