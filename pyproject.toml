@@ -11,16 +11,18 @@ dependencies = [
   "registry-service",
   "superagent",
   "gateway",
+  "orcha-sdk",
 ]
-name = "metaorcha-monorepo"
+name = "orcha-monorepo"
 requires-python = ">=3.12"
 version = "0.1.0"
 
 [tool.uv.workspace]
-members = ["services/*", "common/*", "packages/*"]
+members = ["services/*", "common/*", "packages/*", "sdk"]
 exclude = ["services/wallet-service"]
 
 [tool.uv.sources]
+orcha-sdk = {workspace = true}
 common-database = {workspace = true}
 common-kafka = {workspace = true}
 common-llm = {workspace = true}

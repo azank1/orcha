@@ -98,7 +98,7 @@ security:
         provider_hint: "microsoft"
 
 payment:
-  type: "none"
+  enabled: false
 
 interrupt_support:
   - type: "hitl_approval"

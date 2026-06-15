@@ -37,7 +37,7 @@ security:
           X-Shopify-Store-URL: "SHOPIFY_STORE_URL"
 
 payment:
-  type: "none"
+  enabled: false
 
 # A2A skills — harvested from /.well-known/agent.json at registration time.
 skills:

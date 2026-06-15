@@ -1,0 +1,29 @@
+[project]
+name = "orcha-sdk"
+version = "0.1.0"
+description = "Orcha agent SDK + emerge CLI — register an agent in three lines."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Orcha" }]
+keywords = ["ai-agents", "mcp", "a2a", "orchestration", "orcha", "emerge"]
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/azank1/orcha"
+Repository = "https://github.com/azank1/orcha"
+
+[project.scripts]
+emerge = "emerge.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/emerge"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/emerge/templates" = "emerge/templates"
