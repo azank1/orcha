@@ -28,6 +28,29 @@ def split_revenue(base_fee: Decimal) -> tuple[Decimal, Decimal]:
     return developer_payout, platform_cut
 
 
+def split_revenue_dan(
+    base_fee: Decimal,
+    *,
+    coordinator_share_bps: int = 0,
+    validator_share_bps: int = 0,
+) -> tuple[Decimal, Decimal, Decimal]:
+    """
+    DAN three-way split: (agent_share, validator_share, coordinator_share).
+
+    BPS values are basis points of base_fee (500 = 5%). Remainder goes to agent.
+    """
+    coordinator_cut = (
+        base_fee * Decimal(coordinator_share_bps) / Decimal(10000)
+    ).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
+    validator_cut = (
+        base_fee * Decimal(validator_share_bps) / Decimal(10000)
+    ).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
+    agent_share = base_fee - coordinator_cut - validator_cut
+    if agent_share < 0:
+        raise ValueError("fee shares exceed base_fee")
+    return agent_share, validator_cut, coordinator_cut
+
+
 def compute_turn_cost(base_fees: list[Decimal], platform_output_tokens: int) -> Decimal:
     """
     Compute total cost charged to the user for one SuperAgent turn.

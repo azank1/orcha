@@ -136,7 +136,8 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
   info "Creating Kafka topics..."
   docker exec metaorcha-kafka bash -c '
     for topic in registry.agent.registered gateway.user.query \
-                 planning.manifest.created planning.validation.failed; do
+                 planning.manifest.created planning.validation.failed \
+                 execution.step_complete; do
       kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists \
         --topic $topic --partitions 1 --replication-factor 1 2>/dev/null; done' >/dev/null 2>&1
   success "Kafka topics created"

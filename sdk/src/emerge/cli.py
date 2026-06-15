@@ -5,15 +5,18 @@ Three commands only (resist scope creep — test/deploy/login are post-launch):
 - ``emerge init [name]``   scaffold a new agent from the bundled template
 - ``emerge run [module]``  serve decorated agents locally + register them
 - ``emerge publish [module]``  register decorated agents against a remote registry
+- ``emerge validate``  DAN validator spike (`--once` demo attestation)
 """
 
 from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import logging
 import os
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 from . import __version__
@@ -150,6 +153,52 @@ def cmd_publish(args: argparse.Namespace) -> int:
     return 1 if failures else 0
 
 
+def _synthetic_attestation(*, validator_did: str) -> dict:
+    """Build a demo attestation for `emerge validate --once` (D1 spike)."""
+    success = True
+    content = "ok"
+    score = 0.85 if success and content and not content.startswith("Error:") else 0.2
+    return {
+        "schema_version": "1.0",
+        "call_id": "call-validate-demo",
+        "agent_id": "did:orcha:agent:demo",
+        "validator_did": validator_did,
+        "success": success,
+        "latency_ms": 42,
+        "judge_score": score,
+        "notes": "spike-heuristic (--once demo)",
+        "observed_at": datetime.now(UTC).isoformat(),
+    }
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    validator_did = args.validator_did or os.getenv(
+        "VALIDATOR_DID", "did:orcha:validator:local"
+    )
+    if args.once:
+        attestation = _synthetic_attestation(validator_did=validator_did)
+        print(json.dumps(attestation, indent=2))
+        print(
+            f"\n✓ Demo attestation for validator {validator_did} "
+            "(subscribe to execution.step_complete for live traffic)"
+        )
+        return 0
+    if args.kafka:
+        print(
+            "emerge validate: Kafka consumer is not wired in the D1 spike.\n"
+            "  Use --once for a local demo, or run a validator process against "
+            "execution.step_complete when KAFKA_ENABLED=true.",
+            file=sys.stderr,
+        )
+        return 1
+    print(
+        "emerge validate: pass --once for a demo attestation, or --kafka <brokers> "
+        "(consumer TBD).",
+        file=sys.stderr,
+    )
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="emerge", description="Orcha agent developer CLI")
     p.add_argument("--version", action="version", version=f"emerge {__version__}")
@@ -189,6 +238,30 @@ def build_parser() -> argparse.ArgumentParser:
         help="host advertised in the manifest endpoint (default: localhost)",
     )
     pp.set_defaults(func=cmd_publish)
+
+    pv = sub.add_parser(
+        "validate",
+        help="run a DAN validator node (D1 spike — --once demo attestation)",
+    )
+    pv.add_argument(
+        "--validator-did",
+        help="validator DID (default: did:orcha:validator:local or VALIDATOR_DID)",
+    )
+    pv.add_argument(
+        "--bootstrap",
+        help="network bootstrap peer (D0 — reserved for gossip sidecar)",
+    )
+    pv.add_argument(
+        "--kafka",
+        help="Kafka bootstrap servers for execution.step_complete (consumer TBD)",
+    )
+    pv.add_argument(
+        "--once",
+        action="store_true",
+        help="emit one synthetic attestation and exit (local demo)",
+    )
+    pv.set_defaults(func=cmd_validate)
+
     return p
 
 

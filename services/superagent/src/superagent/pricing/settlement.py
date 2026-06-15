@@ -12,9 +12,35 @@ MCP agents are free — settlement is never called for protocol == "MCP".
 from __future__ import annotations
 
 import logging
+import os
 from decimal import Decimal
 
 logger = logging.getLogger(__name__)
+
+
+def compute_revenue_split(base_fee: Decimal) -> tuple[Decimal, Decimal, Decimal]:
+    """Return (developer_payout, platform_cut, validator_cut) for settlement.
+
+    Uses DAN three-way split when COORDINATOR_SHARE_BPS or VALIDATOR_SHARE_BPS
+    are set; otherwise falls back to the legacy two-way platform split.
+    """
+    coordinator_bps = int(os.getenv("COORDINATOR_SHARE_BPS", "0"))
+    validator_bps = int(os.getenv("VALIDATOR_SHARE_BPS", "0"))
+
+    if coordinator_bps > 0 or validator_bps > 0:
+        from common_pricing.formulae import split_revenue_dan
+
+        developer_payout, validator_cut, coordinator_cut = split_revenue_dan(
+            base_fee,
+            coordinator_share_bps=coordinator_bps,
+            validator_share_bps=validator_bps,
+        )
+        return developer_payout, coordinator_cut, validator_cut
+
+    from common_pricing.formulae import split_revenue
+
+    developer_payout, platform_cut = split_revenue(base_fee)
+    return developer_payout, platform_cut, Decimal("0")
 
 
 async def settle_invocation(
@@ -66,11 +92,20 @@ async def settle_invocation(
 
     # ── Revenue split ─────────────────────────────────────────────────────────
     try:
-        from common_pricing.formulae import split_revenue
-
-        developer_payout, platform_cut = split_revenue(base_fee)
+        developer_payout, platform_cut, validator_cut = compute_revenue_split(
+            base_fee
+        )
+        validator_did = os.getenv("VALIDATOR_DID", "").strip()
+        if validator_did and validator_cut > 0:
+            logger.info(
+                "settle_invocation: mock validator payout validator_did=%s "
+                "amount=%s call_id=%s",
+                validator_did,
+                validator_cut,
+                call_id,
+            )
     except Exception:
-        logger.exception("settle_invocation: split_revenue failed call_id=%s", call_id)
+        logger.exception("settle_invocation: revenue split failed call_id=%s", call_id)
         return
 
     # ── DB operations ─────────────────────────────────────────────────────────

@@ -12,3 +12,6 @@ class KafkaTopics:
     PLANNING_MANIFEST_CREATED = "planning.manifest.created"
     PLANNING_VALIDATION_FAILED = "planning.validation.failed"
     PLANNING_METRICS = "planning.metrics"
+
+    # SuperAgent → validator nodes (DAN Phase D1)
+    EXECUTION_STEP_COMPLETE = "execution.step_complete"

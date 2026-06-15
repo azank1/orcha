@@ -82,10 +82,12 @@ the registry and routes the matching step to it.
 
 ## Next steps
 
-- Edit `agent.py` — the `@emerge.agent` handler is the whole agent. See
-  [`emerge-yaml.md`](emerge-yaml.md) for the manifest the SDK generates.
-- Connect a different protocol with a [bridge](bridges.md).
-- See which protocols are supported in the [protocol matrix](protocols.md).
+- [`join.md`](join.md) — pick a role, phased journey diagram
+- [`VISION.md`](../VISION.md) — why Orcha → DAN
+- [`ROADMAP.md`](../ROADMAP.md) — milestones
+- Edit `agent.py` — see [`emerge-yaml.md`](emerge-yaml.md)
+- Contributor setup: [`setup.md`](setup.md)
+- Connect a protocol: [`bridges.md`](bridges.md)
 
 ## Troubleshooting
 

@@ -1,11 +1,13 @@
 # Contributing to Orcha
 
-Thanks for your interest in Orcha — an orchestration runtime that plans, routes,
-and executes one natural-language goal across agents speaking **different**
-protocols (MCP, A2A, ACP) in a single run.
+Thanks for your interest in Orcha — open **agent orchestration and observability**
+infrastructure, growing toward the **Decentralized Agent Network (DAN)**.
 
-We are building this in the open. Two kinds of contributions are **eagerly
-welcomed** and need no prior discussion:
+Read [`VISION.md`](VISION.md) for the north star. This is not a model benchmark
+repo — it's about **routing, executing, observing, and distributing** agents
+across MCP, A2A, and ACP.
+
+Contributions we **eagerly welcome** without prior discussion:
 
 - **Bridges** — a new protocol handler so the runtime can orchestrate agents
   that speak something we don't support yet (n8n, LangGraph, OpenAPI, …). This
@@ -15,6 +17,9 @@ welcomed** and need no prior discussion:
 - **Agents** — a new example agent that registers against the local registry.
   Start from [`templates/your-first-agent/`](templates/your-first-agent/) and
   [`docs/quickstart.md`](docs/quickstart.md).
+- **DAN spikes** — gossip (`node/`), validators (`services/validator/`), settlement
+  splits, reputation APIs. See [`ROADMAP.md`](ROADMAP.md) and
+  [`docs/dev_docs/dan/`](docs/dev_docs/dan/).
 
 > **Core engine changes** (the SuperAgent execution pipeline, the registry
 > contract, the planner) need an issue **first**. Open one describing the
@@ -44,7 +49,38 @@ make grpc-generate
 ./scripts/run-all.sh    # bring the local stack up
 ```
 
-See [`docs/quickstart.md`](docs/quickstart.md) for the full 5-minute path.
+See [`docs/quickstart.md`](docs/quickstart.md) for the 5-minute path, or
+[`docs/setup.md`](docs/setup.md) for manual service-by-service setup.
+
+## Commit messages
+
+Keep them **short and scannable** — one logical change per commit.
+
+```
+<type>(<scope>): <what changed>
+```
+
+| Type | Use for |
+|---|---|
+| `feat` | New behavior users or operators touch |
+| `fix` | Bug fix |
+| `docs` | README, ROADMAP, vision, devdocs |
+| `refactor` | Code move/rename, no behavior change |
+| `test` | Tests only |
+| `chore` | CI, deps, Makefile |
+
+**Scopes (examples):** `sdk`, `superagent`, `registry`, `gateway`, `dan`, `node`, `validator`
+
+**Examples:**
+
+```
+feat(node): signed manifest gossip spike
+docs: simplify readme for DAN vision
+fix(settlement): dan fee split when validator bps set
+test(validator): FulfillmentRecorder attestation
+```
+
+No `Co-authored-by` trailers unless you actually pair-programmed.
 
 ## Before you open a PR
 

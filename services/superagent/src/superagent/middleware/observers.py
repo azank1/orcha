@@ -94,3 +94,12 @@ async def emit_step_complete(record: StepResult) -> None:
             "ExecutionObserver.on_step_complete raised for call_id=%s; ignoring",
             record.call_id,
         )
+    # D1: optional Kafka fan-out for validator nodes (never raises).
+    try:
+        from .step_events import schedule_fan_out
+
+        schedule_fan_out(record)
+    except Exception:  # pragma: no cover
+        logger.exception(
+            "step_complete fan-out failed for call_id=%s; ignoring", record.call_id
+        )

@@ -231,7 +231,7 @@ kafka-down: ## Stop Kafka broker
 kafka-topics: ## Create all required Kafka topics
 	@printf '$(BLUE)Creating Kafka topics...$(RESET)\n'
 	@docker exec metaorcha-kafka bash -c '\
-		for topic in registry.agent.registered gateway.user.query planning.manifest.created planning.validation.failed; do \
+		for topic in registry.agent.registered gateway.user.query planning.manifest.created planning.validation.failed execution.step_complete; do \
 			kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists \
 				--topic $$topic --partitions 1 --replication-factor 1; \
 		done'
