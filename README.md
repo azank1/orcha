@@ -95,16 +95,36 @@ below are the **detailed manual setup** for working on the services themselves.
 
 ## Step 1 — Start infrastructure
 
-### Database (pgvector)
+**Recommended:** use the compose stack (matches `./scripts/run-all.sh` and [docs/quickstart.md](docs/quickstart.md)):
+
+```bash
+make docker-up          # postgres, redis, kafka via docker-compose.local.yml
+make kafka-topics       # create required Kafka topics
+```
+
+Postgres defaults from [`docker-compose.local.yml`](docker-compose.local.yml):
+
+| Setting | Value |
+|---|---|
+| User / password | `postgres` / `postgres` |
+| Database | `metaorcha` |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/metaorcha` |
+
+<details>
+<summary>Alternative: standalone Postgres container</summary>
 
 ```bash
 docker run --name metaorcha \
-  -e POSTGRES_USER=test \
-  -e POSTGRES_PASSWORD=test123 \
-  -e POSTGRES_DB=metaorcha-db \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=metaorcha \
   -p 5432:5432 \
-  -d pgvector/pgvector:pg17
+  -d pgvector/pgvector:pg15
 ```
+
+Use the same `DATABASE_URL` as above in all service `.env` files.
+
+</details>
 
 ### Redis (SuperAgent session state)
 
@@ -134,7 +154,7 @@ make install
 Run migrations and generate the Prisma client:
 
 ```bash
-DATABASE_URL="postgresql://test:test123@localhost:5432/metaorcha-db" make migrate
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha" make migrate
 make prisma-generate
 ```
 
@@ -154,7 +174,7 @@ Edit `services/registry/.env` and set:
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | `postgresql://test:test123@localhost:5432/metaorcha-db` |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/metaorcha` |
 | `KAFKA_BOOTSTRAP_SERVERS` | `localhost:9092` |
 | `KAFKA_ENABLED` | `true` |
 | `DISABLE_AUTH` | `true` (for local dev) |
@@ -169,7 +189,7 @@ Edit `services/planning-discovery/.env.development` and set:
 
 | Variable | Value |
 |---|---|
-| `DATABASE_URL` | `postgresql://test:test123@localhost:5432/metaorcha-db` |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/metaorcha` |
 | `OPENROUTER_API_KEY` | Your OpenRouter key |
 | `LLM_EMBEDDING_MODEL` | `nomic-embed-text` (requires Ollama) |
 
@@ -187,7 +207,7 @@ Edit `services/superagent/.env` and set:
 |---|---|
 | `OPENROUTER_API_KEY` | Your OpenRouter key |
 | `VAULT_KEY` | Run `openssl rand -base64 32` to generate |
-| `DATABASE_URL` | `postgresql://test:test123@localhost:5432/metaorcha-db` |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/metaorcha` |
 
 ---
 
@@ -215,6 +235,11 @@ Copy and edit Gateway config once:
 cp services/gateway/.env.example services/gateway/.env
 ```
 
+> **Local dev ports:** Registry `:8000`, PnD `:8001`, SuperAgent `:8002`, Gateway `:8080`.
+> The example `.env` lists supervisord/production port layout (`SUPERAGENT_URL=:8001`, `REGISTRY_URL=:8003`).
+> For local `make gw-dev`, override to:
+> `SUPERAGENT_URL=http://127.0.0.1:8002` and `REGISTRY_URL=http://127.0.0.1:8000`.
+
 ### Payment mode
 
 The Gateway ships with `PAYMENT_MODE=mock` by default — new users are seeded with mock credits so the full orchestration flow works without external payment setup. **This is the recommended mode for local development.**
@@ -232,19 +257,38 @@ Service URLs:
 
 ## Step 6 — Register agents
 
-### Option A — Seed all fixture agents (quickest)
+### Option A — Full stack (recommended)
+
+With services and agents running:
+
+```bash
+./scripts/run-all.sh          # registers all agents/*/emerge.yaml + embeddings
+# or, if infra/services are already up:
+make agents-dev               # start HTTP agents first
+make seed-live                # register fleet manifests + trigger embeddings
+```
+
+### Option B — Test fixtures only (no live agent servers)
 
 ```bash
 make seed
 ```
 
-This registers all agents in `agents/` with the Registry.
+This registers **registry test fixtures** from `services/registry/tests/fixtures/` (via a local manifest server on port 9000). It does **not** register the example fleet in `agents/`.
 
-### Option B — Register via Swagger UI
+### Option C — Register via Swagger UI
 
 1. Open http://localhost:8000/docs
-2. Use `POST /api/agents/register`
-3. Paste the contents of any `agents/<name>/emerge.yaml`
+2. Use `POST /api/v1/agents/register`
+3. Upload any `agents/<name>/emerge.yaml`
+
+### Option D — SDK (after quickstart scaffold)
+
+```bash
+emerge init my-agent && cd my-agent && emerge run --register
+```
+
+See [docs/quickstart.md](docs/quickstart.md).
 
 ---
 
@@ -403,7 +447,8 @@ All commands run from the **monorepo root**.
 
 | Target | Description |
 |---|---|
-| `make seed` | Register all fixture agents into a running Registry |
+| `make seed` | Register registry test fixtures (not fleet agents in `agents/`) |
+| `make seed-live` | Register fleet agents from `agents/*/emerge.yaml` |
 | `make chat` | Open SuperAgent CLI chat |
 
 ---

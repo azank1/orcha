@@ -21,6 +21,8 @@ jobs:
       planning_discovery: ${{ steps.filter.outputs.planning_discovery }}
       superagent: ${{ steps.filter.outputs.superagent }}
       sdk: ${{ steps.filter.outputs.sdk }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      agents: ${{ steps.filter.outputs.agents }}
     steps:
       - uses: actions/checkout@v4
 
@@ -41,6 +43,12 @@ jobs:
               - 'common/**'
             sdk:
               - 'sdk/**'
+            gateway:
+              - 'services/gateway/**'
+              - 'common/**'
+            agents:
+              - 'agents/**'
+              - 'docs/spec/**'
 
   # ============================================================================
   # Registry Service Tests
@@ -512,6 +520,135 @@ jobs:
       - name: Test the ExecutionObserver seam (open/closed boundary)
         working-directory: services/superagent
         run: uv run pytest tests/unit/test_observers.py --verbose
+
+  # ============================================================================
+  # Fleet manifest validation (JSON Schema + ValidationService)
+  # ============================================================================
+  manifest-validate:
+    runs-on: ubuntu-latest
+    name: Fleet Manifest Validation
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      PYTHONPATH: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Validate fleet emerge.yaml manifests
+        run: uv run pytest services/registry/tests/test_fleet_manifests.py --verbose
+
+  # ============================================================================
+  # Gateway — lint + unit tests
+  # ============================================================================
+  gateway-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.gateway == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Gateway (Lint, Test)
+    timeout-minutes: 15
+
+    env:
+      PYTHONPATH: .
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      JWT_SECRET_KEY: ci-test-secret-key-for-gateway-tests-only
+      REDIS_URL: redis://localhost:6379/1
+      SUPERAGENT_URL: http://127.0.0.1:8002
+      REGISTRY_URL: http://127.0.0.1:8000
+      PAYMENT_MODE: mock
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff
+        run: uv run ruff check services/gateway/src/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check services/gateway/src/
+
+      - name: Run Gateway unit tests
+        working-directory: services/gateway
+        run: uv run pytest tests/unit/test_auth_routes.py tests/unit/test_jwt.py --verbose
+
+  # ============================================================================
+  # Launch gate — infra → migrate → register → SDK smoke
+  # ============================================================================
+  launch-gate:
+    runs-on: ubuntu-latest
+    name: Launch Gate (register + SDK smoke)
+    timeout-minutes: 25
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha?schema=public
+      PYTHONPATH: .
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: metaorcha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run launch gate
+        run: ./scripts/launch-gate-ci.sh
 
   # # ============================================================================
   # # Docker Build Test

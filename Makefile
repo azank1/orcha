@@ -275,13 +275,10 @@ seed: ## Seed registry with test fixture agents (registry must be running)
 	@printf '$(YELLOW)Requires: registry running (make dev s=registry) + KAFKA_ENABLED=true in registry .env for PnD indexing$(RESET)\n'
 	uv run python services/registry/scripts/seed_agents.py
 
-seed-live: ## Seed registry with live agents from agents/*/emerge.yaml (agents-dev must be running)
-	@printf '$(BLUE)Seeding registry with live agents...$(RESET)\n'
-	@printf '$(YELLOW)Requires: registry + all agents running (make agents-dev in another terminal)$(RESET)\n'
-	uv run python services/registry/scripts/seed_agents.py
-	@printf '$(BLUE)Seeding registry with fixture agents...$(RESET)\n'
-	@printf '$(YELLOW)Requires: registry running (make dev s=registry) + KAFKA_ENABLED=true in registry .env for PnD indexing$(RESET)\n'
-	uv run python services/registry/scripts/seed_agents.py
+seed-live: ## Register fleet agents from agents/*/emerge.yaml (registry + agents-dev must be running)
+	@printf '$(BLUE)Registering fleet agents from agents/*/emerge.yaml...$(RESET)\n'
+	@printf '$(YELLOW)Requires: registry running + HTTP agents up (make agents-dev)$(RESET)\n'
+	@./scripts/seed-live-agents.sh --embeddings
 
 check: lint format-check test-all ## Run all checks (lint, format, test)
 	@printf '$(GREEN)✓ All checks passed$(RESET)\n'

@@ -1,150 +1,54 @@
 # Notion Research Agent - Quick Start Guide
 
+> **Note:** This guide is for the standalone Notion Research agent. For the full Orcha platform, see the [5-minute quickstart](../../docs/quickstart.md) and [agents/CONTRIBUTING.md](../CONTRIBUTING.md).
+
 ## Get Started in 5 Minutes
 
 ### Prerequisites
-- Docker installed
-- OpenRouter API key (get from https://openrouter.ai/keys)
-- Notion integration created (optional, for production use)
+- Python 3.12+ and [uv](https://docs.astral.sh/uv/)
+- OpenRouter API key (from https://openrouter.ai/keys)
+- Notion integration (optional, for production use)
 
 ### Step 1: Configure Environment
 
-```bash
-cd /workspaces/metaorcha-emerge/mvp
-
-# Edit .env file and add your keys:
-nano .env
-
-# Minimum required:
-OPENROUTER_API_KEY=sk-or-v1-your-key-here
-
-# Optional (for full functionality):
-NOTION_API_KEY=secret_your_notion_key
-GOOGLE_OAUTH_CLIENT_ID=your_client_id.apps.googleusercontent.com
-GOOGLE_OAUTH_CLIENT_SECRET=GOCSPX-your_secret
-TAVILY_API_KEY=tvly-your_key
-```
-
-### Step 2: Start Services
+From the monorepo root:
 
 ```bash
-# Start all MVP services including Notion agent
-docker-compose up -d
-
-# Wait for services to be healthy (~30 seconds)
-docker-compose ps
+cp agents/notion-research/.env.example agents/notion-research/.env
+# Edit and add at minimum:
+# OPENROUTER_API_KEY=sk-or-v1-your-key-here
+# Optional: NOTION_API_KEY, GOOGLE_OAUTH_*, TAVILY_API_KEY
 ```
 
-### Step 3: Test the Agent
+### Step 2: Start the Agent
+
+With the Orcha stack running (see root [README.md](../../README.md) or `./scripts/run-all.sh`):
 
 ```bash
-# Run test workflow
-cd /workspaces/metaorcha-emerge/mvp/scripts
-python3 test_notion_workflow.py
+# From repo root — starts all HTTP agents including notion-research on :3006
+make agents-dev
 ```
 
-### Step 4: Try Natural Language Queries
-
-```bash
-# Start interactive CLI
-python3 interactive_orchestrator.py
-
-# Try queries like:
-> Research Bitcoin and create a Notion page with current price
-> Create a comprehensive market analysis for Ethereum with charts
-> Track my portfolio: BTC, ETH, SOL with 7-day charts
-```
-
----
-
-## What Gets Created
-
-When you run a Notion workflow, the agent:
-
-1. **Searches the web** for relevant research (Tavily API)
-2. **Fetches market data** (mock for MVP, CoinGecko planned)
-3. **Creates a Notion page** with structured content
-4. **Embeds TradingView charts** (if OAuth configured)
-
----
-
-## Architecture
-
-```
-Notion Research Agent (FastMCP · SSE transport · port 3003)
-├── Tools (7):
-│   ├── create_note          → Notion page creation
-│   ├── search               → Tavily + OpenRouter summarization
-│   ├── market_data          → price/volume/indicators
-│   ├── tradingview_chart    → TradingView embed in Notion
-│   ├── orchestrate          → meta-tool (calls all above)
-│   ├── authorize_oauth      → Google OAuth URL
-│   └── oauth_exchange       → code → token exchange
-│
-├── Config (pydantic-settings):
-│   └── All keys optional — starts in mock/dev mode
-│
-└── Transport:
-    ├── SSE (default in Docker, port 3003)
-    └── stdio (for local MCP clients)
-```
-
----
-
-## Local Development (without Docker)
+Or run this agent alone:
 
 ```bash
 cd agents/notion-research
-
-# Install deps
-pip install -e ".[dev]"
-
-# Run with SSE transport
-python -m src.server
-
-# Or stdio for MCP client testing
-fastmcp run src.server:mcp
+uv run uvicorn src.server:app --host 0.0.0.0 --port 3006 --reload
 ```
 
----
-
-## OAuth Setup (Optional)
-
-To enable TradingView chart embedding:
-
-1. Go to https://console.cloud.google.com/apis/credentials
-2. Create OAuth 2.0 Client ID
-3. Add redirect URI: `http://localhost:3003/oauth/callback`
-4. Set `GOOGLE_OAUTH_CLIENT_ID` and `GOOGLE_OAUTH_CLIENT_SECRET` in `.env`
-
-Use the `authorize_oauth` and `oauth_exchange` MCP tools to complete the flow.
-
----
-
-## Monitoring
+### Step 3: Register with Registry
 
 ```bash
-# View agent logs
-docker-compose logs -f notion-agent
-
-# Check container health
-docker-compose ps
+curl -X POST http://localhost:8000/api/v1/agents/register \
+  -F "emerge_yaml=@agents/notion-research/emerge.yaml"
 ```
 
----
+Health check:
 
-## Troubleshooting
+```bash
+curl http://localhost:3006/health
+```
 
-**Agent not starting**: Check `docker-compose logs notion-agent` for missing deps.
+### Step 4: OAuth (optional)
 
-**Notion API errors**: Create integration at https://www.notion.so/my-integrations, share database with it.
-
-**OAuth errors**: Verify credentials in `.env` and redirect URI in Google Console.
-
----
-
-## Docs
-
-- [MVP Guide](../../mvp/README.md)
-- [Contributing](../../CONTRIBUTING.md)
-- [Agent Tools](src/tools/)
+Use the `authorize_oauth` and `oauth_exchange` MCP tools to complete the Google OAuth flow. See [README.md](README.md) for endpoint details.

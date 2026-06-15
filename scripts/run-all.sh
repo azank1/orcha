@@ -233,25 +233,8 @@ if [[ "$SKIP_SEED" == "false" ]]; then
     >/dev/null 2>&1 || true
   success "Agent tables cleared"
 
-  for agent_dir in agents/*/; do
-    yaml="$agent_dir/emerge.yaml"; [[ -f "$yaml" ]] || continue
-    agent_name=$(basename "$agent_dir")
+  ./scripts/seed-live-agents.sh --embeddings || warn "Some agents failed to register (non-fatal)"
 
-    result=$(curl -s -w "\n%{http_code}" -F "emerge_yaml=@$yaml" http://localhost:8000/api/v1/agents/register 2>/dev/null || echo -e '{}\n000')
-    http_code=$(echo "$result" | tail -1)
-    body=$(echo "$result" | sed '$d')
-
-    agent_id=$(echo "$body" | python3 -c "import json,sys;print(json.load(sys.stdin).get('data',{}).get('agent_id','?'))" 2>/dev/null || echo "?")
-    if [[ "$agent_id" != "?" ]]; then
-      success "Registered ${agent_name} → ${agent_id}"
-      emb=$(curl -sf -X POST http://localhost:8001/api/v1/manifests/process \
-        -H "Content-Type: application/json" -d "{\"agent_id\":\"$agent_id\"}" 2>/dev/null || echo '{}')
-      ok=$(echo "$emb" | python3 -c "import json,sys;print(json.load(sys.stdin).get('success',False))" 2>/dev/null || echo "False")
-      [[ "$ok" == "True" ]] && success "Embeddings for ${agent_name}" || warn "Embeddings failed for ${agent_name}"
-    else
-      warn "Failed to register ${agent_name}"
-    fi
-  done
   counts=$(docker exec metaorcha-postgres psql -U postgres -d metaorcha -tAc \
     "SELECT count(*) FROM agents;" 2>/dev/null || echo "?")
   embs=$(docker exec metaorcha-postgres psql -U postgres -d metaorcha -tAc \

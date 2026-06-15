@@ -8,7 +8,6 @@ from .observers import (
     get_observer,
     set_observer,
 )
-from .pipeline import ExecutionMiddleware
 
 __all__ = [
     "ExecutionMiddleware",
@@ -19,3 +18,11 @@ __all__ = [
     "get_observer",
     "set_observer",
 ]
+
+
+def __getattr__(name: str):
+    if name == "ExecutionMiddleware":
+        from .pipeline import ExecutionMiddleware
+
+        return ExecutionMiddleware
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
