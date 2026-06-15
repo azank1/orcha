@@ -18,7 +18,6 @@ import { queryClient } from './lib/queryClient'
 function AppRoutes() {
   const initFromStorage = useAuthStore((s) => s.initFromStorage)
   const loadLocalPrefs = useSettingsStore((s) => s.loadLocalPrefs)
-  const isDevMode = useSettingsStore((s) => s.isDevMode)
 
   useEffect(() => {
     initFromStorage()
@@ -32,16 +31,9 @@ function AppRoutes() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/chat/:sessionId" element={<Chat />} />
       <Route path="/workflows" element={<Workflows />} />
-      {isDevMode && (
-        <>
-          <Route path="/agents" element={<AgentLibrary />} />
-          <Route path="/agents/register" element={<RegisterAgent />} />
-        </>
-      )}
-      {/* Redirect /agents to settings if dev mode is off */}
-      {!isDevMode && (
-        <Route path="/agents/*" element={<Navigate to="/settings" replace />} />
-      )}
+      {/* Agent Library + Register are core developer surfaces — always available. */}
+      <Route path="/agents" element={<AgentLibrary />} />
+      <Route path="/agents/register" element={<RegisterAgent />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

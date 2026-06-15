@@ -43,7 +43,9 @@ def run() -> int:
 
     agents = registered_agents()
     if not agents:
-        print("emerge.run(): no @emerge.agent registered in this module.", file=sys.stderr)
+        print(
+            "emerge.run(): no @emerge.agent registered in this module.", file=sys.stderr
+        )
         return 1
     for spec in agents[:-1]:
         serve_agent(spec, block=False)

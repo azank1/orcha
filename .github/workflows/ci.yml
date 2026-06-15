@@ -19,6 +19,8 @@ jobs:
       registry: ${{ steps.filter.outputs.registry }}
       common: ${{ steps.filter.outputs.common }}
       planning_discovery: ${{ steps.filter.outputs.planning_discovery }}
+      superagent: ${{ steps.filter.outputs.superagent }}
+      sdk: ${{ steps.filter.outputs.sdk }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,6 +36,11 @@ jobs:
             planning_discovery:
               - 'services/planning-discovery/**'
               - 'common/**'
+            superagent:
+              - 'services/superagent/**'
+              - 'common/**'
+            sdk:
+              - 'sdk/**'
 
   # ============================================================================
   # Registry Service Tests
@@ -416,6 +423,95 @@ jobs:
         run: |
           uv run python -m py_compile services/planning-discovery/src/main.py
           echo "Build check passed"
+
+  # ============================================================================
+  # SDK + emerge CLI Tests (self-contained — no DB/services needed)
+  # ============================================================================
+  sdk:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.sdk == 'true' }}
+    runs-on: ubuntu-latest
+    name: SDK + emerge CLI (Lint, Format, Test)
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff
+        run: uv run ruff check sdk/src/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check sdk/src/
+
+      - name: Run SDK tests
+        run: uv run pytest sdk/tests/ --verbose
+
+      - name: Smoke test the emerge CLI
+        run: |
+          uv run emerge --version
+          uv run emerge init "CI Agent" --dir /tmp/ci-agent
+          test -f /tmp/ci-agent/agent.py
+          uv run python -c "import json,yaml; from jsonschema import Draft202012Validator as V; \
+            import emerge; from emerge.manifest import build_manifest; from emerge.sdk import registered_agents, clear_registry; \
+            clear_registry(); \
+            (lambda: emerge.agent(name='Schema Check', description='d')(lambda t: t))(); \
+            V(json.load(open('docs/spec/emerge-yaml.schema.json'))).validate(build_manifest(registered_agents()[0]))"
+
+  # ============================================================================
+  # SuperAgent — lint + execution-pipeline seam tests
+  # ============================================================================
+  superagent-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.superagent == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: SuperAgent (Lint, Observer Seam Tests)
+    timeout-minutes: 15
+
+    env:
+      PYTHONPATH: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff (middleware pipeline — auth cascade + dispatch + observer seam)
+        run: uv run ruff check services/superagent/src/superagent/middleware/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check services/superagent/src/superagent/middleware/observers.py services/superagent/src/superagent/middleware/pipeline.py
+
+      - name: Test the ExecutionObserver seam (open/closed boundary)
+        working-directory: services/superagent
+        run: uv run pytest tests/unit/test_observers.py --verbose
 
   # # ============================================================================
   # # Docker Build Test

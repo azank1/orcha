@@ -14,10 +14,10 @@ export function NavBar() {
       <button
         onClick={() => navigate('/')}
         className="flex items-center gap-2 font-bold text-lg text-text-heading hover:opacity-80 transition-opacity"
-        aria-label="MetaOrcha home"
+        aria-label="Orcha home"
       >
         <Logo size={24} />
-        MetaOrcha
+        Orcha
         <span className="size-1.5 rounded-full bg-brand-secondary inline-block" aria-hidden="true" />
       </button>
 

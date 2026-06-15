@@ -115,7 +115,11 @@ def _make_handler(spec: AgentSpec, host: str):
                 body = json.loads(self.rfile.read(length) or b"{}")
             except json.JSONDecodeError:
                 self._send_json(
-                    {"jsonrpc": "2.0", "id": "", "error": {"code": -32700, "message": "Parse error"}},
+                    {
+                        "jsonrpc": "2.0",
+                        "id": "",
+                        "error": {"code": -32700, "message": "Parse error"},
+                    },
                     status=400,
                 )
                 return
@@ -126,7 +130,9 @@ def _make_handler(spec: AgentSpec, host: str):
 
             if method == "message/send":
                 message = params.get("message", {}) or {}
-                task_id = params.get("taskId") or message.get("taskId") or str(uuid.uuid4())
+                task_id = (
+                    params.get("taskId") or message.get("taskId") or str(uuid.uuid4())
+                )
                 query = _extract_text(message)
                 try:
                     answer = asyncio.run(spec.invoke(query))
@@ -141,21 +147,35 @@ def _make_handler(spec: AgentSpec, host: str):
                 task = task_store.get(task_id)
                 if task is None:
                     self._send_json(
-                        {"jsonrpc": "2.0", "id": rpc_id,
-                         "error": {"code": -32602, "message": f"Task {task_id!r} not found"}}
+                        {
+                            "jsonrpc": "2.0",
+                            "id": rpc_id,
+                            "error": {
+                                "code": -32602,
+                                "message": f"Task {task_id!r} not found",
+                            },
+                        }
                     )
                 else:
                     self._send_json({"jsonrpc": "2.0", "id": rpc_id, "result": task})
             else:
                 self._send_json(
-                    {"jsonrpc": "2.0", "id": rpc_id,
-                     "error": {"code": -32601, "message": f"Method not found: {method!r}"}}
+                    {
+                        "jsonrpc": "2.0",
+                        "id": rpc_id,
+                        "error": {
+                            "code": -32601,
+                            "message": f"Method not found: {method!r}",
+                        },
+                    }
                 )
 
     return Handler
 
 
-def serve_agent(spec: AgentSpec, host: str = "0.0.0.0", *, block: bool = True) -> ThreadingHTTPServer:
+def serve_agent(
+    spec: AgentSpec, host: str = "0.0.0.0", *, block: bool = True
+) -> ThreadingHTTPServer:
     """Start an HTTP server for a single agent. Returns the server.
 
     When ``block`` is False the server runs in a daemon thread (useful for tests

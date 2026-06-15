@@ -1,13 +1,55 @@
 # Orcha
 
-Orcha is an AI agent orchestration platform. Agents register themselves via a **Registry**, are discovered by a **Planning & Discovery** service, and are orchestrated by a **SuperAgent** that delegates tasks to the right agent at the right time.
+**Orchestrate AI agents across MCP, A2A, and ACP in one runtime.**
+
+Every agent framework assumes all your agents speak the same protocol. In
+practice you end up with MCP servers here, A2A agents there, and a pile of glue
+code. Orcha is an orchestration runtime where **one natural-language goal gets
+planned, routed, and executed across agents speaking _different_ protocols in
+the same run** — with input validation, a credential vault + auth cascade
+(OAuth included), output normalization, human-in-the-loop approvals, and
+per-call payments (mock mode by default — no wallet needed).
+
+> 📺 **Demo:** _<60–90s demo video — coming at launch>_
+> 💬 **Community:** [Discord](https://discord.gg/orcha) · 📖 [Quickstart](docs/quickstart.md) · 🧩 [Write a bridge](docs/bridges.md)
+
+## Register an agent in 3 lines
+
+```python
+import emerge
+
+@emerge.agent(name="My Agent", description="What I do")
+def handle(task: str) -> str:
+    return f"handled: {task}"
+```
+
+```bash
+emerge run        # serve locally + register against the local registry
+```
+
+The manifest ([`emerge.yaml`](docs/emerge-yaml.md) — versioned, JSON-Schema'd)
+gives every agent a DID, declared transport, auth, and pricing. See the
+[**5-minute quickstart**](docs/quickstart.md) to go from `git clone` to a
+registered, callable agent.
+
+## How it works
+
+Agents register via a **Registry**, are discovered by a **Planning & Discovery**
+service, and are orchestrated by a **SuperAgent** that delegates each step to the
+right agent at the right time. A **React + Vite** web app (`frontend/`) talks to
+the **Gateway** (port 8080) for auth, sessions, and streaming orchestration.
+
+Everything is open: the engine, the registry, the planner, the frontend, the
+CLI/SDK, and the [bridge interface](docs/bridges.md) for adding new protocols —
+that's the contribution we most want. See [`ROADMAP.md`](ROADMAP.md) for the
+trajectory and [`CONTRIBUTING.md`](CONTRIBUTING.md) to get involved.
+
+## Repository layout
 
 ```bash
 git clone git@github.com:azank1/orcha.git
 cd orcha
 ```
-
-The monorepo includes a **React + Vite** web app under `frontend/` that talks to the **Gateway** (HTTP API on port 8080) for authentication, chat sessions, and streaming orchestration. It is the recommended way to try the product locally alongside (or instead of) the SuperAgent CLI chat.
 
 ```
 orcha/
@@ -21,6 +63,9 @@ orcha/
 │   └── web-scraper/
 ├── common/                    # Shared libraries (database, proto, LLM)
 ├── frontend/                  # React web app (Vite dev server — port 3000)
+├── sdk/                       # orcha-sdk — `emerge` CLI + @emerge.agent SDK
+├── templates/                 # your-first-agent, your-first-bridge scaffolds
+├── docs/                      # quickstart, emerge-yaml, protocols, bridges, spec
 ├── services/
 │   ├── registry/              # Agent registration — REST + gRPC (port 8000)
 │   ├── planning-discovery/    # Agent discovery + planning (port 8001)
@@ -29,6 +74,14 @@ orcha/
 ├── Makefile                   # All dev commands
 └── pyproject.toml             # UV workspace root
 ```
+
+---
+
+## Quickstart vs. manual setup
+
+Most people should follow the **[5-minute quickstart](docs/quickstart.md)**
+(`docker-compose.local.yml` + `./scripts/run-all.sh` + `emerge run`). The steps
+below are the **detailed manual setup** for working on the services themselves.
 
 ## Prerequisites
 

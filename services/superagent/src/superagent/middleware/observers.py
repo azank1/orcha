@@ -42,9 +42,7 @@ class StepResult:
     latency_ms: int = 0
     base_fee: str = "0"
     total_cost_usd: str = "0"
-    completed_at: str = field(
-        default_factory=lambda: datetime.now(UTC).isoformat()
-    )
+    completed_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     metadata: dict[str, Any] = field(default_factory=dict)
 
 

@@ -1,7 +1,6 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '../ui/cn'
 import { Logo } from '../ui/Logo'
-import { useSettingsStore } from '../../store/settings'
 
 interface NavItem {
   to: string
@@ -13,15 +12,16 @@ interface NavItem {
 const navItems: NavItem[] = [
   { to: '/', icon: '💬', label: 'Chat' },
   { to: '/workflows', icon: '⚡', label: 'My Workflows' },
-  { to: '/agents', icon: '🤖', label: 'Agent Library', devOnly: true },
+  // Agent Library + Register are the core developer surface for the OSS launch,
+  // so they live in the main nav (no dev-mode gate).
+  { to: '/agents', icon: '🤖', label: 'Agent Library' },
   { to: '/settings', icon: '⚙️', label: 'Settings' },
 ]
 
 export function Sidebar() {
-  const isDevMode = useSettingsStore((s) => s.isDevMode)
   const navigate = useNavigate()
 
-  const visible = navItems.filter((item) => !item.devOnly || isDevMode)
+  const visible = navItems.filter((item) => !item.devOnly)
 
   return (
     <aside

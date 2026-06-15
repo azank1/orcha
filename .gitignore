@@ -78,8 +78,19 @@ dist/
 # Docker
 .dockerignore
 
-# SSH keys / certificates
+# SSH keys / certificates / credentials (never commit these)
 *.pem
+*.key
+*.p12
+*.pfx
+*_SERV_ACC*.json
+*service-account*.json
+*service_account*.json
+GOOGLE_SERV_ACC*.json
+*credentials*.json
+*-credentials.json
+gcp-*.json
+startup.log
 
 # OS
 Thumbs.db

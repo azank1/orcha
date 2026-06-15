@@ -206,7 +206,7 @@ export function Settings() {
                       patchMut.mutate({ is_dev_mode: v })
                     }}
                     label="Developer Mode"
-                    description="Register and host agents on MetaOrcha"
+                    description="Register and host agents on Orcha"
                     id="dev-mode"
                   />
                 </div>

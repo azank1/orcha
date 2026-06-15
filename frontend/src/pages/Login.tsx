@@ -41,7 +41,7 @@ export function Login() {
           <div className="size-14 flex items-center justify-center rounded-xl bg-brand-primary-dim border border-[rgba(59,110,248,0.35)] mb-3">
             <Logo size={34} />
           </div>
-          <h1 className="text-h3 text-text-heading">MetaOrcha</h1>
+          <h1 className="text-h3 text-text-heading">Orcha</h1>
           <p className="text-caption text-text-secondary mt-1">
             {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}
           </p>

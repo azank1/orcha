@@ -5,7 +5,7 @@ interface LogoProps {
   readonly className?: string
 }
 
-/** MetaOrcha prismatic hexagon logo (inline SVG, no external fetch) */
+/** Orcha prismatic hexagon logo (inline SVG, no external fetch) */
 export function Logo({ size = 32, className }: LogoProps) {
   return (
     <svg
@@ -15,7 +15,7 @@ export function Logo({ size = 32, className }: LogoProps) {
       width={size}
       height={size}
       className={cn('shrink-0', className)}
-      aria-label="MetaOrcha logo"
+      aria-label="Orcha logo"
     >
       {/* Six triangular facets — blue-cyan prismatic spectrum */}
       <polygon points="32,32 32,10 51.1,21"   fill="#4A7FFA" />

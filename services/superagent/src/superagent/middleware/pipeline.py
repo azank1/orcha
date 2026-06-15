@@ -156,9 +156,7 @@ class ExecutionMiddleware:
         # Open/closed seam: emit the completed step to the installed observer.
         # OSS ships NoOpObserver; hosted deployments inject a recorder
         # server-side. emit_step_complete never raises out to the caller.
-        _latency_ms = int(
-            (datetime.now(UTC) - _call_start).total_seconds() * 1000
-        )
+        _latency_ms = int((datetime.now(UTC) - _call_start).total_seconds() * 1000)
         await emit_step_complete(
             StepResult(
                 call_id=call_id,

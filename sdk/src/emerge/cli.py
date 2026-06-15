@@ -57,7 +57,9 @@ def _default_module() -> str:
     for candidate in ("agent.py", "main.py"):
         if Path(candidate).exists():
             return candidate
-    sys.exit("emerge: no agent.py/main.py here. Pass a module path or run `emerge init`.")
+    sys.exit(
+        "emerge: no agent.py/main.py here. Pass a module path or run `emerge init`."
+    )
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -86,7 +88,9 @@ def cmd_init(args: argparse.Namespace) -> int:
 def cmd_run(args: argparse.Namespace) -> int:
     module = args.module or _default_module()
     agents = _discover(module)
-    registry_url = args.registry or os.getenv("ORCHA_REGISTRY_URL", DEFAULT_REGISTRY_URL)
+    registry_url = args.registry or os.getenv(
+        "ORCHA_REGISTRY_URL", DEFAULT_REGISTRY_URL
+    )
     token = os.getenv("ORCHA_PAT")
 
     # Serve every agent but the last in background threads; block on the last.
@@ -96,9 +100,17 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"✓ Serving {spec.name} on http://localhost:{spec.port}  ({spec.did})")
         if args.register:
             try:
-                resp = register(manifest_yaml(spec), registry_url=registry_url, token=token)
-                print(f"  ✓ Registered with {registry_url}"
-                      + (f" (agent_id={resp.get('agent_id')})" if resp.get("agent_id") else ""))
+                resp = register(
+                    manifest_yaml(spec), registry_url=registry_url, token=token
+                )
+                print(
+                    f"  ✓ Registered with {registry_url}"
+                    + (
+                        f" (agent_id={resp.get('agent_id')})"
+                        if resp.get("agent_id")
+                        else ""
+                    )
+                )
             except RegistryError as exc:
                 print(f"  ⚠ Registration skipped: {exc}", file=sys.stderr)
         if block:
@@ -121,9 +133,17 @@ def cmd_publish(args: argparse.Namespace) -> int:
     failures = 0
     for spec in agents:
         try:
-            resp = register(manifest_yaml(spec, host=host), registry_url=registry_url, token=token)
-            print(f"✓ Published {spec.name} → {registry_url}"
-                  + (f" (agent_id={resp.get('agent_id')})" if resp.get("agent_id") else ""))
+            resp = register(
+                manifest_yaml(spec, host=host), registry_url=registry_url, token=token
+            )
+            print(
+                f"✓ Published {spec.name} → {registry_url}"
+                + (
+                    f" (agent_id={resp.get('agent_id')})"
+                    if resp.get("agent_id")
+                    else ""
+                )
+            )
         except RegistryError as exc:
             failures += 1
             print(f"✗ {spec.name}: {exc}", file=sys.stderr)
@@ -140,19 +160,34 @@ def build_parser() -> argparse.ArgumentParser:
     pi.add_argument("--dir", help="target directory (default: slug of name)")
     pi.set_defaults(func=cmd_init)
 
-    pr = sub.add_parser("run", help="serve agents locally + register against local registry")
-    pr.add_argument("module", nargs="?", help="path to agent module (default: agent.py/main.py)")
-    pr.add_argument("--registry", help=f"registry URL (default: {DEFAULT_REGISTRY_URL})")
-    pr.add_argument("--no-register", dest="register", action="store_false",
-                    help="serve only; do not register")
+    pr = sub.add_parser(
+        "run", help="serve agents locally + register against local registry"
+    )
+    pr.add_argument(
+        "module", nargs="?", help="path to agent module (default: agent.py/main.py)"
+    )
+    pr.add_argument(
+        "--registry", help=f"registry URL (default: {DEFAULT_REGISTRY_URL})"
+    )
+    pr.add_argument(
+        "--no-register",
+        dest="register",
+        action="store_false",
+        help="serve only; do not register",
+    )
     pr.set_defaults(func=cmd_run, register=True)
 
     pp = sub.add_parser("publish", help="register agents against a remote registry")
-    pp.add_argument("module", nargs="?", help="path to agent module (default: agent.py/main.py)")
+    pp.add_argument(
+        "module", nargs="?", help="path to agent module (default: agent.py/main.py)"
+    )
     pp.add_argument("--registry", help="remote registry URL (or ORCHA_REGISTRY_URL)")
     pp.add_argument("--token", help="PAT token (or ORCHA_PAT)")
-    pp.add_argument("--host", default="localhost",
-                    help="host advertised in the manifest endpoint (default: localhost)")
+    pp.add_argument(
+        "--host",
+        default="localhost",
+        help="host advertised in the manifest endpoint (default: localhost)",
+    )
     pp.set_defaults(func=cmd_publish)
     return p
 
