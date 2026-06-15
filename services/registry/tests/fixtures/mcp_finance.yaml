@@ -1,0 +1,167 @@
+# mcp_finance.yaml
+# MCP agent for personal finance operations — portfolio lookup, expense tracking,
+# and stock quote retrieval. Intentionally uses different field names from
+# mcp_currency_exchange.yaml (e.g. ticker_symbol vs currency code, net_value vs
+# converted_amount) so the IO resolver must use semantic matching.
+identity:
+  id: "did:metaorcha:agent:clearledger-finance"
+  name: "ClearLedger-Finance"
+  version: "1.2.0"
+  description: "Personal finance toolkit — real-time stock quotes, portfolio valuation, and expense categorisation. Supports equities, ETFs, and mutual funds across major exchanges."
+  tags: ["finance", "stocks", "portfolio", "expenses", "investing", "budget"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_finance.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_bearer"
+      type: "http_bearer"
+      config:
+        header_name: "Authorization"
+        scheme: "Bearer"
+        validation_endpoint: "https://api.clearledger.io/auth/validate"
+
+payment:
+  type: "none"
+
+capabilities:
+  tools:
+    - name: "get_stock_quote"
+      description: "Fetch the latest price quote for a publicly traded stock, ETF, or mutual fund by its ticker symbol."
+      inputSchema:
+        type: object
+        properties:
+          ticker_symbol:
+            type: string
+            description: "Exchange ticker symbol (e.g. AAPL, TSLA, VOO)"
+          exchange:
+            type: string
+            description: "Exchange code (e.g. NASDAQ, NYSE, LSE). Omit to auto-detect."
+        required:
+          - ticker_symbol
+      outputSchema:
+        type: object
+        properties:
+          ticker_symbol:
+            type: string
+            description: "Ticker symbol as provided"
+          company_name:
+            type: string
+            description: "Full company or fund name"
+          current_price:
+            type: number
+            description: "Latest trade price in the instrument's native currency"
+          currency_code:
+            type: string
+            description: "ISO 4217 currency code of the quoted price (e.g. USD, GBP)"
+          change_percent:
+            type: number
+            description: "Price change percentage vs. previous close"
+          market_cap:
+            type: number
+            description: "Market capitalisation in the instrument's native currency"
+          quote_timestamp:
+            type: string
+            format: date-time
+            description: "UTC timestamp of the quote"
+
+    - name: "get_portfolio_value"
+      description: "Calculate the current total market value of a list of stock holdings."
+      inputSchema:
+        type: object
+        properties:
+          holdings:
+            type: array
+            description: "List of stock positions to value"
+            items:
+              type: object
+              properties:
+                ticker_symbol:
+                  type: string
+                  description: "Ticker symbol"
+                quantity:
+                  type: number
+                  description: "Number of shares held"
+              required:
+                - ticker_symbol
+                - quantity
+          target_currency:
+            type: string
+            description: "ISO 4217 currency to express the total value in (e.g. GBP). Defaults to USD."
+        required:
+          - holdings
+      outputSchema:
+        type: object
+        properties:
+          net_value:
+            type: number
+            description: "Total portfolio value in target_currency"
+          target_currency:
+            type: string
+            description: "Currency of the net_value figure"
+          positions:
+            type: array
+            items:
+              type: object
+              properties:
+                ticker_symbol:
+                  type: string
+                quantity:
+                  type: number
+                unit_price:
+                  type: number
+                position_value:
+                  type: number
+          valuation_timestamp:
+            type: string
+            format: date-time
+
+    - name: "categorise_expense"
+      description: "Classify a transaction description into a standard personal-finance category (e.g. Travel, Food, Utilities) and flag whether it is tax-deductible."
+      inputSchema:
+        type: object
+        properties:
+          merchant_name:
+            type: string
+            description: "Merchant or payee name as it appears on the statement"
+          transaction_amount:
+            type: number
+            description: "Transaction amount (positive = debit)"
+          transaction_currency:
+            type: string
+            description: "ISO 4217 currency code of the transaction"
+          transaction_date:
+            type: string
+            format: date
+            description: "Date of the transaction (YYYY-MM-DD)"
+        required:
+          - merchant_name
+          - transaction_amount
+          - transaction_currency
+      outputSchema:
+        type: object
+        properties:
+          category:
+            type: string
+            description: "Top-level category (e.g. Travel, Food & Dining, Utilities, Healthcare)"
+          subcategory:
+            type: string
+            description: "Finer-grained label (e.g. Airline, Coffee Shop, Electricity)"
+          is_tax_deductible:
+            type: boolean
+            description: "Whether this expense is likely tax-deductible (jurisdiction-agnostic heuristic)"
+          confidence:
+            type: number
+            description: "Classification confidence score 0–1"
+
+  resources: []
+  prompts: []

@@ -1,0 +1,211 @@
+# mcp_hotel_search.yaml
+# MCP agent for searching and comparing hotel/accommodation options.
+#
+# NOTE ON FIELD NAMING — deliberately non-matching to a2a_hotel_booking.yaml:
+#
+#   Search output field  │  Booking input field  │  Semantic relationship
+#   ─────────────────────┼───────────────────────┼─────────────────────────────────
+#   accommodation_id     │  hotel_id             │  same entity, different name
+#   listing_name         │  (hotel_name)         │  same concept
+#   nightly_rate         │  (price_per_night)    │  same monetary value
+#   arrival_date         │  check_in             │  semantically equivalent date
+#   departure_date       │  check_out            │  semantically equivalent date
+#   occupancy            │  guests               │  same headcount concept
+#
+# This fixture is used to test that the IO resolver's semantic field matcher
+# can bridge the naming gap (e.g. accommodation_id → hotel_id) while also
+# correctly rejecting cross-domain mismatches (e.g. nightly_rate ≠ hotel_id).
+identity:
+  id: "did:metaorcha:agent:lodgefinder-hotel-search"
+  name: "LodgeFinder-HotelSearch"
+  version: "1.4.2"
+  description: "Searches accommodation options (hotels, serviced apartments, ryokans) by destination, dates, and guest count. Returns ranked listings with pricing and availability. Does not perform bookings."
+  tags: ["travel", "hotels", "accommodation", "search", "lodging", "hospitality"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_hotel_search.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_api_key"
+      type: "x_api_key"
+      config:
+        header_name: "X-LodgeFinder-Key"
+        key_vault_ref: "LODGEFINDER_API_KEY"
+
+payment:
+  type: "none"
+
+capabilities:
+  tools:
+    - name: "find_accommodations"
+      description: "Search for available hotels and accommodation options in a destination for the given stay dates and number of guests. Returns a ranked list of listings with pricing and availability."
+      inputSchema:
+        type: object
+        properties:
+          destination:
+            type: string
+            description: "City, district, or landmark (e.g., 'Shibuya, Tokyo', 'Manhattan, New York')"
+          arrival_date:
+            type: string
+            format: date
+            description: "Arrival/check-in date in YYYY-MM-DD format"
+          departure_date:
+            type: string
+            format: date
+            description: "Departure/check-out date in YYYY-MM-DD format"
+          occupancy:
+            type: integer
+            minimum: 1
+            default: 1
+            description: "Total number of guests"
+          max_nightly_rate:
+            type: number
+            description: "Maximum acceptable price per night (in the billing currency)"
+          billing_currency:
+            type: string
+            default: "USD"
+            description: "Preferred currency for displaying prices (ISO 4217)"
+          min_guest_score:
+            type: number
+            minimum: 0
+            maximum: 10
+            description: "Minimum guest review score out of 10"
+          required_facilities:
+            type: array
+            items:
+              type: string
+              enum: ["wifi", "pool", "fitness_centre", "breakfast_included", "parking", "spa", "pets_allowed"]
+            description: "Facilities that must be present at the property"
+          property_types:
+            type: array
+            items:
+              type: string
+              enum: ["hotel", "apartment", "ryokan", "hostel", "resort", "guesthouse"]
+            description: "Accepted property categories (omit for all types)"
+        required:
+          - destination
+          - arrival_date
+          - departure_date
+      outputSchema:
+        type: object
+        properties:
+          listings:
+            type: array
+            description: "Ranked list of available accommodation options"
+            items:
+              type: object
+              properties:
+                accommodation_id:
+                  type: string
+                  description: "Unique identifier for this accommodation listing — pass to a booking agent as hotel_id"
+                listing_name:
+                  type: string
+                  description: "Display name of the property"
+                property_type:
+                  type: string
+                  enum: ["hotel", "apartment", "ryokan", "hostel", "resort", "guesthouse"]
+                address:
+                  type: string
+                guest_score:
+                  type: number
+                  description: "Guest review score out of 10"
+                nightly_rate:
+                  type: number
+                  description: "Price per night in the billing currency"
+                total_stay_cost:
+                  type: number
+                  description: "Total cost for the full stay"
+                billing_currency:
+                  type: string
+                available_rooms:
+                  type: integer
+                cancellation_policy:
+                  type: string
+                facilities:
+                  type: array
+                  items:
+                    type: string
+                distance_to_centre_km:
+                  type: number
+          total_listings:
+            type: integer
+            description: "Total number of matching listings found"
+          search_destination:
+            type: string
+            description: "Normalised destination string used for the search"
+
+    - name: "get_accommodation_details"
+      description: "Retrieve full details, photos, and room type availability for a specific accommodation by its ID."
+      inputSchema:
+        type: object
+        properties:
+          accommodation_id:
+            type: string
+            description: "The accommodation_id from a find_accommodations result"
+          arrival_date:
+            type: string
+            format: date
+          departure_date:
+            type: string
+            format: date
+          occupancy:
+            type: integer
+            minimum: 1
+            default: 1
+        required:
+          - accommodation_id
+          - arrival_date
+          - departure_date
+      outputSchema:
+        type: object
+        properties:
+          accommodation_id:
+            type: string
+          listing_name:
+            type: string
+          description:
+            type: string
+          address:
+            type: string
+          geo:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+          guest_score:
+            type: number
+          photo_urls:
+            type: array
+            items:
+              type: string
+          room_types:
+            type: array
+            items:
+              type: object
+              properties:
+                room_type_id:
+                  type: string
+                name:
+                  type: string
+                nightly_rate:
+                  type: number
+                max_occupancy:
+                  type: integer
+                bed_configuration:
+                  type: string
+                available:
+                  type: boolean
+
+  resources: []
+  prompts: []

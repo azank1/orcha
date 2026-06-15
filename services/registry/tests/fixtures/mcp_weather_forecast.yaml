@@ -1,0 +1,159 @@
+# mcp_weather_forecast.yaml
+# MCP agent for weather forecasting and climate data
+identity:
+  id: "did:metaorcha:agent:clearsky-weather-forecast"
+  name: "ClearSky-WeatherForecast"
+  version: "1.5.2"
+  description: "Provides accurate weather forecasts and historical climate data for any location worldwide. Supports multi-day forecasts, hourly breakdowns, and travel-friendly climate summaries."
+  tags: ["weather", "forecast", "climate", "travel", "environment", "data"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_weather_forecast.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_api_key"
+      type: "x_api_key"
+      config:
+        header_name: "X-ClearSky-Key"
+        key_vault_ref: "CLEARSKY_API_KEY"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "eip155:8453"
+    asset: "USDC"
+    token_address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    recipient_address: "0xDead1234Dead1234Dead1234Dead1234Dead1234"
+    default_price: "0.02"
+    currency: "USD"
+    facilitator_url: "https://api.clearsky.io/x402/verify"
+
+capabilities:
+  tools:
+    - name: "get_forecast"
+      description: "Retrieve a multi-day weather forecast for a given location and date range. Returns daily high/low temperatures, precipitation probability, wind speed, and UV index."
+      inputSchema:
+        type: object
+        properties:
+          location:
+            type: string
+            description: "City name, airport code, or 'lat,lon' coordinates (e.g., 'Tokyo', 'NRT', '35.6762,139.6503')"
+          start_date:
+            type: string
+            format: date
+            description: "Start date of the forecast period in YYYY-MM-DD format"
+          end_date:
+            type: string
+            format: date
+            description: "End date of the forecast period in YYYY-MM-DD format (max 14 days ahead)"
+          units:
+            type: string
+            enum: ["metric", "imperial"]
+            default: "metric"
+            description: "Temperature and measurement units"
+        required:
+          - location
+          - start_date
+          - end_date
+      outputSchema:
+        type: object
+        properties:
+          location:
+            type: string
+          timezone:
+            type: string
+          forecast:
+            type: array
+            items:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                condition:
+                  type: string
+                  description: "Weather condition (e.g., 'Partly Cloudy', 'Heavy Rain')"
+                temp_high:
+                  type: number
+                  description: "High temperature in specified units"
+                temp_low:
+                  type: number
+                  description: "Low temperature in specified units"
+                precipitation_mm:
+                  type: number
+                precipitation_probability:
+                  type: number
+                  minimum: 0
+                  maximum: 100
+                wind_speed_kmh:
+                  type: number
+                uv_index:
+                  type: integer
+                humidity_percent:
+                  type: number
+                sunrise:
+                  type: string
+                sunset:
+                  type: string
+
+    - name: "get_climate_summary"
+      description: "Returns historical climate statistics for a location and month, useful for travel planning. Includes average temperatures, typical rainfall, and best/worst travel periods."
+      inputSchema:
+        type: object
+        properties:
+          location:
+            type: string
+            description: "City name or 'lat,lon' coordinates"
+          month:
+            type: integer
+            minimum: 1
+            maximum: 12
+            description: "Month number (1=January, 12=December)"
+          units:
+            type: string
+            enum: ["metric", "imperial"]
+            default: "metric"
+        required:
+          - location
+          - month
+      outputSchema:
+        type: object
+        properties:
+          location:
+            type: string
+          month_name:
+            type: string
+          avg_temp_high:
+            type: number
+          avg_temp_low:
+            type: number
+          avg_rainfall_mm:
+            type: number
+          avg_rainy_days:
+            type: integer
+          avg_humidity_percent:
+            type: number
+          travel_rating:
+            type: string
+            enum: ["excellent", "good", "fair", "poor"]
+          travel_notes:
+            type: string
+            description: "Human-readable summary for travellers"
+
+  resources:
+    - name: "weather-alerts"
+      description: "Active weather alerts and warnings for a region"
+      uri: "weather://alerts/{region_code}"
+      mimeType: "application/json"
+
+  prompts: []

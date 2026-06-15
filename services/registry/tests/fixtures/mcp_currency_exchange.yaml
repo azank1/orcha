@@ -1,0 +1,174 @@
+# mcp_currency_exchange.yaml
+# MCP agent for currency conversion and exchange rates
+identity:
+  id: "did:metaorcha:agent:forex-currency-exchange"
+  name: "ForexPro-CurrencyExchange"
+  version: "1.0.3"
+  description: "Provides real-time and historical currency exchange rates, budget conversion, and multi-currency breakdown. Supports 170+ currencies including major cryptocurrencies."
+  tags: ["finance", "currency", "forex", "travel", "exchange", "conversion"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_currency_exchange.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_bearer"
+      type: "http_bearer"
+      config:
+        header_name: "Authorization"
+        scheme: "Bearer"
+        validation_endpoint: "https://api.forexpro.io/auth/validate"
+
+payment:
+  type: "none"
+
+capabilities:
+  tools:
+    - name: "convert_currency"
+      description: "Convert an amount from one currency to another using the current exchange rate. Returns the converted amount and the rate used."
+      inputSchema:
+        type: object
+        properties:
+          amount:
+            type: number
+            minimum: 0
+            description: "Amount to convert"
+          from_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            description: "Source currency ISO 4217 code (e.g., GBP, USD, EUR)"
+          to_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            description: "Target currency ISO 4217 code (e.g., JPY, EUR, USD)"
+          date:
+            type: string
+            format: date
+            description: "Date for historical rate in YYYY-MM-DD format (omit for live rate)"
+        required:
+          - amount
+          - from_currency
+          - to_currency
+      outputSchema:
+        type: object
+        properties:
+          original_amount:
+            type: number
+          from_currency:
+            type: string
+          converted_amount:
+            type: number
+          to_currency:
+            type: string
+          exchange_rate:
+            type: number
+          rate_date:
+            type: string
+            format: date
+          rate_source:
+            type: string
+
+    - name: "get_exchange_rate"
+      description: "Get the current or historical exchange rate between two currencies."
+      inputSchema:
+        type: object
+        properties:
+          base_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            description: "Base currency ISO 4217 code"
+          target_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            description: "Target currency ISO 4217 code"
+          date:
+            type: string
+            format: date
+            description: "Date for historical rate (omit for live rate)"
+        required:
+          - base_currency
+          - target_currency
+      outputSchema:
+        type: object
+        properties:
+          base_currency:
+            type: string
+          target_currency:
+            type: string
+          rate:
+            type: number
+          inverse_rate:
+            type: number
+          rate_date:
+            type: string
+            format: date
+          change_24h_percent:
+            type: number
+            description: "Percentage change from 24 hours ago (live rate only)"
+
+    - name: "get_travel_budget_breakdown"
+      description: "Convert a travel budget into multiple local currencies at once. Useful for planning daily spending in a destination country."
+      inputSchema:
+        type: object
+        properties:
+          budget:
+            type: number
+            description: "Total budget amount"
+          from_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            description: "Your home currency"
+          destination_currencies:
+            type: array
+            items:
+              type: string
+              minLength: 3
+              maxLength: 3
+            description: "List of currencies to convert to"
+          trip_duration_days:
+            type: integer
+            minimum: 1
+            description: "Trip duration in days for daily budget calculation"
+        required:
+          - budget
+          - from_currency
+          - destination_currencies
+      outputSchema:
+        type: object
+        properties:
+          total_budget:
+            type: number
+          from_currency:
+            type: string
+          conversions:
+            type: array
+            items:
+              type: object
+              properties:
+                currency:
+                  type: string
+                total_amount:
+                  type: number
+                daily_budget:
+                  type: number
+                exchange_rate:
+                  type: number
+          rate_date:
+            type: string
+            format: date
+
+  resources: []
+  prompts: []

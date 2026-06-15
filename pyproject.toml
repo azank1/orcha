@@ -1,0 +1,106 @@
+[project]
+dependencies = [
+  "common-database",
+  "common-kafka",
+  "common-llm",
+  "common-pricing",
+  "common-proto",
+  "common-utils",
+  "internal-commons",
+  "planning-discovery-service",
+  "registry-service",
+  "superagent",
+  "gateway",
+]
+name = "metaorcha-monorepo"
+requires-python = ">=3.12"
+version = "0.1.0"
+
+[tool.uv.workspace]
+members = ["services/*", "common/*", "packages/*"]
+exclude = ["services/wallet-service"]
+
+[tool.uv.sources]
+common-database = {workspace = true}
+common-kafka = {workspace = true}
+common-llm = {workspace = true}
+common-pricing = {workspace = true}
+common-proto = {workspace = true}
+common-utils = {workspace = true}
+internal-commons = {workspace = true}
+planning-discovery-service = {workspace = true}
+registry-service = {workspace = true}
+superagent = {workspace = true}
+gateway = {workspace = true}
+
+[[tool.uv.index]]
+# CPU-only PyTorch — avoids pulling ~600 MB of NVIDIA CUDA libraries
+# Used by planning-discovery-service (sentence-transformers cross-encoder)
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv]
+dev-dependencies = [
+  "grpcio-tools>=1.60.0", # Needed for proto generation step
+  "mypy>=1.8.0",
+  "pytest>=7.4.0",
+  "pytest-asyncio>=0.23.0",
+  "pytest-cov>=4.1.0",
+  "ruff>=0.1.0",
+]
+
+# ============================================================================
+# Ruff (lint + format — replaces Black)
+# ============================================================================
+
+[tool.ruff]
+exclude = [
+  ".git",
+  ".venv",
+  "__pycache__",
+  "*.egg-info", # Generated files — never lint these
+  "common/database/src/generated_client",
+  "common/proto/src/registry_pb2.py",
+  "common/proto/src/registry_pb2_grpc.py",
+]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+ignore = [
+  "E501",  # line length — handled by ruff format
+  "S101",  # allow assert (tests + type narrowing)
+  "TC001", # FastAPI/Pydantic resolve annotations at runtime — TYPE_CHECKING blocks break Depends()
+  "TC002", # same — third-party runtime annotations
+  "TC003", # same — stdlib runtime annotations (e.g. AsyncIterator in lifespan)
+  "S104",  # "0.0.0.0" binding is expected in server config
+  "S105",  # false-positive: "bearer" token_type field is not a hardcoded secret
+  "B008",  # FastAPI Body()/Query()/Depends() in default args is idiomatic
+]
+select = [
+  "E",
+  "W", # pycodestyle
+  "F", # Pyflakes
+  "I", # isort
+  "UP", # pyupgrade
+  "B", # flake8-bugbear
+  "S", # flake8-bandit (security)
+  "C4", # flake8-comprehensions
+  "A", # flake8-builtins
+  "PT", # flake8-pytest-style
+  "RET", # flake8-return
+  "SIM", # flake8-simplify
+  "PTH", # flake8-use-pathlib
+  "FA", # __future__ annotations
+  "ISC", # implicit string concat
+  "TC", # type-checking blocks
+  "DTZ", # naive datetime
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["common_database", "common_kafka", "common_llm", "common_proto", "common_utils", "planning_discovery_service", "registry_service", "gateway"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S", "PT", "A002"] # relax security + pytest-style + builtin-shadowing in test helpers
+"**/conftest.py" = ["E402"]          # sys.path manipulation before imports is intentional

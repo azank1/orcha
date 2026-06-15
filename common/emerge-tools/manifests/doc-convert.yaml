@@ -1,0 +1,57 @@
+# Document conversion via MCP — https://github.com/xt765/mcp-document-converter
+# Install: uvx mcp-document-converter (PyPI). Optional: --from git+https://github.com/xt765/mcp-document-converter
+# Converts using file paths; agents should read/write under /tmp/{session_id}/ (see SuperAgent staging).
+identity:
+  id: "did:metaorcha:system:doc-convert"
+  name: "Document Converter"
+  version: "2.0.0"
+  description: "Convert documents between Markdown, HTML, DOCX, PDF, and plain text using the mcp-document-converter MCP server (WeasyPrint, python-docx, etc.). Prefer absolute paths under /tmp/{session_id}/ for inputs and outputs."
+  tags: ["documents", "conversion", "pdf", "docx", "markdown", "system"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "stdio"
+    command: "uvx"
+    args: ["mcp-document-converter"]
+
+health_endpoint: "http://localhost:0/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies: []
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "convert_document"
+      description: "Convert a document on disk from one format to another. Pass source_path (absolute path to the file) and target_format (html, pdf, markdown, docx, text). Optional output_path, source_format (auto-detected from extension if omitted), and options (css, preserve_metadata, extract_images, template). Prefer output_path under /tmp/{session_id}/; after conversion, call SuperAgent system tool save_artifact(local_path=output_path) so the file becomes a user-downloadable artifact."
+      inputSchema:
+        type: object
+        properties:
+          source_path:
+            type: string
+            description: "Absolute path to the source file (e.g. under /tmp/{session_id}/)"
+          target_format:
+            type: string
+            enum: ["html", "pdf", "markdown", "docx", "text"]
+            description: "Output format"
+          output_path:
+            type: string
+            description: "Optional absolute path for the output file"
+          source_format:
+            type: string
+            description: "Optional source format hint; omit for auto-detection from extension"
+          options:
+            type: object
+            description: "Optional keys: template, css, preserve_metadata, extract_images"
+        required: ["source_path", "target_format"]
+    - name: "list_supported_formats"
+      description: "List all input/output document formats supported by the converter."
+      inputSchema:
+        type: object
+        properties: {}

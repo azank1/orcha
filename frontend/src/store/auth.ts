@@ -1,0 +1,42 @@
+import { create } from 'zustand'
+import { auth, setAccessToken } from '../api/client'
+
+interface AuthState {
+  isAuthenticated: boolean
+  email: string | null
+  login: (email: string, password: string) => Promise<void>
+  register: (email: string, password: string, displayName?: string) => Promise<void>
+  logout: () => Promise<void>
+  initFromStorage: () => void
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  isAuthenticated: false,
+  email: null,
+
+  initFromStorage: () => {
+    const hasToken = !!localStorage.getItem('access_token')
+    if (hasToken) set({ isAuthenticated: true })
+  },
+
+  login: async (email, password) => {
+    const data = await auth.login(email, password)
+    setAccessToken(data.access_token)
+    localStorage.setItem('refresh_token', data.refresh_token)
+    set({ isAuthenticated: true, email })
+  },
+
+  register: async (email, password, displayName) => {
+    const data = await auth.register(email, password, displayName)
+    setAccessToken(data.access_token)
+    localStorage.setItem('refresh_token', data.refresh_token)
+    set({ isAuthenticated: true, email })
+  },
+
+  logout: async () => {
+    try { await auth.logout() } catch { /* ignore */ }
+    setAccessToken(null)
+    localStorage.removeItem('refresh_token')
+    set({ isAuthenticated: false, email: null })
+  },
+}))

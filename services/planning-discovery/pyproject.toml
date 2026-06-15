@@ -1,0 +1,54 @@
+[project]
+name = "planning-discovery-service"
+version = "1.0.0"
+description = "Planning & Discovery Service — query planning and agent manifest processing"
+requires-python = ">=3.12"
+
+dependencies = [
+    # Web framework
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+
+    # Config & validation
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+
+    # Database
+    "asyncpg>=0.29.0",
+    "prisma>=0.11.0",
+
+    # HTTP client (for LLM provider)
+    "httpx>=0.26.0",
+
+    # NLP — keyword extraction for hybrid search
+    "nltk>=3.8.1",
+
+    # ML — cross-encoder reranking (local sentence-transformers model)
+    # CPU-only torch — avoids pulling ~600 MB of NVIDIA CUDA libraries
+    "sentence-transformers>=2.3.1",
+    "torch>=2.1.0",
+    "numpy>=1.26.0",
+
+    # Graph algorithms — dependency refinement (transitive reduction)
+    "networkx>=3.2",
+
+    # Common packages
+    "common-database",
+    "common-kafka",
+    "common-llm",
+    "common-pricing",
+    "common-utils",
+]
+
+[tool.uv.sources]
+# Pin torch to the CPU-only wheel — the cross-encoder runs on CPU only
+torch = { index = "pytorch-cpu" }
+common-pricing = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/planning_discovery"]

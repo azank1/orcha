@@ -1,0 +1,486 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # ============================================================================
+  # Detect Changed Services
+  # ============================================================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      registry: ${{ steps.filter.outputs.registry }}
+      common: ${{ steps.filter.outputs.common }}
+      planning_discovery: ${{ steps.filter.outputs.planning_discovery }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            registry:
+              - 'services/registry/**'
+              - 'common/**'
+            common:
+              - 'common/**'
+            planning_discovery:
+              - 'services/planning-discovery/**'
+              - 'common/**'
+
+  # ============================================================================
+  # Registry Service Tests
+  # ============================================================================
+  registry-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.registry == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Registry Service (Lint, Format, Test, Build)
+    timeout-minutes: 15
+
+    env:
+      # Service Config
+      SERVICE_NAME: registry-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: test
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8000
+      RELOAD: "false"
+
+      # gRPC
+      GRPC_HOST: "[::]"
+      GRPC_PORT: 50051
+
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+
+      # Security
+      PAT_TOKEN_PREFIX: metaorcha_pat_
+      PAT_TOKEN_LENGTH: 40
+
+      # Adapter Settings
+      ADAPTER_TIMEOUT: 10
+      ADAPTER_MAX_RETRIES: 3
+
+      # Health Check
+      HEALTH_CHECK_INTERVAL: 300
+      MAX_HEALTH_FAILURES: 3
+
+      # Payment
+      PAYMENT_FACILITATOR_URL: https://api.metaorcha.bot/verify
+
+      # MCP Protocol
+      MCP_PROTOCOL_VERSION: 2025-11-25
+
+      # Logging
+      LOG_LEVEL: DEBUG
+
+      # Python path — exposes workspace root so `from common.xxx.src import ...`
+      # works as namespace-package imports (no __init__.py needed in common/).
+      PYTHONPATH: .
+
+    services:
+      # PostgreSQL with pgvector extension (required by Prisma migrations)
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: metaorcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Cache Ruff
+        uses: actions/cache@v4
+        with:
+          path: .ruff_cache
+          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ruff-
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Run database migrations
+        run: |
+          cd common/database
+          uv run prisma migrate deploy
+
+      - name: Generate gRPC stubs
+        run: |
+          cd common/proto
+          uv run python -m grpc_tools.protoc \
+            -I./src \
+            --python_out=./src \
+            --grpc_python_out=./src \
+            ./src/registry.proto
+          # grpc_tools generates absolute bare imports by default; fix to relative
+          # so the stub works inside the namespace-package monorepo.
+          sed -i \
+            's/^import registry_pb2 as registry__pb2$/from . import registry_pb2 as registry__pb2/' \
+            ./src/registry_pb2_grpc.py
+
+      - name: Lint with ruff
+        run: |
+          uv run ruff check services/registry/src/ common/ --cache-dir .ruff_cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check services/registry/src/ common/
+
+      - name: Type check with mypy (optional)
+        continue-on-error: true
+        run: |
+          uv run mypy services/registry/src/ || echo "Type checking completed with warnings"
+
+      - name: Run tests
+        run: |
+          uv run pytest services/registry/tests/ \
+            --cov=services/registry/src \
+            --cov-report=xml \
+            --cov-report=term \
+            --verbose
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: registry
+          name: registry-coverage
+
+      - name: Build check
+        run: |
+          # Verify imports work
+          uv run python -c "from services.registry.src import main"
+
+  # ============================================================================
+  # Common Packages Tests
+  # ============================================================================
+  common-packages:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Common Packages (Lint, Format, Build)
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: metaorcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Cache Ruff
+        uses: actions/cache@v4
+        with:
+          path: .ruff_cache
+          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ruff-
+
+      - name: Lint common packages
+        run: |
+          uv run ruff check common/ --cache-dir .ruff_cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check common/
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Validate Prisma schema
+        run: |
+          cd common/database
+          uv run prisma validate
+
+      - name: Generate gRPC stubs
+        run: |
+          cd common/proto
+          uv run python -m grpc_tools.protoc \
+            -I./src \
+            --python_out=./src \
+            --grpc_python_out=./src \
+            ./src/registry.proto
+          # grpc_tools generates absolute bare imports by default; fix to relative
+          # so the stub works inside the namespace-package monorepo.
+          sed -i \
+            's/^import registry_pb2 as registry__pb2$/from . import registry_pb2 as registry__pb2/' \
+            ./src/registry_pb2_grpc.py
+
+      - name: Test common utilities
+        run: |
+          # Run unit tests if they exist
+          if [ -d "common/utils/tests" ]; then
+            uv run pytest common/utils/tests/ --verbose
+          fi
+
+  # ============================================================================
+  # Planning & Discovery Service Tests
+  # ============================================================================
+  planning-discovery-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.planning_discovery == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Planning & Discovery Service (Lint, Format, Test, Build)
+    timeout-minutes: 30
+
+    env:
+      # Service Config
+      SERVICE_NAME: planning-discovery-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: test
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8001
+
+      # Database (no ?schema= suffix — asyncpg does not accept Prisma-specific params)
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test
+
+      # Kafka (not started in CI — all consumers are mocked in tests)
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+
+      # LLM — use Ollama for both providers to avoid requiring OPENROUTER_API_KEY.
+      # All LLM calls are mocked in tests so no real Ollama instance is needed.
+      LLM_PROVIDER: ollama
+      LLM_COMPLETION_PROVIDER: ollama
+      LLM_EMBEDDING_PROVIDER: ollama
+      OLLAMA_BASE_URL: http://localhost:11434
+      LLM_DECOMPOSITION_MODEL: llama3.1:8b
+      LLM_FALLBACK_MODEL: llama3.1:8b
+      LLM_EMBEDDING_MODEL: nomic-embed-text
+      LLM_VALIDATION_MODEL: llama3.1:8b
+      LLM_CONFIDENCE_THRESHOLD: "0.75"
+
+      # Search
+      SIMILARITY_THRESHOLD: "0.75"
+      TOP_K_CANDIDATES: "5"
+
+      # Logging
+      LOG_LEVEL: DEBUG
+
+      # Python path — workspace root for namespace package imports
+      PYTHONPATH: .
+
+    services:
+      # PostgreSQL with pgvector extension (required for HNSW / embedding queries)
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: metaorcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Cache Ruff
+        uses: actions/cache@v4
+        with:
+          path: .ruff_cache
+          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
+          restore-keys: |
+            ${{ runner.os }}-ruff-
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Run database migrations
+        run: |
+          cd common/database
+          uv run prisma migrate deploy
+
+      - name: Initialise pgvector indices
+        run: |
+          uv run python services/planning-discovery/scripts/db/initialize_database.py
+
+      - name: Lint with ruff
+        run: |
+          uv run ruff check services/planning-discovery/src/ common/ --cache-dir .ruff_cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check services/planning-discovery/src/ common/
+
+      - name: Type check with mypy (optional)
+        continue-on-error: true
+        run: |
+          uv run mypy services/planning-discovery/src/ || echo "Type checking completed with warnings"
+
+      - name: Run tests
+        working-directory: services/planning-discovery
+        run: |
+          uv run pytest tests/ \
+            --cov-report=xml \
+            --cov-report=term \
+            --verbose
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./services/planning-discovery/coverage.xml
+          flags: planning-discovery
+          name: planning-discovery-coverage
+
+      - name: Build check
+        run: |
+          uv run python -m py_compile services/planning-discovery/src/main.py
+          echo "Build check passed"
+
+  # # ============================================================================
+  # # Docker Build Test
+  # # ============================================================================
+  # docker-build:
+  #   needs: [detect-changes, registry-service]
+  #   if: ${{ needs.detect-changes.outputs.registry == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   name: Docker Build Test
+  #   timeout-minutes: 20
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Build Registry Docker image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./services/registry/Dockerfile
+  #         push: false
+  #         tags: metaorcha/registry:test
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
+
+  #     - name: Test Docker image
+  #       run: |
+  #         docker run --rm metaorcha/registry:test python -c "import services.registry.src.main"
+
+  # # ============================================================================
+  # # Security Scan
+  # # ============================================================================
+  # security-scan:
+  #   needs: detect-changes
+  #   if: ${{ needs.detect-changes.outputs.registry == 'true' || needs.detect-changes.outputs.common == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   name: Security Scan
+  #   timeout-minutes: 10
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.12'
+
+  #     - name: Install uv
+  #       uses: astral-sh/setup-uv@v5
+
+  #     - name: Install dependencies
+  #       run: uv sync --frozen
+
+  #     - name: Run safety check
+  #       continue-on-error: true
+  #       run: |
+  #         uv run pip install safety
+  #         uv run safety check --json || echo "Safety check completed with warnings"
+
+  #     - name: Run bandit security linter
+  #       continue-on-error: true
+  #       run: |
+  #         uv run pip install bandit
+  #         uv run bandit -r services/registry/src/ common/ -f json || echo "Bandit scan completed with warnings"

@@ -1,0 +1,93 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env.*
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# uv
+.uv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+*.cover
+*.log
+
+# Prisma
+node_modules/
+common/database/src/generated_client/
+*.db
+*.db-journal
+
+# gRPC Generated
+common/proto/src/*_pb2.py
+common/proto/src/*_pb2_grpc.py
+common/proto/src/*_pb2.pyi
+
+# Logs
+*.log
+logs/
+dist/
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Environment
+.env.local
+.env.*.local
+.env.production
+.env.*
+!.env.example
+
+# Docker
+.dockerignore
+
+# SSH keys / certificates
+*.pem
+
+# OS
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+.ruff_cache
+.logs
+ctx/

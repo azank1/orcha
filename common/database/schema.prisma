@@ -1,0 +1,615 @@
+generator client {
+  provider             = "prisma-client-py"
+  output               = "./src/generated_client"
+  recursive_type_depth = 5
+  enable_experimental_decimal = true
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// USER MANAGEMENT
+// ============================================================================
+
+enum UserRole {
+  USER
+  DEV
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active  Boolean  @default(true)
+
+  // Gateway auth fields
+  password_hash String?
+  display_name  String?
+  is_dev_mode   Boolean  @default(false)
+  role          UserRole @default(USER)
+  credits_usd   Float    @default(0)
+
+  // Billing / arrears
+  arrears_usd  Float   @default(0)
+  arrears_flag Boolean @default(false)
+
+  // Privy embedded wallet
+  wallet_address     String? // smart wallet address (AA contract on EVM, or mirrors eoa on Solana)
+  eoa_wallet_address String? // EOA controlling the smart wallet (EVM) or mirrors wallet_address (Solana)
+  privy_wallet_id    String? // Privy internal wallet ID
+  withdrawal_address String? // DEV only: preferred payout destination
+
+  // Relations
+  agents                Agent[]
+  workflow_templates    WorkflowTemplate[]
+  user_secrets          UserSecret[]
+  agent_registrations   AgentRegistration[]
+  refresh_tokens        RefreshToken[]
+  conversation_sessions ConversationSession[]
+  agent_invocations     AgentInvocation[]
+  transactions          Transaction[]
+  artifacts             Artifact[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  user_id    String
+  token_hash String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+  revoked    Boolean  @default(false)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([expires_at])
+  @@map("refresh_tokens")
+}
+
+// ============================================================================
+// AGENT REGISTRY
+// ============================================================================
+
+model Agent {
+  id            String   @id // DID format: did:emerge:agent:xyz
+  user_id       String
+  name          String
+  version       String
+  description   String   @db.Text
+  provider      String
+  owner_contact String
+  tags          String[] // Array of strings
+  task_category String?  // Used for RegistryStats aggregation
+
+  // Protocol
+  protocol_type    ProtocolType // Enum: MCP, A2A
+  protocol_version String
+
+  // Health
+  health_status     HealthStatus @default(UNKNOWN) // Enum
+  health_endpoint   String
+  last_health_check DateTime?
+  health_failures   Int          @default(0)
+
+  // Phase 1 metrics — maintained nightly by metrics_refresh cron
+  success_rate    Float @default(0.70)
+  uptime_score    Float @default(1.0)
+  p95_latency_ms  Int   @default(5000)
+  execution_count Int   @default(0)
+
+  // Metadata
+  indexed_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  is_active  Boolean  @default(true)
+
+  // Relations
+  user          User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transport     Transport?
+  security      Security?
+  payment       Payment?
+  capabilities  Capability[]
+  versions      AgentVersion[]
+  embedding     AgentEmbedding?
+  agent_secrets AgentSecret[]
+
+  @@unique([user_id, name, version])
+  @@index([user_id])
+  @@index([protocol_type])
+  @@index([health_status])
+  @@map("agents")
+}
+
+enum ProtocolType {
+  MCP
+  A2A
+}
+
+enum HealthStatus {
+  HEALTHY
+  UNHEALTHY
+  UNKNOWN
+}
+
+// ============================================================================
+// VERSIONING
+// ============================================================================
+
+model AgentVersion {
+  id                String   @id @default(cuid())
+  agent_id          String
+  version           String
+  manifest_snapshot Json // Full snapshot of capabilities, security, payment at this version
+  change_summary    String?  @db.Text
+  created_at        DateTime @default(now())
+
+  // Relations
+  agent Agent @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@unique([agent_id, version])
+  @@index([agent_id])
+  @@map("agent_versions")
+}
+
+// ============================================================================
+// PROTOCOL CONFIGURATION
+// ============================================================================
+
+model Transport {
+  id       String        @id @default(cuid())
+  agent_id String        @unique
+  type     TransportType // Enum: SSE, STDIO, HTTP
+  endpoint String? // Required for SSE/HTTP
+  command  String? // Required for STDIO
+  args     String[] // For STDIO
+  // NOTE: Do NOT store credentials here. Use AuthStrategy with type=PLATFORM_ENV (platform secrets)
+  // or type=HTTP_BEARER/OAUTH2 (user secrets resolved from Vault). env is for non-secret
+  // process config only (e.g. working directory, locale).
+  env      Json? // STDIO non-secret env config e.g. {"WORKING_DIR": "/tmp"}
+
+  // Relations
+  agent Agent @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@map("transports")
+}
+
+enum TransportType {
+  SSE
+  STDIO
+  HTTP
+}
+
+// ============================================================================
+// SECURITY & AUTHENTICATION
+// ============================================================================
+
+model Security {
+  id                   String  @id @default(cuid())
+  agent_id             String  @unique
+  transport_layer_type TLSType // Enum: TLS, MTLS, NONE
+  mtls_cert_vault_key  String?
+  mtls_key_vault_key   String?
+  mtls_ca_vault_key    String?
+
+  // Relations
+  agent           Agent          @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  auth_strategies AuthStrategy[]
+
+  @@map("security_configs")
+}
+
+enum TLSType {
+  TLS
+  MTLS
+  NONE
+}
+
+model AuthStrategy {
+  id          String @id @default(cuid())
+  security_id String
+
+  strategy_id String   // User-defined ID (e.g., "strategy_api_key")
+  type        AuthType // Enum
+
+  // Config varies by type (stored as JSON for flexibility)
+  config Json // { "header_name": "...", "key_vault_ref": "...", etc. }
+
+  // Capability scoping — empty array = global (applies to all capabilities of this agent).
+  // Non-empty = only evaluated when the invoked capability_id is in this list.
+  // Using a string array (not a FK) to allow one strategy to scope to multiple capabilities.
+  capability_ids String[] @default([])
+
+  // Relations
+  security Security @relation(fields: [security_id], references: [id], onDelete: Cascade)
+
+  @@index([security_id])
+  @@map("auth_strategies")
+}
+
+enum AuthType {
+  X_API_KEY
+  HTTP_BEARER
+  OAUTH2
+  OAUTH2_DCR
+  PLATFORM_ENV // platform-owned secret read from SuperAgent .env at boot; never user-resolved
+}
+
+// ============================================================================
+// PAYMENT
+// ============================================================================
+
+model Payment {
+  id       String  @id @default(cuid())
+  agent_id String  @unique
+  enabled  Boolean @default(false)
+  // USD value as string, e.g. "0.50"; null = free agent (MCP agents are always free)
+  base_fee String?
+
+  // Relations
+  agent Agent @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@map("payment_configs")
+}
+
+// ============================================================================
+// CAPABILITIES
+// ============================================================================
+
+model Capability {
+  id       String @id @default(cuid())
+  agent_id String
+
+  type          CapabilityType // Enum: TOOL, RESOURCE, PROMPT
+  capability_id String // Tool/resource/prompt ID from agent
+  name          String
+  description   String         @db.Text
+
+  // Type-specific fields (nullable for irrelevant types)
+  input_schema  Json? // For TOOL
+  output_schema Json? // For TOOL
+  uri_template  String? // For RESOURCE
+  mime_type     String? // For RESOURCE
+  arguments     Json? // For PROMPT (array of arg objects)
+
+  // Relations
+  agent Agent @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@unique([agent_id, capability_id])
+  @@index([agent_id])
+  @@index([type])
+  @@map("capabilities")
+}
+
+enum CapabilityType {
+  TOOL
+  RESOURCE
+  PROMPT
+}
+
+// ============================================================================
+// SUPERAGENT — WORKFLOW TEMPLATES
+// ============================================================================
+
+model WorkflowTemplate {
+  id                   String    @id @default(cuid())
+  user_id              String
+  name                 String
+  description          String?   @db.Text
+  goal_template        String    @db.Text
+  parameters           Json      @default("{}")
+  steps                Json
+  agents_used          String[]  @default([])
+  created_from_session String?
+  schedule_cron        String?
+  schedule_tz          String    @default("UTC")
+  schedule_enabled     Boolean   @default(false)
+  next_run_at          DateTime?
+  last_run_at          DateTime?
+  run_count            Int       @default(0)
+  status               String    @default("inactive")
+  created_at           DateTime  @default(now())
+  updated_at           DateTime  @updatedAt
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([next_run_at])
+  @@map("workflow_templates")
+}
+
+// ============================================================================
+// SUPERAGENT — CONVERSATION SESSIONS & TRANSCRIPT (Postgres source of truth)
+// ============================================================================
+
+enum TranscriptRole {
+  USER
+  ASSISTANT
+  TOOL
+}
+
+model ConversationSession {
+  id                      String   @id
+  user_id                 String
+  title                   String
+  persisted_message_count Int      @default(0)
+  created_at              DateTime @default(now())
+  updated_at              DateTime @updatedAt
+
+  user               User                     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  transcript_entries SessionTranscriptEntry[]
+  artifacts          Artifact[]
+
+  @@index([user_id])
+  @@index([user_id, updated_at])
+  @@map("conversation_sessions")
+}
+
+model SessionTranscriptEntry {
+  id            String         @id @default(cuid())
+  session_id    String
+  sequence_num  Int
+  role          TranscriptRole
+  content       String         @db.Text
+  tool_calls    Json?
+  tool_call_id  String?
+  tool_name     String?
+  tool_inputs   Json?
+  tool_status   String?
+  // base_fee charged for this invocation; null for MCP calls or unsuccessful invocations
+  invocation_cost Decimal?     @db.Decimal(18, 8)
+  created_at    DateTime       @default(now())
+
+  session ConversationSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+
+  @@unique([session_id, sequence_num])
+  @@index([session_id])
+  @@map("session_transcript_entries")
+}
+
+// ============================================================================
+// SUPERAGENT — USER SECRETS (AES-256-GCM encrypted at app layer)
+// ============================================================================
+
+model UserSecret {
+  user_id         String
+  key             String
+  encrypted_value Bytes
+  created_at      DateTime @default(now())
+
+  agent_secret_id String?
+  agent_secret    AgentSecret? @relation(fields: [agent_secret_id], references: [id], onDelete: SetNull)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, key])
+  @@map("user_secrets")
+}
+
+// ============================================================================
+// AGENT RUNTIME SECRETS — secrets required by agents at runtime (from emerge.yaml env)
+// ============================================================================
+
+model AgentSecret {
+  id          String   @id @default(cuid())
+  agent_id    String
+  var_name    String
+  description String?  @db.Text
+  required    Boolean  @default(true)
+  created_at  DateTime @default(now())
+
+  agent        Agent        @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+  user_secrets UserSecret[]
+
+  @@unique([agent_id, var_name])
+  @@index([agent_id])
+  @@map("agent_secrets")
+}
+
+// ============================================================================
+// SUPERAGENT — AGENT OAUTH REGISTRATIONS
+// ============================================================================
+
+model AgentRegistration {
+  agent_id                String
+  user_id                 String
+  client_id               String
+  encrypted_client_secret Bytes
+  created_at              DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@id([agent_id, user_id])
+  @@map("agent_registrations")
+}
+
+// ============================================================================
+// VECTOR SEARCH — Planning & Discovery Service
+// ============================================================================
+
+model AgentEmbedding {
+  id       String @id @default(cuid())
+  agent_id String @unique
+
+  // TDWA semantic string representation of the agent
+  templated_string String @db.Text
+
+  // Vector embeddings (1536-dim, text-embedding-3-small via OpenRouter)
+  // Stored as pgvector type — managed via raw SQL migration, not Prisma ALTER
+  embedding              Unsupported("vector(768)")?
+  name_embedding         Unsupported("vector(768)")?
+  description_embedding  Unsupported("vector(768)")?
+  capabilities_embedding Unsupported("vector(768)")?
+  tags_embedding         Unsupported("vector(768)")?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  // Relations
+  agent Agent @relation(fields: [agent_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_id])
+  @@map("agent_embeddings")
+}
+
+// ============================================================================
+// PLAN EXECUTION HISTORY — Planning & Discovery Service
+// ============================================================================
+
+model PlanExecution {
+  id                String @id @default(cuid())
+  plan_hash         String
+  workflow_manifest Json
+
+  // Execution results
+  success           Boolean
+  error_message     String? @db.Text
+  execution_time_ms Int?
+
+  // DAG structural features (used for feasibility analysis)
+  node_count             Int
+  edge_count             Int
+  max_depth              Int
+  parallel_width         Int
+  agent_reliability_mean Float
+  agent_reliability_min  Float
+  has_loops              Boolean
+  has_conditionals       Boolean
+  conditional_depth      Int
+
+  created_at DateTime @default(now())
+
+  @@index([plan_hash])
+  @@index([success])
+  @@index([created_at])
+  @@map("plan_executions")
+}
+
+// ============================================================================
+// PRICING — AGENT INVOCATION LOG
+// ============================================================================
+
+enum InvocationStatus {
+  SUCCESS
+  ERROR
+  TIMEOUT
+}
+
+model AgentInvocation {
+  id              String           @id @default(cuid())
+  session_id      String
+  user_id         String
+  agent_id        String
+  call_id         String           @unique
+  status          InvocationStatus
+  latency_ms      Int?
+  base_fee        Decimal?         @db.Decimal(18, 8)
+  platform_tokens Int?
+  error_type      String?
+  created_at      DateTime         @default(now())
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([agent_id, created_at])
+  @@index([session_id])
+  @@map("agent_invocations")
+}
+
+// ============================================================================
+// PRICING — BILLING TRANSACTIONS
+// ============================================================================
+
+enum TxStatus {
+  PENDING
+  SETTLED
+  FAILED
+}
+
+model Transaction {
+  id               String    @id @default(cuid())
+  session_id       String
+  user_id          String
+  agent_id         String
+  call_id          String    @unique
+  base_fee         Decimal   @db.Decimal(18, 8)
+  platform_cut     Decimal   @db.Decimal(18, 8)
+  developer_payout Decimal   @db.Decimal(18, 8)
+  latency_ms       Int
+  status           TxStatus  @default(PENDING)
+  created_at       DateTime  @default(now())
+  settled_at       DateTime?
+  // On-chain settlement details — populated when status → SETTLED
+  chain_id         String?   // CAIP-2 format: e.g. "eip155:84532" (Base Sepolia), "eip155:8453" (Base)
+  tx_hash          String?   // Transaction hash of the developer payout transfer
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([status, created_at])
+  @@index([agent_id])
+  @@map("transactions")
+}
+
+// ============================================================================
+// ARTIFACTS — Files uploaded by users or produced by agent tool calls
+// ============================================================================
+
+enum ArtifactSource {
+  USER_UPLOAD  // uploaded by user via Gateway /files/upload
+  AGENT_OUTPUT // produced by a tool call (e.g. mcp-pandoc output)
+}
+
+enum ArtifactStatus {
+  PENDING // upload initiated, bytes not yet in S3
+  READY   // fully uploaded, available for use
+  DELETED // soft-deleted
+}
+
+model Artifact {
+  id         String         @id @default(cuid())
+  user_id    String
+  session_id String? // null = user-level; set = session-scoped
+
+  filename   String
+  mime_type  String
+  size_bytes Int
+  source     ArtifactSource
+  status     ArtifactStatus @default(PENDING)
+
+  // S3 location
+  s3_bucket String
+  s3_key    String // artifacts/{user_id}/{artifact_id}/{filename}
+
+  // Optional metadata populated from Chomper extract_metadata at upload time
+  page_count Int?
+  word_count Int?
+
+  created_at DateTime  @default(now())
+  expires_at DateTime? // null = no expiry; set for session-scoped artifacts
+
+  user    User                  @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  session ConversationSession?  @relation(fields: [session_id], references: [id], onDelete: SetNull)
+
+  @@index([user_id])
+  @@index([session_id])
+  @@index([status])
+  @@map("artifacts")
+}
+
+// ============================================================================
+// PRICING — REGISTRY STATISTICS (per-category medians for routing score)
+// ============================================================================
+
+model RegistryStats {
+  id                  String   @id @default(cuid())
+  task_category       String   @unique
+  median_base_fee_usd Decimal? @db.Decimal(18, 8)
+  median_latency_ms   Float?
+  agent_count         Int      @default(0)
+  computed_at         DateTime @default(now())
+
+  @@map("registry_stats")
+}

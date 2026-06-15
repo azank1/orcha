@@ -1,0 +1,38 @@
+# mcp-summarizer.yaml
+identity:
+  id: "did:metaorcha:agent:ai-summarizer-v2"
+  name: "SummarizerPro"
+  version: "2.1.0"
+  description: "High-fidelity text summarization and extraction agent."
+  tags: ["ai", "nlp", "productivity", "llm"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_summarizer.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_jwt"
+      type: "http_bearer"
+      config:
+        header_name: "Authorization"
+        scheme: "Bearer"
+        issuer: "https://auth.metaorcha.bot"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "BASE_MAINNET"
+    recipient_address: "0x123...abc"
+    asset: "USDC"
+    token_address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    default_price: "0.05"
+    currency: "USDC"

@@ -1,0 +1,25 @@
+identity:
+  id: "invalid-did-format"  # Wrong DID format
+  name: "InvalidAgent"
+  version: "invalid-version"  # Wrong version format
+  description: "An invalid agent config"
+  tags: []
+
+protocol:
+  type: "unknown"  # Invalid protocol type
+  version: "1.0.0"
+  transport:
+    type: "sse"
+    # Missing endpoint for SSE
+
+health_endpoint: "not-a-valid-url"  # Invalid URL format
+
+security:
+  transport_layer:
+    type: "mtls"
+    # Missing mtls_config when type is mtls
+
+  auth_strategies: []
+
+payment:
+  type: "none"

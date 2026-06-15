@@ -1,0 +1,30 @@
+# a2a-logistics.yaml
+identity:
+  id: "did:metaorcha:agent:global-logistics-ops"
+  name: "LogisticsCoordinator"
+  version: "4.2.1"
+  description: "Coordinates freight booking between regional warehouses."
+  tags: ["supply-chain", "logistics", "enterprise"]
+
+protocol:
+  type: "a2a"
+  version: "1.0"
+  transport:
+    type: "http"
+    endpoint: "http://localhost:9000/agents/a2a_logistics.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_internal_oauth"
+      type: "oauth2"
+      config:
+        oidc_discovery_url: "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration"
+        scopes: ["logistics.read", "logistics.write"]
+        provider_hint: "azure_ad"
+
+payment:
+  type: "none"

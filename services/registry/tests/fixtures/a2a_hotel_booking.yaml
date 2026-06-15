@@ -1,0 +1,175 @@
+# a2a_hotel_booking.yaml
+# A2A agent for hotel search and booking
+identity:
+  id: "did:metaorcha:agent:staywise-hotel-booking"
+  name: "StayWise-HotelBooking"
+  version: "3.0.1"
+  description: "Searches, compares, and books hotels worldwide. Supports filtering by location, amenities, price range, and guest rating. Returns confirmed reservations with cancellation policies."
+  tags: ["travel", "hotels", "booking", "accommodation", "hospitality"]
+
+protocol:
+  type: "a2a"
+  version: "1.0"
+  transport:
+    type: "http"
+    endpoint: "http://localhost:9000/agents/a2a_hotel_booking.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_oauth"
+      type: "oauth2"
+      config:
+        oidc_discovery_url: "https://auth.staywise.io/.well-known/openid-configuration"
+        scopes: ["hotels.search", "hotels.book"]
+        provider_hint: "staywise_auth"
+
+payment:
+  type: "none"
+
+capabilities:
+  skills:
+    - id: "search_hotels"
+      name: "Search Hotels"
+      description: "Search for available hotels in a city or neighbourhood for given check-in and check-out dates. Returns ranked results with pricing, amenities, and guest ratings."
+      input_schema:
+        type: object
+        properties:
+          location:
+            type: string
+            description: "City, neighbourhood, or landmark (e.g., 'Shibuya, Tokyo')"
+          check_in:
+            type: string
+            format: date
+            description: "Check-in date in YYYY-MM-DD format"
+          check_out:
+            type: string
+            format: date
+            description: "Check-out date in YYYY-MM-DD format"
+          guests:
+            type: integer
+            minimum: 1
+            default: 1
+            description: "Number of guests"
+          rooms:
+            type: integer
+            minimum: 1
+            default: 1
+            description: "Number of rooms"
+          max_price_per_night:
+            type: number
+            description: "Maximum price per night in the specified currency"
+          currency:
+            type: string
+            default: "USD"
+            description: "Currency for pricing"
+          min_rating:
+            type: number
+            minimum: 0
+            maximum: 5
+            description: "Minimum guest rating (0-5)"
+          amenities:
+            type: array
+            items:
+              type: string
+              enum: ["wifi", "pool", "gym", "breakfast", "parking", "spa", "pet_friendly"]
+            description: "Required amenities"
+        required:
+          - location
+          - check_in
+          - check_out
+      output_schema:
+        type: object
+        properties:
+          hotels:
+            type: array
+            items:
+              type: object
+              properties:
+                hotel_id:
+                  type: string
+                name:
+                  type: string
+                address:
+                  type: string
+                rating:
+                  type: number
+                price_per_night:
+                  type: number
+                currency:
+                  type: string
+                total_price:
+                  type: number
+                amenities:
+                  type: array
+                  items:
+                    type: string
+                cancellation_policy:
+                  type: string
+                distance_to_center_km:
+                  type: number
+          total_results:
+            type: integer
+
+    - id: "book_hotel"
+      name: "Book Hotel"
+      description: "Book a hotel room using a hotel_id returned by search_hotels. Returns a confirmed reservation with booking reference."
+      input_schema:
+        type: object
+        properties:
+          hotel_id:
+            type: string
+            description: "Hotel ID from search_hotels result"
+          check_in:
+            type: string
+            format: date
+            description: "Check-in date in YYYY-MM-DD format"
+          check_out:
+            type: string
+            format: date
+            description: "Check-out date in YYYY-MM-DD format"
+          guests:
+            type: integer
+            minimum: 1
+          guest_name:
+            type: string
+            description: "Primary guest full name"
+          guest_email:
+            type: string
+            format: email
+            description: "Guest email address for confirmation"
+          special_requests:
+            type: string
+            description: "Any special requests (e.g., high floor, late check-in)"
+        required:
+          - hotel_id
+          - check_in
+          - check_out
+          - guests
+          - guest_name
+          - guest_email
+      output_schema:
+        type: object
+        properties:
+          booking_reference:
+            type: string
+          hotel_name:
+            type: string
+          check_in:
+            type: string
+            format: date
+          check_out:
+            type: string
+            format: date
+          total_price:
+            type: number
+          currency:
+            type: string
+          cancellation_deadline:
+            type: string
+            format: date-time
+          confirmation_sent_to:
+            type: string
