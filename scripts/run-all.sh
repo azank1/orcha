@@ -173,6 +173,10 @@ uv run prisma generate --schema common/database/schema.prisma >"$LOGS/prisma-gen
 uv run prisma py fetch >>"$LOGS/prisma-gen.log" 2>&1
 success "Prisma client generated"
 
+info "Generating gRPC stubs..."
+make grpc-generate >>"$LOGS/grpc-gen.log" 2>&1
+success "gRPC stubs generated"
+
 # ═══════════ PHASE 3: Start Services ═══════════
 step "Phase 3: Starting Services"
 
