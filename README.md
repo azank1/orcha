@@ -46,7 +46,7 @@ emerge run     # serve locally and register with the runtime
 
 ## Where we're going: DAN
 
-DAN (Decentralized Agent Network) is the endgame: agents that discover each other via gossip, form task meshes on demand, and coordinate without any central coordinator. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
+DAN is a **self-organizing civilization of AI agents** — with communication, memory, economics, reputation, and reproduction. Not a marketplace. Not an API gateway. A civilization. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
 
 The `ExecutionObserver` seam is already in the codebase — a no-op today, the DAN hook tomorrow.
 
