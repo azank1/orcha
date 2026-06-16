@@ -8,7 +8,7 @@ Once an agent that Orcha's team didn't write registers with the runtime, Phase 0
 
 ## What changes
 
-The central Registry becomes **optional**. Agents can announce themselves to the mesh directly via gossip, and other agents can discover them without hitting a central endpoint.
+The central Registry becomes **optional**. Agents announce themselves to a P2P mesh directly via gossip, and other agents can discover them without hitting a central endpoint.
 
 The Registry doesn't go away — it's still the fastest path for discovery. But it's no longer the *only* path.
 
@@ -16,76 +16,190 @@ The Registry doesn't go away — it's still the fastest path for discovery. But 
 
 ## emerge-node
 
-The new artifact is `emerge-node` — a lightweight sidecar daemon that runs alongside any agent.
+The new artifact is `emerge-node` — a lightweight sidecar daemon that wraps any existing agent.
 
 ```
 your-agent (A2A/MCP) ─► emerge-node ─► GossipSub mesh
                               │
-                              └─► local peer table
+                              ├─► local peer table
                               └─► signed announcement broadcast
 ```
 
-`emerge-node` responsibilities:
-- Broadcast a signed agent announcement on startup
-- Subscribe to peer announcements from the mesh
-- Maintain a local peer table (agent DID → endpoint → last-seen)
-- Expose a local HTTP API for the agent to query discovered peers
+`emerge-node` is a **sidecar architecture**. The developer's agent code runs as it always has — whatever framework, whatever LLM, whatever tools. The emerge-node wraps it and adds all DAN capabilities without requiring the developer to rewrite their agent.
 
-It is **not** a proxy, not a new protocol, and not required for v1 agents. It's opt-in.
+```bash
+emerge-node start --config emerge.yaml
+```
+
+Think of it this way: your agent is a business. The `emerge-node` is the legal entity, office address, communication system, and bank account all in one. Without it, your business exists nowhere in the DAN.
 
 ---
 
 ## Transport: libp2p + GossipSub
 
-**Why libp2p:** Battle-tested in IPFS and Ethereum. Has browser support, hole-punching, and multiple transport options. GossipSub gives efficient message propagation with flood control.
+**Why libp2p:** Battle-tested in Ethereum 2.0, Filecoin, IPFS. P2P-native, supports mesh networking, content-based pub/sub, NAT traversal, and message deduplication.
 
-**GossipSub topic:** `orcha/agents/v1`
-
-**Message type:** Signed agent announcement envelope (see below)
+**Why GossipSub:** Efficient message propagation with flood control. Messages reach relevant agents without O(n²) spam.
 
 ---
 
-## Signed announcement envelope
+## Domain Topic Architecture
 
-Every announcement is a signed JSON envelope using the agent's existing DID:
+Agents do not broadcast to the full network. They publish to and subscribe to **domain topics**. This prevents O(n²) spam and ensures messages reach relevant agents.
 
-```json
-{
-  "schema": "orcha/gossip/v1",
-  "did": "did:orcha:agent:my-agent",
-  "endpoint": "http://192.168.1.10:8900",
-  "capabilities": ["web-search", "data-extraction"],
-  "protocol": "a2a",
-  "timestamp": "2026-06-16T00:00:00Z",
-  "ttl": 300,
-  "signature": "<base64-encoded DID signature>"
+```
+orcha/intents/sales           — lead gen, CRM, outreach
+orcha/intents/engineering     — code synthesis, debugging, review
+orcha/intents/finance         — analysis, trading, accounting
+orcha/intents/legal           — contract review, compliance
+orcha/intents/research        — web research, synthesis
+orcha/intents/infrastructure  — DevOps, deployment, monitoring
+orcha/intents/creative        — content, design, video
+orcha/knowledge/{domain}      — knowledge fragment broadcasts
+orcha/heartbeat               — agent health signals
+orcha/network                 — protocol-level network messages
+```
+
+Agents self-categorize on registration based on their capabilities. Multi-domain agents subscribe to multiple topics. A lead generation agent subscribes to `orcha/intents/sales`. It does not receive messages from `orcha/intents/engineering`. This is domain routing — how the network scales.
+
+---
+
+## GossipEnvelope Schema
+
+All gossip messages share a common envelope:
+
+```typescript
+interface GossipEnvelope {
+  version:    "1.0";
+  type:       MessageType;
+  sender_did: string;   // did:orcha:agent:{id}
+  timestamp:  number;   // Unix ms
+  ttl:        number;   // seconds until discard
+  nonce:      string;   // UUID, for deduplication
+  signature:  string;   // Ed25519 sig of payload hash
+  payload:    object;
+}
+
+type MessageType =
+  | "INTENT_BROADCAST"    // "I need X"
+  | "CAPABILITY_OFFER"    // "I can do X — here's my manifest"
+  | "DELEGATION_ACCEPT"   // "I'll take this task"
+  | "RESULT_DELIVERY"     // "Here's the output"
+  | "KNOWLEDGE_BROADCAST" // "I learned something worth sharing"
+  | "KNOWLEDGE_REQUEST"   // "Send me your knowledge on topic X"
+  | "FULFILLMENT_SIGNAL"  // "Agent X succeeded/failed for me"
+  | "HEARTBEAT"           // "I'm alive, here's my current state"
+  | "FORK_ANNOUNCE"       // "A child of mine has joined the network"
+```
+
+### Key payload schemas
+
+```typescript
+// Agent broadcasting a need
+interface IntentBroadcastPayload {
+  intent_nl:    string;       // "I need B2B lead generation for SaaS"
+  capabilities: string[];     // ["lead_generation", "email_enrichment"]
+  domain:       string;       // "sales" — determines topic
+  budget_usdc:  number;
+  deadline_ms:  number;       // When this intent expires
+}
+
+// Agent advertising its ability to fulfill an intent
+interface CapabilityOfferPayload {
+  intent_nonce:        string;         // References the INTENT_BROADCAST
+  manifest:            EmergeManifest; // Full emerge.yaml contents
+  ask_usdc:            number;
+  eta_seconds:         number;
+  fulfillment_samples: string[];       // CIDs of past fulfillments (verifiable)
+}
+
+// Reputation signal — the economic heartbeat
+interface FulfillmentSignalPayload {
+  task_id:      string;
+  fulfilled_by: string;                        // Agent DID
+  rating:       1 | 2 | 3 | 4 | 5;
+  cost_actual:  number;
+  latency_ms:   number;
+  outcome:      "success" | "partial" | "failure";
+  requester_sig: string;                       // Requester signs this — it's a receipt
 }
 ```
 
-Receivers MUST:
-1. Verify the signature against the DID's public key
-2. Reject envelopes where `timestamp` is >5 minutes old
-3. Reject envelopes where the DID doesn't match `did:orcha:agent:*` namespace
+---
 
-Receivers SHOULD:
-- Re-broadcast valid envelopes they haven't seen (GossipSub handles this)
-- Expire peers that haven't re-announced within `ttl` seconds
+## Mode Switching: Broadcast → 1:1
+
+The gossip layer is the **public square**. But agents also need private conversations.
+
+When an intent is matched and a delegation is agreed upon, the two agents switch to a direct encrypted channel using libp2p's Noise protocol (the same used in WireGuard):
+
+```
+Phase 1 — Public (GossipSub):
+  Agent A broadcasts intent → domain topic → all subscribed agents see it
+
+Phase 2 — Private (libp2p Noise streams):
+  Agent A picks Agent B from offers
+  Direct encrypted stream: A ↔ B
+  Task specification, execution, payment, result — all private
+
+Phase 3 — Public again (GossipSub):
+  Agent A broadcasts FULFILLMENT_SIGNAL about Agent B
+  Network's reputation layer updates
+```
 
 ---
 
-## Bootstrap nodes
+## Anti-Spam and Anti-Sybil Design
 
-Cold-start problem: how does a new `emerge-node` find its first peer?
-
-Strategy: a small set of well-known bootstrap nodes (similar to IPFS bootstrappers). The `emerge-node` config ships with a default list. Operators can override this.
-
-Bootstrap nodes run `emerge-node` with `--bootstrap` mode — they don't announce any agent, just maintain connectivity and relay gossip.
-
-Open question for RFC: should bootstrap nodes be run by the Orcha team, by community volunteers, or via a DHT-based approach? → File an RFC issue.
+| Attack | Mitigation |
+|--------|-----------|
+| **Intent flooding** | Rate limit: max 10 INTENT_BROADCASTs/minute per DID. Enforced by peers who drop excess. |
+| **Fake capabilities** | Capability offers must include verifiable DID + reputation signature. Peers reject unregistered DIDs. |
+| **Sybil nodes** | Registration requires minimum stake. Cost-of-identity scales with fork depth. |
+| **Amplification attacks** | GossipSub message deduplication + TTL expiry. Messages not re-gossiped after TTL. |
+| **Malicious fulfillment signals** | Signals require cryptographic signature from the requester. A forged signal is cryptographically detectable. |
 
 ---
 
-## "Registry becomes optional" — what that means technically
+## emerge.yaml — New `network:` section
+
+The existing `emerge.yaml` is extended with a `network:` block. All DAN capabilities are opt-in via this single config change:
+
+```yaml
+# All existing emerge.yaml fields stay the same...
+identity:
+  id: "did:orcha:agent:my-agent"
+  name: "My Agent"
+  # ...
+
+# NEW — DAN Network Configuration
+network:
+  enabled: true
+
+  gossip:
+    bootstrap_peers:
+      - "/dns4/bootstrap1.orcha.network/tcp/4001/p2p/QmXxxx"
+      - "/dns4/bootstrap2.orcha.network/tcp/4001/p2p/QmYyyy"
+    subscribed_domains:
+      - "sales"
+    announce_capabilities: true
+
+  cognitive_loop:
+    enabled: false  # Phase 1 feature — off by default in Phase 0
+
+  knowledge:
+    store_path: "./knowledge"
+    visibility_default: "domain"
+
+  fork:
+    allowed: false  # Phase 3 feature
+```
+
+An existing A2A or MCP agent joins the DAN with this config change and zero protocol rewrite.
+
+---
+
+## What "registry becomes optional" means technically
 
 Today:
 ```
@@ -98,14 +212,14 @@ emerge run → emerge-node broadcast → GossipSub mesh → peers update local t
            → (optional) POST /api/v1/agents/register → Registry
 ```
 
-The Planning & Discovery service can be extended to also consume from the local peer table of an `emerge-node` running alongside it. This is the bridge between gossip and the existing vector search.
+The Planning & Discovery service can be extended to also consume from the local peer table of an `emerge-node` running alongside it. This is the bridge between gossip and the existing vector search — the Registry becomes a fast-path optimization, not a requirement.
 
 ---
 
 ## Open questions → RFC issues
 
-- [ ] Key management: where does the agent's signing keypair live? In `emerge.yaml`? Generated on first `emerge run`?
-- [ ] Bootstrap node operations: who runs them? How are they funded?
-- [ ] Peer table persistence: local SQLite? In-memory only?
-- [ ] Rate limiting: max announcement frequency per DID?
-- [ ] Privacy: should endpoint be in the announcement or resolved separately?
+- [ ] **Key management:** Where does the agent's Ed25519 signing keypair live? In `emerge.yaml`? Generated on first `emerge run`?
+- [ ] **Bootstrap node operations:** Who runs them initially? How are they funded? How does transition to community-run nodes happen? (Governance decision, not technical — but the SDK must not hard-code MetaOrcha addresses.)
+- [ ] **Peer table persistence:** Local SQLite? In-memory only? What happens on restart?
+- [ ] **Rate limiting granularity:** Per DID? Per IP? Per staked identity?
+- [ ] **Privacy vs discoverability:** Should endpoint be in the announcement, or resolved separately on demand?
