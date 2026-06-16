@@ -1,8 +1,8 @@
-# Phase I — Inception & phased network journey
+# Contributor journey — Phase I (Inception)
 
 Internal execution doc: how the **network**, **users**, **maintainers**, and **repo** evolve together.
 
-Public entry: [`../../join.md`](../../join.md). Thesis: [`../EmergeOS-DAN.pdf`](../EmergeOS-DAN.pdf). Milestones: [`milestones.md`](milestones.md).
+Public entry: [`../../join.md`](../../join.md). Thesis: [`../../../INCEPTION.md`](../../../INCEPTION.md). PDF: [`../EmergeOS-DAN.pdf`](../EmergeOS-DAN.pdf). Milestones: [`milestones.md`](milestones.md).
 
 ---
 
@@ -348,7 +348,7 @@ emerge publish --registry <coord> --network bootstrap.orcha.dev
 | D0-7 | AC: machine B invokes A | Not started |
 | Later | libp2p GossipSub replaces TCP spike | TBD |
 
-Spec: [`D0-gossip.md`](D0-gossip.md).
+Spec: [`phase-0-gossip.md`](phase-0-gossip.md).
 
 **D0 exit gate:** External operator completes AC-D0 without maintainer SSH access.
 
@@ -473,7 +473,7 @@ No stake, no chain, no permissionless registry in D1.
 | PnD routing + reputation | Not started |
 | Attestation DB migration | Not started |
 
-Spec: [`D1-validators.md`](D1-validators.md).
+Spec: [`phase-1-autonomy.md`](phase-1-autonomy.md).
 
 **D1 entry gate:** D0 signed identity in production path.
 

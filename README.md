@@ -1,83 +1,27 @@
-<p align="center">
-  <img src="docs/services/front-end/emergeos-icon.svg" alt="Orcha" width="72" />
-</p>
+<div align="center">
 
-<h1 align="center">Orcha</h1>
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;The+road+to+DAN+starts+here." alt="Orcha" />
 
-<p align="center">
-  <strong>The open runtime for agent orchestration — growing into the Decentralized Agent Network (DAN).</strong><br/>
-  Not a better model. A better way to <em>use</em>, <em>route</em>, <em>observe</em>, and <em>distribute</em> agents.
-</p>
+**The open runtime for multi-protocol AI agent orchestration — and the foundation of DAN.**
 
-<p align="center">
-  <a href="docs/quickstart.md">Quickstart</a> ·
-  <a href="docs/join.md">Join</a> ·
-  <a href="VISION.md">Vision</a> ·
-  <a href="ROADMAP.md">Roadmap</a> ·
-  <a href="CONTRIBUTING.md">Contribute</a>
-</p>
+[![Build](https://github.com/azank1/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/azank1/orcha/actions)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
+[![Discord](https://img.shields.io/badge/community-Discord-5865F2)](https://discord.gg/orcha)
+
+</div>
 
 ---
 
-## The problem we actually solve
+## The problem
 
-Everyone is racing on **models**. The bottleneck is everything around them:
+AI agents today are islands. MCP servers live here. A2A agents live there. Glue code everywhere.
 
-| Gap | What breaks today | What Orcha / DAN builds |
-|---|---|---|
-| **Passivity** | Agents wait for a human ping | Orchestration + (later) autonomous loops |
-| **Isolation** | You wire every integration by hand | Discovery, gossip, federated registry |
-| **Amnesia** | Every call starts from zero | Shared execution + knowledge propagation |
-| **Economic sterility** | Agents can't earn or stake reputation | Per-call settlement, validator attestations |
-| **Muteness** | No way to advertise capability at scale | Signed manifests, reputation, open observability |
+**This is not a model problem. It's an orchestration, observability, and distribution problem.**
 
-**Orcha is the substrate:** one goal → plan → route → execute across **MCP, A2A, and ACP** in a single run, with validation, auth, payments (mock by default), and an **ExecutionObserver** seam for distributed attestation.
+Orcha is the runtime that fixes it: one natural-language goal gets planned, routed, and executed across agents speaking **different** protocols in the same run — with a credential vault, auth cascade, output normalization, and per-call payments (mock mode by default, no wallet needed).
 
-**DAN is the destination:** agents as network participants — not functions hidden behind a platform API.
-
-> Full thesis: [`docs/dev_docs/EmergeOS-DAN.pdf`](docs/dev_docs/EmergeOS-DAN.pdf) · Public summary: [`VISION.md`](VISION.md)
-
----
-
-## How it fits together
-
-```mermaid
-flowchart TB
-  subgraph today ["Open today — local runtime"]
-    C[Consumer] --> G[Gateway]
-    G --> SA[SuperAgent]
-    SA --> PnD[Planning & Discovery]
-    SA --> A1[MCP agent]
-    SA --> A2[A2A agent]
-    SA --> A3[ACP agent]
-    SA --> O[ExecutionObserver seam]
-  end
-
-  subgraph dan ["Growing toward — DAN"]
-    O --> V[Validator nodes]
-    OP[Agent operator] --> N[emerge-node gossip]
-    N --> PnD
-    V --> REP[Reputation + fee split]
-  end
-
-  today --> dan
-```
-
-```mermaid
-flowchart LR
-  subgraph layers ["DAN architecture (north star)"]
-    L1["Layer 1 · Communication<br/>gossip, discovery, intent"]
-    L2["Layer 2 · Knowledge<br/>local-first memory, propagation"]
-    L3["Layer 3 · Trust & value<br/>identity, attestations, settlement"]
-  end
-  L1 --> L2 --> L3
-```
-
-We ship **honestly**: trusted-coordinator bootstrap first, chain/token only when the network outgrows a single operator. See [`ROADMAP.md`](ROADMAP.md).
-
----
-
-## Ship an agent in 3 lines
+## Register an agent in 4 lines
 
 ```python
 import emerge
@@ -88,50 +32,72 @@ def handle(task: str) -> str:
 ```
 
 ```bash
-emerge run    # serve + register locally
+emerge run     # serve locally and register with the runtime
 ```
 
-Every agent gets a DID, manifest ([`emerge.yaml`](docs/emerge-yaml.md)), transport, auth, and pricing — the passport for both local orchestration and future network participation.
+## Roadmap
 
----
+| Phase | Status | What it means |
+|-------|--------|---------------|
+| **v1 — OSS Runtime** | ✅ Now | MCP + A2A + ACP in one run, SDK, CLI, 7 agents |
+| **v1.2 — Harness** | 🔧 Next | DAG executor, retry/fallback, semantic judging |
+| **v2 — DAN Alpha** | 🌐 Planned | Gossip mesh, `emerge-node`, agents find each other |
+| **v3 — DAN** | 🚀 Horizon | Observe→Think→Act, knowledge graph, no central coordinator |
 
-## Who participates
+## Where we're going: DAN
 
-| Role | You run | Today | DAN target |
-|---|---|---|---|
-| **Agent operator** | Your agent + `emerge` | Local registry | Signed gossip manifest · earn per call |
-| **Coordinator** | Registry · PnD · SuperAgent · Gateway | `./scripts/run-all.sh` | Federated bootstrap |
-| **Validator** | Observer on executions | `emerge validate --once` spike | Attest quality · earn fee share |
-| **Consumer** | UI or CLI session | Mock credits | Pay · choose by reputation |
+DAN is a **self-organizing civilization of AI agents** — with communication, memory, economics, reputation, and reproduction. Not a marketplace. Not an API gateway. A civilization. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
 
----
+The `ExecutionObserver` seam is already in the codebase — a no-op today, the DAN hook tomorrow.
 
-## Try it locally (~5 min)
+> **Read the full vision:** [INCEPTION.md](INCEPTION.md)
+
+## Quickstart
 
 ```bash
-git clone git@github.com:azank1/orcha.git && cd orcha
-make install && cp services/superagent/.env.example services/superagent/.env
-# add OPENROUTER_API_KEY to services/superagent/.env
-./scripts/run-all.sh
-emerge init demo && cd demo && emerge run
+git clone https://github.com/azank1/orcha && cd orcha
+./scripts/run-all.sh        # infra + all services + seed agents
+emerge init my-agent && cd my-agent && emerge run
 ```
 
-→ **[Full quickstart](docs/quickstart.md)** · **[Manual service setup](docs/setup.md)** for contributors
+Full setup with manual service control: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)
+
+## Architecture
+
+```
+Goal
+ └─► Registry ──► Planning & Discovery ──► SuperAgent
+                                               │
+                         ┌─────────────────────┼─────────────────────┐
+                         ▼                     ▼                     ▼
+                   MCP handler           A2A handler           ACP handler
+```
+
+<details>
+<summary>Service map</summary>
+
+| Service | Port | Role |
+|---------|------|------|
+| Registry | 8000 | Agent registration + gRPC |
+| Planning & Discovery | 8001 | Vector search + LLM planner |
+| SuperAgent | 8002 | LangGraph orchestration engine |
+| Gateway | 8080 | Auth + BFF + mock payments |
+| Frontend | 3000 | React chat UI |
+
+</details>
+
+## Contribute
+
+Three paths — no prior discussion needed for any of them:
+
+| What | Where | Why it matters |
+|------|-------|----------------|
+| **New bridge** | `templates/your-first-bridge/` | Adds a protocol — highest leverage contribution |
+| **New agent** | `agents/` | Grows the fleet, stress-tests the runtime |
+| **DAN spec** | [`docs/dev_docs/dan/`](docs/dev_docs/dan/) | Shape Phase 0–2 via RFC issues |
+
+→ [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](docs/bridges.md) · [Open a RFC](https://github.com/azank1/orcha/issues/new?labels=rfc)
 
 ---
 
-## Why contribute here
-
-- **Bridges & agents** — extend protocols and ship real examples ([`docs/bridges.md`](docs/bridges.md))
-- **DAN spikes** — `emerge-node` gossip, validator attestations, settlement splits (see [`ROADMAP.md`](ROADMAP.md))
-- **Open observability** — execution events, reputation, and routing should not live in a black box
-
-```bash
-make check    # before you PR
-```
-
----
-
-<p align="center">
-  <sub>Orcha is orchestration infrastructure — the civilization layer above MCP / A2A / ACP, not a replacement for them.</sub>
-</p>
+<div align="center">Apache 2.0 · <a href="https://discord.gg/orcha">Discord</a> · <a href="INCEPTION.md">The DAN vision</a></div>

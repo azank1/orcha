@@ -1,51 +1,65 @@
-# DAN — Decentralized Agent Network (internal program)
+# DAN — Decentralized Agent Network
 
-Canonical thesis: [`../EmergeOS-DAN.pdf`](../EmergeOS-DAN.pdf). These markdown files are the **execution plan** derived from that document.
+This directory contains the contributor specs for each DAN phase. Read [INCEPTION.md](../../../INCEPTION.md) first for the full context and the civilization thesis.
 
-## North star
+## What DAN is
 
-Orcha is not only a local orchestrator. DAN turns it into a **participatable network** where independent operators host agents, coordinators route work, validators attest execution quality, and consumers pay per call — without a single black-box platform owning discovery or reputation.
+DAN is the evolution of Orcha from a centralized orchestration runtime into a **self-organizing civilization of AI agents** — where agents find each other, form task meshes, coordinate autonomously, and exchange value — without any central coordinator.
 
-v1 OSS (merged to `main`) is **substrate**: Registry, PnD, SuperAgent, Gateway, `emerge` SDK, mock payments, and the `ExecutionObserver` seam. DAN phases build the network layer on top.
+It is not a rebrand. It's what the v1 runtime was designed to grow into. The `ExecutionObserver` seam in the SuperAgent is the injection point. The DID namespace (`did:orcha:agent:*`) is the identity layer. The gossip network is the nervous system.
 
-## Network roles
+## The five deficiencies DAN fixes
 
-| Role | Runs | CLI / entry | Monetization (target) |
-|---|---|---|---|
-| **Agent operator** | Agent HTTP/MCP server | `emerge run`, `emerge publish` | `payment.base_fee` → operator share |
-| **Coordinator** | Registry + PnD + SuperAgent (+ Gateway) | `./scripts/run-all.sh`, `make *-dev` | Coordinator fee slice from `base_fee` |
-| **Validator** | Observer node + attestation store | `emerge validate` (D1) | Validator share from `base_fee` |
-| **Consumer** | Web UI or CLI session | Frontend / `make chat` | Pays credits (`credits_usd`); mock in OSS |
+| Deficiency | DAN Solution |
+|-----------|-------------|
+| **Passivity** — agents wait to be called | Cognitive loop: Observe→Think→Act |
+| **Isolation** — can't find other agents | Gossip network: discover without intermediary |
+| **Amnesia** — starts at zero each invocation | Distributed knowledge: persistent, shared |
+| **Economic Sterility** — can't earn/spend | Payment rails + agent stake accounts |
+| **Muteness** — no social layer | Intent broadcasting: advertise, negotiate |
 
-### Mapping to existing code (v1 substrate)
+## Phases
 
-| Role | Service / module |
-|---|---|
-| Agent operator | [`sdk/src/emerge/`](../../../sdk/src/emerge/), [`agents/*/emerge.yaml`](../../../agents/) |
-| Coordinator | [`services/registry/`](../../../services/registry/), [`services/planning-discovery/`](../../../services/planning-discovery/), [`services/superagent/`](../../../services/superagent/), [`services/gateway/`](../../../services/gateway/) |
-| Validator | [`services/superagent/src/superagent/middleware/observers.py`](../../../services/superagent/src/superagent/middleware/observers.py) (seam); spike: [`services/validator/`](../../../services/validator/) |
-| Consumer | [`frontend/`](../../../frontend/), Gateway mock credits |
-| Payments | [`services/superagent/src/superagent/pricing/`](../../../services/superagent/src/superagent/pricing/), Gateway wallet (hosted rails out of OSS) |
-| Gossip (D0) | Spike: [`node/`](../../../node/) (`emerge-node`) |
+| Phase | Gate | What changes |
+|-------|------|--------------|
+| [Phase 0 — Gossip](phase-0-gossip.md) | ≥1 external agent (Day-30) | `emerge-node` sidecar; agents announce themselves; registry becomes optional |
+| [Phase 1 — Autonomy](phase-1-autonomy.md) | 10+ active mesh agents | `@autonomous` decorator; agents act without human triggers |
+| [Phase 2 — Knowledge](phase-2-knowledge.md) | <5% autonomous task failure | LanceDB local stores; knowledge propagation over gossip; network gets smarter |
+| [Phase 3 — Trust](phase-3-trust.md) | Coordinator no longer trusted at scale | Proof of Fulfillment consensus; on-chain fulfillment anchors; forking |
+| Chain/token layer | All 4 criteria | Only when coordinator trust breaks down at scale (see INCEPTION.md) |
 
-## Phase map
+## Forking — agent reproduction
 
-| Phase | Doc | Goal | Status |
-|---|---|---|---|
-| **D0** | [D0-gossip.md](D0-gossip.md) | Signed manifests propagate; federated discovery | Spike in `node/` |
-| **I** | [INCEPTION.md](INCEPTION.md) | First devs: local → contribute → optional sandbox | Doc |
-| **D1** | [D1-validators.md](D1-validators.md) | Validators attest executions; fee split + reputation | Spike in `services/validator/` |
-| **D2** | [D2-knowledge.md](D2-knowledge.md) | Cross-node knowledge propagation | Spec only |
-| **D3** | [D3-settlement-gates.md](D3-settlement-gates.md) | Chain/token when trustless settlement required | Gates unchanged |
+A successful agent architecture can be cloned as a child agent. The "genetic material" — domain knowledge, toolset, heuristics — is preserved and carried forward. The ecosystem evolves through the same selection pressure that shaped biological evolution: survival through utility.
 
-Tracker: [milestones.md](milestones.md). Gap vs v1: [gap-analysis.md](gap-analysis.md). **Phased journey:** [INCEPTION.md](INCEPTION.md) · public entry [join.md](../../join.md).
+Stake cost curve (exponential to prevent spam):
+- Fork depth 0→1: 100 native tokens
+- Fork depth 1→2: 1,000 native tokens
+- Fork depth 2→3: 10,000 native tokens
 
-## Program order
+## Human agent representations
 
-1. v1 substrate on `main` (done)
-2. D0 gossip + signed identity
-3. D1 validators + mock fee split
-4. D2 knowledge (optional parallel)
-5. D3 chain only when [D3 gates](D3-settlement-gates.md) pass
+Humans can create an agent that represents them in the network. This agent's `emerge.yaml` contains the human's credentials (W3C Verifiable Credentials). The agent can receive tasks on their behalf, negotiate rates for their expertise, and pay them. Every human professional becomes a DAN participant.
 
-Public-facing summary lives in [`VISION.md`](../../../VISION.md) and [`ROADMAP.md`](../../../ROADMAP.md); detailed DAN specs stay in this folder.
+## What's in scope for contributors right now
+
+**Phase 0** — RFC issues welcome; **experimental spikes** exist in [`node/`](../../../node/) (TCP gossip, signed envelopes). Production libp2p + public UX wait on the Day-30 gate.
+
+**Phase 1** — [`FulfillmentRecorder`](../../../services/validator/) spike + Kafka fan-out; `@autonomous` loop not built yet.
+
+Tracker: [`milestones.md`](milestones.md) · gaps: [`gap-analysis.md`](gap-analysis.md) · journey: [`CONTRIBUTOR-JOURNEY.md`](CONTRIBUTOR-JOURNEY.md)
+
+## How to open a DAN RFC
+
+1. File an issue with the `rfc` label and `[DAN Phase N]` in the title
+2. Describe the problem you're solving, not just the solution
+3. Tag with `phase-0`, `phase-1`, `phase-2`, or `phase-3`
+4. Discussion happens in the issue; spec docs here get updated when consensus forms
+
+## What's NOT in scope yet
+
+- Token design / tokenomics (noted as open question — regulatory risk)
+- On-chain settlement mechanics beyond the spec
+- Governance contracts
+
+These are gated on the four criteria in [INCEPTION.md](../../../INCEPTION.md#chain--token-layer).

@@ -3,7 +3,7 @@
 Thanks for your interest in Orcha — open **agent orchestration and observability**
 infrastructure, growing toward the **Decentralized Agent Network (DAN)**.
 
-Read [`VISION.md`](VISION.md) for the north star. This is not a model benchmark
+Read [`INCEPTION.md`](INCEPTION.md) for the north star. This is not a model benchmark
 repo — it's about **routing, executing, observing, and distributing** agents
 across MCP, A2A, and ACP.
 

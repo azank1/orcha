@@ -1,123 +1,101 @@
-# Roadmap
+# Orcha Roadmap
 
-Direction, not dates. We ship **open substrate first**, then **network participation** — aligned with the [DAN thesis](docs/dev_docs/EmergeOS-DAN.pdf).
+> For the full DAN vision — the civilization thesis, five deficiencies, and architecture layers — read [INCEPTION.md](INCEPTION.md).
 
-**One-line goal:** move from *“run agents on my machine”* to *“participate in a network of orchestrated, observable agents.”*
-
-Public vision summary: [`VISION.md`](VISION.md).
+This is the public trajectory for Orcha. It describes direction, not dated commitments. Each phase is gated on the phase before it being validated by real adoption — we build the next layer only when the current one is earned.
 
 ---
 
-## Now — v1 open runtime ✅
+## ✅ v1 — OSS Runtime (now)
 
-Multi-protocol orchestration you can clone and run locally.
+The multi-protocol orchestration runtime, fully usable locally in mock payment mode.
 
-| Shipped | Why it matters |
-|---|---|
-| Registry · PnD · SuperAgent · Gateway | Plan, discover, execute one goal across agents |
-| MCP + A2A + ACP in one run | Not a model — **usage** across protocols |
-| `emerge` SDK + JSON Schema spec | Every agent is a first-class network citizen (DID, manifest) |
-| Mock payments + credential vault | Full flow without wallets |
-| `ExecutionObserver` seam | **Observability distribution** starts here — validators plug in without blocking execution |
-
-**Try it:** [`docs/quickstart.md`](docs/quickstart.md)
+- Core services: Registry, Planning & Discovery, SuperAgent, Gateway
+- Three protocols orchestrated in one run: **MCP**, **A2A**, **ACP**
+- Execution pipeline: input validation, credential vault + auth cascade (OAuth), output normalization, human-in-the-loop interrupts, per-call payments (mock mode by default)
+- 7 example agents + agent/bridge templates
+- `emerge` CLI (`init` / `run` / `publish`) and the `@emerge.agent` SDK decorator
+- Versioned `emerge.yaml` spec with JSON Schema + RFC governance
+- `ExecutionObserver` seam — a no-op hook today; the DAN injection point tomorrow
 
 ---
 
-## Next — v1.2 harness (parallel, non-blocking)
+## 🔧 v1.2 — Harness (gated on v1 validation)
 
-Production-grade orchestration reliability — does **not** gate DAN.
+Reliability work for production-grade orchestration. Does not block launch.
 
-- DAG executor · semantic verification · retries · long-context manager
-
----
-
-## DAN program — orchestration → network
-
-Internal specs: [`docs/dev_docs/dan/`](docs/dev_docs/dan/). Contributor journey: [`docs/join.md`](docs/join.md) · maintainer detail: [`docs/dev_docs/dan/INCEPTION.md`](docs/dev_docs/dan/INCEPTION.md).
-
-### Phase I — Inception *(first external devs)*
-
-Local quickstart first; optional hosted sandbox for allowlisted early adopters.
-
-| Step | Outcome |
-|---|---|
-| I0 Run locally | Launch gate green on fresh clone |
-| I1 First PR | Agent, bridge, or DAN spike merged |
-| I2 Sandbox (opt-in) | External agent on shared test network |
-
-Exit I2 → D0 hardening sprint.
-
-### D0 · Network surface *(in progress)*
-
-**Outcome:** Machine B discovers and invokes an agent on Machine A — no manual URL paste.
-
-| Item | Status |
-|---|---|
-| `emerge-node` gossip sidecar | Spike in [`node/`](node/) (TCP; libp2p GossipSub target) |
-| Signed manifest envelopes | Spike in [`node/src/emerge_node/envelope.py`](node/src/emerge_node/envelope.py) |
-| Bootstrap peers + federated registry read | Spec in [`docs/dev_docs/dan/D0-gossip.md`](docs/dev_docs/dan/D0-gossip.md) |
-| `emerge run --network …` | Planned |
-
-**Not in D0:** chain, token, autonomous agents, semantic judging.
+- DAG executor for parallel and dependent step execution
+- Output verification and semantic judging
+- Retry and fallback policies
+- Context manager for long-running multi-step tasks
 
 ---
 
-### D1 · Validator layer *(spike landed)*
+## 🌐 v2 — DAN Alpha (gated on Day-30 adoption signal)
 
-**Outcome:** Third parties run observer nodes; execution quality is attested and rewarded.
+**No DAN engineering starts before ≥1 external agent registers in the wild.**
 
-| Item | Status |
-|---|---|
-| `FulfillmentRecorder` reference observer | [`services/validator/`](services/validator/) |
-| `execution.step_complete` Kafka fan-out | SuperAgent middleware |
-| `emerge validate --once` | Demo CLI |
-| Three-way mock fee split | `COORDINATOR_SHARE_BPS` / `VALIDATOR_SHARE_BPS` env |
-| `GET /agents/{did}/reputation` | Target |
+### Phase 0 — Gossip
+Gate: ≥1 external agent registered (Day-30)
 
-Trustworthy production attestations require **D0 signed identity**.
+- [`emerge-node`](docs/dev_docs/dan/phase-0-gossip.md) sidecar + libp2p GossipSub
+- Domain topic architecture: `orcha/intents/{domain}`, `orcha/knowledge/{domain}`
+- Full `GossipEnvelope` schema: 9 message types, Ed25519 signatures, DID-bound identity
+- Mode switching: public gossip → private libp2p Noise stream → public fulfillment signal
+- Registry becomes optional
 
----
+### Phase 1 — Autonomous Loop
+Gate: 10+ active agents in the gossip mesh
 
-### D2 · Knowledge propagation
-
-Local-first vector stores + gossip-propagated fragments. Merge with v1.2 semantic judge — one judge system, not two.
-
-Spec: [`docs/dev_docs/dan/D2-knowledge.md`](docs/dev_docs/dan/D2-knowledge.md)
-
----
-
-### D3 · Trustless settlement *(gated)*
-
-Chain / native token **only when all four hold:**
-
-1. Coordinator cannot be trusted by a large, diverse network  
-2. Economic stakes require trustless settlement  
-3. Third parties demand permissionless entry  
-4. Community demands on-chain governance  
-
-Until then: **USDC + coordinator** (hosted wallet code stays out of OSS). Details: [`docs/dev_docs/dan/D3-settlement-gates.md`](docs/dev_docs/dan/D3-settlement-gates.md)
+- [`@autonomous` decorator](docs/dev_docs/dan/phase-1-autonomy.md) extending the existing SDK
+- Tiered cognitive loop: rule-based fast path + LLM slow path (economically viable at scale)
+- `FulfillmentRecorder` wired into the existing `ExecutionObserver` seam
+- `KNOWLEDGE_BROADCAST` + `KNOWLEDGE_REQUEST` message types
 
 ---
 
-## Network roles
+## 🚀 v3 — DAN (gated on autonomous task reliability)
 
-| Role | Run | Today | Target |
-|---|---|---|---|
-| Agent operator | Agent + `emerge` | Local only | Gossip publish · earn per call |
-| Coordinator | Core stack | `run-all.sh` | Federated bootstrap |
-| Validator | `emerge validate` | `--once` demo | Live attestation · fee share |
-| Consumer | UI / CLI | Mock credits | Reputation-aware routing |
+### Phase 2 — Knowledge
+Gate: Autonomous tasks completing with <5% failure rate
+
+- [Local-first vector stores](docs/dev_docs/dan/phase-2-knowledge.md) (LanceDB primary, sqlite-vec for edge)
+- Knowledge fragment propagation over GossipSub
+- Hypercore/Hyperbee for append-only P2P experience log
+- Domain-key encryption for privacy enforcement
+- Knowledge contribution scoring → feeds into Phase 3 reputation
+
+### Phase 3 — Hardened Trust Layer
+Gate: Network large enough that no single coordinator can be trusted
+
+- [Proof of Fulfillment (PoF) consensus](docs/dev_docs/dan/phase-3-trust.md) — not PoW, not standard PoS; validators selected by fulfillment history
+- `SUBMIT_FULFILLMENT` as on-chain transaction — the unit of value creation
+- Reputation scores migrated from trusted coordinator to on-chain
+- Fork mechanism with exponential stake cost curve
+- Native token (testnet first, legal review required)
+
+### Phase 4 — Open Network
+Gate: Legal/regulatory review complete; community ready to run infrastructure
+
+- DAN Chain mainnet
+- Bootstrap nodes handed to community validators
+- Native token mainnet
+- `emerge-node` open source release
+- Orcha becomes one participant in the network, not the coordinator
 
 ---
 
-## How to help
+## Chain / token layer
 
-| Want to… | Start here |
-|---|---|
-| Run locally | [`docs/quickstart.md`](docs/quickstart.md) |
-| Add a protocol | [`docs/bridges.md`](docs/bridges.md) |
-| Work on DAN | [`docs/dev_docs/dan/milestones.md`](docs/dev_docs/dan/milestones.md) |
-| Propose spec changes | [`docs/spec/governance.md`](docs/spec/governance.md) |
+Deferred until **all four** criteria hold:
 
-Open a discussion issue if you're unsure where your change fits.
+- [ ] The coordinator can no longer be trusted by a large, diverse network
+- [ ] Stakes are large enough to demand trustless settlement
+- [ ] Third parties demand permissionless entry without coordinator approval
+- [ ] The community demands on-chain governance
+
+Until then: USDC + trusted coordinator. We will not announce a token before this gate.
+
+---
+
+Have an opinion on direction? Open a discussion issue or join the community. DAN phase specs are open RFC issues — participation is the point.

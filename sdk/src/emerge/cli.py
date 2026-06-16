@@ -30,6 +30,23 @@ logger = logging.getLogger("emerge")
 _TEMPLATE_DIR = Path(__file__).parent / "templates" / "your-first-agent"
 
 
+def _dan_experimental_enabled() -> bool:
+    """True when ORCHA_DAN_EXPERIMENTAL=1 (pre-Day-30 DAN spike opt-in)."""
+    return os.getenv("ORCHA_DAN_EXPERIMENTAL", "").lower() in ("1", "true", "yes")
+
+
+def _require_dan_experimental(feature: str) -> bool:
+    if _dan_experimental_enabled():
+        return True
+    print(
+        f"emerge: {feature} requires DAN experimental mode.\n"
+        "  Set ORCHA_DAN_EXPERIMENTAL=1 or network.experimental: true in emerge.yaml "
+        "(Day-30 gate applies to public defaults).",
+        file=sys.stderr,
+    )
+    return False
+
+
 def _load_module(module_path: str) -> None:
     """Import a Python file by path so its @emerge.agent decorators register."""
     path = Path(module_path).resolve()
@@ -126,6 +143,10 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 
 def cmd_publish(args: argparse.Namespace) -> int:
+    if getattr(args, "network", None) and not _require_dan_experimental(
+        "emerge publish --network"
+    ):
+        return 1
     module = args.module or _default_module()
     agents = _discover(module)
     registry_url = args.registry or os.getenv("ORCHA_REGISTRY_URL")
@@ -183,6 +204,8 @@ def cmd_validate(args: argparse.Namespace) -> int:
             "(subscribe to execution.step_complete for live traffic)"
         )
         return 0
+    if not _require_dan_experimental("emerge validate (live mode)"):
+        return 1
     if args.kafka:
         print(
             "emerge validate: Kafka consumer is not wired in the D1 spike.\n"
@@ -237,11 +260,15 @@ def build_parser() -> argparse.ArgumentParser:
         default="localhost",
         help="host advertised in the manifest endpoint (default: localhost)",
     )
+    pp.add_argument(
+        "--network",
+        help="DAN bootstrap peer for gossip publish (experimental; Phase 0)",
+    )
     pp.set_defaults(func=cmd_publish)
 
     pv = sub.add_parser(
         "validate",
-        help="run a DAN validator node (D1 spike — --once demo attestation)",
+        help="run a DAN observer node (Phase 1 experimental — --once demo)",
     )
     pv.add_argument(
         "--validator-did",

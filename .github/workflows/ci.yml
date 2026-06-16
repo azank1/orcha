@@ -23,6 +23,8 @@ jobs:
       sdk: ${{ steps.filter.outputs.sdk }}
       gateway: ${{ steps.filter.outputs.gateway }}
       agents: ${{ steps.filter.outputs.agents }}
+      node: ${{ steps.filter.outputs.node }}
+      validator: ${{ steps.filter.outputs.validator }}
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +51,11 @@ jobs:
             agents:
               - 'agents/**'
               - 'docs/spec/**'
+            node:
+              - 'node/**'
+            validator:
+              - 'services/validator/**'
+              - 'services/superagent/src/superagent/middleware/**'
 
   # ============================================================================
   # Registry Service Tests
@@ -519,7 +526,80 @@ jobs:
 
       - name: Test the ExecutionObserver seam (open/closed boundary)
         working-directory: services/superagent
-        run: uv run pytest tests/unit/test_observers.py --verbose
+        run: |
+          uv run pytest tests/unit/test_observers.py \
+            tests/unit/test_step_events.py \
+            tests/unit/test_settlement_dan.py --verbose
+
+  # ============================================================================
+  # DAN Phase 0 — emerge-node gossip spike
+  # ============================================================================
+  dan-node:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.node == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: DAN emerge-node (Phase 0 spike)
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run emerge-node tests
+        working-directory: node
+        run: uv run pytest tests/ -v
+
+  # ============================================================================
+  # DAN Phase 1 — validator reference observer
+  # ============================================================================
+  dan-validator:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.validator == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: DAN validator (Phase 1 spike)
+    timeout-minutes: 10
+
+    env:
+      PYTHONPATH: services/superagent/src:services/validator/src
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run validator tests
+        working-directory: services/validator
+        run: uv run pytest tests/ -v
+
+      - name: Run DAN pricing split tests
+        run: uv run pytest common/pricing/tests/ -v
 
   # ============================================================================
   # Fleet manifest validation (JSON Schema + ValidationService)

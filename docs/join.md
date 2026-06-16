@@ -4,7 +4,7 @@
 
 Not a better model. A better way to **use**, **route**, **observe**, and **distribute** agents across MCP, A2A, and ACP.
 
-→ Vision: [`VISION.md`](../VISION.md) · Roadmap: [`ROADMAP.md`](../ROADMAP.md) · Quickstart: [`quickstart.md`](quickstart.md)
+→ Thesis: [`INCEPTION.md`](../INCEPTION.md) · Roadmap: [`ROADMAP.md`](../ROADMAP.md) · Quickstart: [`quickstart.md`](quickstart.md)
 
 ---
 
@@ -21,7 +21,7 @@ flowchart LR
   subgraph next [Next — participate]
     Contrib[First PR]
     Sandbox[Optional sandbox]
-    Network[Federated DAN]
+    Network[Phase 0 gossip mesh]
   end
 
   Clone --> Run --> Agent
@@ -42,14 +42,14 @@ flowchart TB
   subgraph future [Growing toward — DAN]
     OpA[Operator A] --> NodeA[emerge-node]
     NodeA --> CoordB[Coordinator B discovers A]
-    SA2[SuperAgent] --> Val[Validators attest runs]
+    SA2[SuperAgent] --> Val[Phase 1 observers]
     Val --> Rep[Reputation routing]
   end
 
   today --> future
 ```
 
-**Today:** one laptop = one network. **Tomorrow:** agents discover each other; validators attest quality; reputation drives routing. No chain, no token until the network earns it.
+**Today:** one laptop = one network. **Tomorrow:** agents discover each other (Phase 0), act autonomously (Phase 1), share knowledge (Phase 2), trustless settlement when earned (Phase 3). DAN spikes require `network.experimental: true` until the Day-30 gate.
 
 ---
 
@@ -58,12 +58,12 @@ flowchart TB
 | Role | You run | Today | Coming |
 |---|---|---|---|
 | **Curious dev** | Clone + quickstart | Full local orchestration | — |
-| **Agent operator** | `emerge run` / `publish` | Register on **your** registry | Gossip publish · discoverability |
+| **Agent operator** | `emerge run` / `publish` | Register on **your** registry | Gossip publish (Phase 0) |
 | **Coordinator** | `./scripts/run-all.sh` | Whole stack on localhost | Federated bootstrap |
-| **Validator** | `emerge validate` | `--once` demo attestation | Live observer · mock fee share |
+| **Validator / observer** | `emerge validate --once` | Demo attestation (experimental) | Phase 1 live observer |
 | **Consumer** | UI or `make chat` | Mock credits | Reputation-aware routing |
 
-Internal journey detail (maintainers): [`dev_docs/dan/INCEPTION.md`](dev_docs/dan/INCEPTION.md)
+Maintainer journey: [`dev_docs/dan/CONTRIBUTOR-JOURNEY.md`](dev_docs/dan/CONTRIBUTOR-JOURNEY.md)
 
 ---
 
@@ -80,84 +80,62 @@ emerge init demo && cd demo && emerge run
 
 | Can do now | Cannot do yet |
 |---|---|
-| Orchestrate MCP + A2A + ACP in one run | Auto-discover someone else’s agent |
-| Register agents on local registry | Earn real money |
-| Mock credits, full payment plumbing | Join a public gossip network |
-| Fork the entire runtime | Portable reputation across forks |
+| Orchestrate MCP + A2A + ACP in one run | Auto-discover someone else's agent |
+| Register agents on local registry | Public gossip (pre Day-30 gate) |
+| Mock credits, full payment plumbing | Production DAN without `experimental` |
+| Run DAN spikes locally with env opt-in | Portable reputation across forks |
 
-→ [`quickstart.md`](quickstart.md) · [`setup.md`](setup.md) for manual service setup
+→ [`quickstart.md`](quickstart.md) · [`setup.md`](setup.md)
 
 ---
 
-## Step 2 — Contribute (first external devs)
+## Step 2 — Contribute
 
-No RFC needed for:
+No RFC needed for agents, bridges, or experimental DAN tests in `node/` / `services/validator/`.
 
-- **Agents** — [`templates/your-first-agent/`](../templates/your-first-agent/)
-- **Bridges** — [`docs/bridges.md`](bridges.md)
-- **DAN spikes** — gossip tests in `node/`, validator in `services/validator/`
+Core engine + `emerge.yaml` changes need an issue first → [`CONTRIBUTING.md`](../CONTRIBUTING.md)
 
-Core engine + `emerge.yaml` spec changes need an issue first → [`CONTRIBUTING.md`](../CONTRIBUTING.md)
-
-| Can do | Cannot do |
-|---|---|
-| Ship agent/bridge/test PRs | Change spec without RFC |
-| Run DAN spikes locally | Affect global discovery (pre-D0) |
-
-**Goal:** ≥1 merged PR → unlocks D0 hardening sprint.
+**Goal:** ≥1 merged PR → team continues Phase 0 hardening behind `experimental`.
 
 ---
 
 ## Step 3 — Optional sandbox (early adopters)
 
-**Default stays local.** Sandbox is opt-in after you prove I0 (stack runs on your machine).
-
-1. Complete quickstart locally
-2. Request access via GitHub Discussions (handle, role, agent DID intent)
-3. Receive bootstrap URL + sandbox registry (allowlisted, mock credits cap)
-4. Publish agent to **shared test network** (once D0 publish path ships)
-
-| Can do on sandbox | Cannot do |
-|---|---|
-| Agent on shared test network | Permissionless join |
-| Build reputation seed | Real USDC |
-| Demo validator role (D1) | Trustless stake/slash |
+Local first. Sandbox is opt-in after quickstart works. Request via GitHub Discussions → allowlisted bootstrap + registry.
 
 ---
 
-## What each phase unlocks (public)
+## What each phase unlocks
 
-| Phase | Network | You feel |
+| Phase | Gate | Network |
 |---|---|---|
-| **v1 now** | Your laptop only | “It runs — I orchestrate agents” |
-| **Inception** | Local + community | “I shipped something” |
-| **D0** | Cross-machine discovery | “My agent is findable without my URL” |
-| **D1** | Validators + reputation | “Quality is observed and rewarded” |
-| **D2** | Shared knowledge | “The network gets smarter” |
-| **D3** | Trustless settlement | “No single company owns trust” |
+| **v1 now** | — | Your laptop only |
+| **Inception** | Run + contribute | Local + community |
+| **Phase 0 — Gossip** | ≥1 external agent (Day-30) | Cross-machine discovery |
+| **Phase 1 — Autonomy** | 10+ mesh agents | Observers + `@autonomous` |
+| **Phase 2 — Knowledge** | <5% autonomous failure | Shared learnings |
+| **Phase 3 — Trust** | Coordinator distrusted at scale | PoF + settlement preview |
+| **Phase 4 — Open** | Legal + community ready | Chain mainnet |
 
-Full phase tables: [`ROADMAP.md`](../ROADMAP.md)
+Full detail: [`ROADMAP.md`](../ROADMAP.md) · [`INCEPTION.md`](../INCEPTION.md)
 
 ---
 
-## Pre-token economics (plain language)
+## Pre-token economics
 
 | Phase | Money | Trust |
 |---|---|---|
-| **D0** | Optional mock credits | **Reputation-first:** invocations, success rate, discoverability |
-| **D1** | Mock fee split (agent / validator / coordinator) | **Attestations** with `judge_score` drive routing |
-| **D3+** | Real USDC (hosted) → chain when gated | On-chain reputation when network demands it |
-
-Mock credits rehearse plumbing. Reputation rehearses **who to trust**. They stay separate on purpose.
+| **Phase 0** | Optional mock credits | Reputation-first (invocations, success rate) |
+| **Phase 1** | Mock observer fees (preview) | Attestations + `judge_score` |
+| **Phase 3+** | USDC → chain when gated | On-chain reputation |
 
 ---
 
-## Help & community
+## Help
 
-- **Questions:** [Discord](https://discord.gg/orcha) (fastest)
-- **Bugs / bridges / agents:** GitHub issue templates
-- **Security:** [`SECURITY.md`](../SECURITY.md) — never public issues for vulns
+- [Discord](https://discord.gg/orcha)
+- [`SECURITY.md`](../SECURITY.md) for vulnerabilities
 
 ```bash
-make check   # before opening a PR
+make check
 ```

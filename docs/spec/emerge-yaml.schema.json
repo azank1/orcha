@@ -109,6 +109,38 @@
         }
       }
     },
+    "network": {
+      "type": "object",
+      "description": "DAN network configuration. Requires network.experimental: true until Day-30 adoption gate.",
+      "additionalProperties": false,
+      "properties": {
+        "experimental": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt in to pre-release DAN features (gossip, validate live, cognitive loop)."
+        },
+        "gossip": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "bootstrap_peers": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Multiaddr bootstrap peers for emerge-node (Phase 0)."
+            }
+          }
+        },
+        "cognitive_loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "cycle_seconds": { "type": "integer", "minimum": 1, "default": 120 }
+          }
+        }
+      }
+    },
     "skills": {
       "type": "array",
       "description": "A2A skills — harvested from /.well-known/agent.json at registration; listed for documentation and PnD embedding.",
