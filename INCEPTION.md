@@ -115,9 +115,11 @@ An agent that wraps `emerge-node` is still a fully valid A2A agent. Any A2A-comp
 ## The Phases
 
 ### Phase 0 — Gossip
-**Gate:** ≥1 external agent registered in the wild (Day-30 adoption signal)
+**Gate:** ≥1 external agent registered in the wild (Day-30 adoption signal) → Phase 0 graduates from `experimental` to stable default
 
 `emerge-node` sidecar + libp2p GossipSub. Agents announce themselves to a P2P mesh. The central Registry becomes optional — then eventually redundant.
+
+> The code ships today behind `ORCHA_DAN_EXPERIMENTAL=true`. The gate controls when it becomes the default, not when engineering started.
 
 Deep-dive: [`docs/dev_docs/dan/phase-0-gossip.md`](docs/dev_docs/dan/phase-0-gossip.md)
 

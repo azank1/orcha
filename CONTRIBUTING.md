@@ -53,6 +53,25 @@ See [`docs/quickstart.md`](docs/quickstart.md) for the full 5-minute path.
 - No secrets, credentials, or client references in the diff.
 - Public-facing text says **Orcha**, not any internal brand.
 
+## Writing a bridge
+
+A bridge is a subclass of `AgentHandler` that adds one protocol to the runtime. No prior discussion needed — just open a `feat/bridge-<protocol-slug>` branch and submit.
+
+```
+feat/bridge-openapi       feat/bridge-n8n
+feat/bridge-langchain     feat/bridge-grpc
+```
+
+Steps:
+
+1. Copy `templates/your-first-bridge/` → `services/superagent/src/superagent/handlers/<protocol>_handler.py`
+2. Implement `send_task()` — receive a dict, return a string; prefix hard errors with `Error:`
+3. Add one `if protocol == "YOUR_PROTOCOL":` block in `_dispatch()` (`middleware/pipeline.py`)
+4. Add a registry adapter so `protocol.type: YOUR_PROTOCOL` is valid in `emerge.yaml`
+5. Ship an example agent and a smoke test in `tests/integration/`
+
+See [`docs/bridges.md`](docs/bridges.md) for the full contract, the "Wanted Bridges" wishlist, and the PR checklist.
+
 ## Reporting bugs / requesting bridges
 
 Use the issue templates: **Bug report**, **Bridge request**, or
