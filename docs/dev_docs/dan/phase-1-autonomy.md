@@ -2,71 +2,156 @@
 
 **Gate:** 10+ active agents in the gossip mesh
 
-Once there are enough agents discovering each other via gossip that a mesh is meaningfully alive, Phase 1 starts: agents that can act without a human trigger.
+Once there are enough agents finding each other via gossip that a mesh is meaningfully alive, Phase 1 starts: agents that can act without a human trigger.
 
 ---
 
 ## The shift
 
-Phase 0 gives agents **visibility** — they can find each other. Phase 1 gives them **agency** — they can do things with that visibility without waiting to be asked.
+Phase 0 gives agents **visibility** — they can find each other. Phase 1 gives them **agency** — they act on that visibility without waiting to be asked.
 
-The human moves from operator to supervisor. Agents run their own Observe→Think→Act loops. Humans set goals and constraints, agents execute and report back.
+The human moves from operator to supervisor. Agents run their own Observe→Think→Act loops. Humans set goals and constraints; agents execute and report back.
+
+A human professional does not wait for the phone to ring. They read the news, notice opportunities, reach out to contacts, improve their skills, and position themselves for future work — all without being explicitly instructed to. Phase 1 gives agents this.
 
 ---
 
-## @autonomous decorator
+## Tiered Cognitive Loop
+
+The naive implementation — LLM call every N seconds per agent — doesn't scale.
+
+**The math:** 10,000 agents × LLM call every 2 minutes = ~83 calls/second. At $0.001/call (Haiku-class), this is **$7,200/day** in pure think-loop costs before any real work is done.
+
+The solution: **tiered activation**, modeled on the human nervous system.
+
+```
+Fast path (rule-based, always running, ~0 cost):
+  Check: any relevant gossip messages? Any heartbeat anomalies? Any threshold crossed?
+  If no signal: sleep until next cycle
+  If signal: invoke LLM slow path
+
+Slow path (LLM, invoked only on signal):
+  Observe: gather context (gossip state, own metrics, knowledge store)
+  Think: LLM reasoning over state
+  Act: tool calls, gossip broadcasts, task delegations
+  Record: ExecutionObserver.on_invocation()
+```
+
+Reflexes are fast and cheap. Full cognition is expensive and reserved. This is how biology solved the same problem.
+
+---
+
+## emerge.yaml — `cognitive_loop` section
+
+```yaml
+network:
+  cognitive_loop:
+    enabled: true
+    cycle_seconds: 120          # Fast-path check interval
+    max_self_tasks_per_hour: 5  # Rate limit on autonomous task initiation
+    objectives:                 # Agent's standing goals (seeded into every think cycle)
+      - "Maintain top-10 rank in sales domain"
+      - "Monitor for new lead generation techniques"
+      - "Respond to intents within my budget range"
+```
+
+---
+
+## `@autonomous` decorator
 
 Phase 1 extends the existing `@emerge.agent` SDK with a new decorator:
 
 ```python
-import emerge
+from emerge import autonomous, AgentState, NetworkContext, Action
 
-@emerge.autonomous(
-    name="Market Watcher",
-    description="Monitors price feeds and triggers research when anomalies appear",
-    trigger=emerge.Trigger.schedule(interval="5m"),
-    constraints=emerge.Constraints(max_invocations_per_hour=20),
-)
-async def watch(context: emerge.AutonomousContext) -> emerge.AutonomousResult:
-    data = await context.observe("price-feed-agent", query="BTC/USD last 1h")
-    if data.anomaly_score > 0.8:
-        await context.act("research-agent", task=f"Investigate BTC anomaly: {data.summary}")
-    return emerge.AutonomousResult(observations=1, actions_taken=1 if data.anomaly_score > 0.8 else 0)
+@autonomous
+async def think(state: AgentState, network: NetworkContext) -> Action:
+    """
+    Called when the fast path detects a signal worth reasoning about.
+
+    state:   agent's current metrics, domain rank, knowledge summary
+    network: recent gossip, domain signals, nearby agents and their intents
+    """
+    if state.domain_rank > 20:
+        return Action.REQUEST_SELF_IMPROVEMENT(
+            capability_gap="Identify 3 lead enrichment capabilities I'm missing"
+        )
+
+    if network.has_relevant_intents():
+        return Action.RESPOND_TO_BEST_INTENT(
+            criteria="highest_budget_within_capabilities"
+        )
+
+    return Action.OBSERVE_AND_WAIT()
 ```
 
 Key properties:
-- `trigger` — what kicks off the loop: `schedule`, `event`, `threshold`, or `manual`
-- `constraints` — rate limits, cost caps, allowed agent set
-- `context.observe()` — pulls data from another agent (read-only invocation)
-- `context.act()` — triggers a task on another agent (write invocation)
-- Returns a `AutonomousResult` — structured, loggable, propagatable
-
-The decorator is additive — `@emerge.agent` agents don't need to change.
+- `@autonomous` is additive — `@emerge.agent` agents don't need to change
+- `think()` is called only when the fast path fires a signal
+- `Action` is a typed return — structured, loggable, auditable
+- The agent author controls the `Think` step — Orcha doesn't impose a specific LLM or strategy
 
 ---
 
 ## Observe→Think→Act loop
 
 ```
-Trigger fires
+Trigger (fast path fires)
       │
       ▼
-  Observe ──► gather data from mesh peers / external sources
+  Observe ──► gossip state, own metrics, knowledge store queries
       │
       ▼
-   Think ──► LLM-based reasoning (or rule-based, agent's choice)
+   Think ──► LLM reasoning (or rule-based — agent's choice)
       │
       ▼
-    Act ──► invoke peer agents / emit events / update local state
+    Act ──► invoke peer agents / emit INTENT_BROADCAST / update knowledge
       │
       ▼
-  Record ──► ExecutionObserver.on_invocation() ← this is the hook
+  Record ──► ExecutionObserver.on_invocation() ← the hook that's already there
       │
       ▼
-  (loop or exit)
+  (loop or sleep until next fast-path signal)
 ```
 
-The `Think` step is intentionally agent-controlled. Orcha doesn't impose a specific LLM or reasoning strategy — the agent author decides.
+---
+
+## Knowledge messages (introduced in Phase 1)
+
+`KNOWLEDGE_BROADCAST` and `KNOWLEDGE_REQUEST` are Phase 1 message types — they're introduced alongside the cognitive loop because agents need to share what they learn as they act autonomously.
+
+```typescript
+interface KnowledgeBroadcastPayload {
+  fragment_summary:  string;    // One-line description of what was learned
+  domain:            string;
+  embeddings_hint:   number[];  // Compressed embedding for relevance routing
+  full_content_ref:  string;    // How to fetch full content (local-first pull)
+  visibility:        "public" | "domain" | "private";
+}
+```
+
+Receivers that find `embeddings_hint` relevant can request the full content via a direct libp2p stream — the full content is never broadcast, only the hint.
+
+---
+
+## AgentHealthMetrics — heartbeat formalization
+
+Agents publish a `HEARTBEAT` on `orcha/heartbeat` every N seconds:
+
+```typescript
+interface HeartbeatPayload {
+  did:              string;
+  domain:           string;
+  tasks_completed:  number;    // Cumulative
+  tasks_failed:     number;    // Cumulative
+  avg_latency_ms:   number;    // Rolling 1h
+  reputation_score: number;    // Current score (0–10,000)
+  stake_balance:    number;    // Native token units staked
+  cognitive_loop:   boolean;   // Whether autonomous loop is active
+}
+```
+
+Peers use heartbeats to build their local view of the network without DHT traversal. An agent that stops heartbeating is treated as offline after 3× its declared cycle interval.
 
 ---
 
@@ -79,7 +164,7 @@ class ExecutionObserver:
         pass  # no-op in v1
 ```
 
-In Phase 1, this becomes real:
+In Phase 1, `FulfillmentRecorder` implements this hook:
 
 ```python
 class FulfillmentRecorder(ExecutionObserver):
@@ -93,26 +178,14 @@ class FulfillmentRecorder(ExecutionObserver):
         )
 ```
 
-`FulfillmentRecorder` is the Phase 1 implementation of the observer. It ships as an optional hosted add-on — operators who run it get aggregate analytics across their autonomous agents.
-
----
-
-## FulfillmentRecorder
-
-The `FulfillmentRecorder` is a lightweight service that:
-- Receives `InvocationEvent`s via the `ExecutionObserver` hook
-- Stores them in a time-series-friendly schema
-- Exposes aggregates: success rate, latency p50/p99, top task types, agent utilization
-- Feeds back into the Phase 2 knowledge layer
-
-It is **opt-in**. Agents that don't register with a recorder run autonomous loops without telemetry. The recorder never sees task content — only structured outcome metadata.
+`FulfillmentRecorder` is opt-in hosted infrastructure. Agents that register with it get aggregate analytics. The recorder never sees task content — only structured outcome metadata. This data feeds into Phase 3 reputation scoring.
 
 ---
 
 ## Open questions → RFC issues
 
-- [ ] Trigger types beyond `schedule`: event-driven (Kafka topic?), threshold-based, webhook?
-- [ ] Constraint enforcement: local (agent-side) or enforced by the runtime?
-- [ ] `context.observe()` vs direct invocation: should read-only observations have a different wire format?
-- [ ] Multi-agent autonomous chains: Agent A acts → triggers Agent B's autonomous loop. How deep can this recurse?
-- [ ] Human override: what's the interrupt mechanism for autonomous agents mid-loop?
+- [ ] **Trigger types beyond time-based:** Event-driven (specific gossip message pattern)? Threshold-based (own reputation drops below X)? Webhook-triggered by external system?
+- [ ] **Constraint enforcement:** Local (agent-side) or enforced by the runtime? Who verifies `max_self_tasks_per_hour`?
+- [ ] **Multi-agent autonomous chains:** Agent A acts → triggers Agent B's autonomous loop. How deep can this recurse without infinite loops?
+- [ ] **Human interrupt mechanism:** What's the override path for autonomous agents mid-loop? Emergency stop?
+- [ ] **Fast-path signal types:** What exactly triggers the slow path? Define the signal taxonomy.
