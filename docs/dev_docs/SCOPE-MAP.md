@@ -14,7 +14,7 @@ Anthropic's Claude Managed Agents commoditized the agent-ops layer. Value moved 
 
 | ID | Name | Gate | Status |
 |----|------|------|--------|
-| M0 | OSS Launch Gate | e2e verified, merged to main | ✅ Done |
+| M0 | OSS Launch Gate | e2e verified, merged to main | 🔧 Merged locally — live gates + push pending |
 | M1 | Hosted Sandbox | public URL live, spend cap set | ✅ Built (deploy pending) |
 | M2 | Demo + Launch | hero clip recorded, Show HN live | 🔧 In progress |
 | M3 | Traction Window | 4-month OSS compounding | ⬜ Watch |
@@ -29,7 +29,7 @@ Anthropic's Claude Managed Agents commoditized the agent-ops layer. Value moved 
 
 **Branch:** merged via `az/beta/v1-playable` cherry-picks + `az/feat/sandbox-deploy` integration into `main`
 
-**Verification log:** [M0-VERIFICATION.md](M0-VERIFICATION.md)
+**Verification log:** [M0-VERIFICATION.md](M0-VERIFICATION.md). **Canonical paths on `main`:** `docs/dev_docs/{SCOPE-MAP,M0-VERIFICATION,M2-DEMO}.md` (not `oss-launch/` — that layout is only on `az/feat/sandbox-deploy`).
 
 **Built (all committed, pushed):**
 - CanvasKit v0.1 — 8 components, UIManifest types, full SSE pipeline frontend↔backend
@@ -38,14 +38,25 @@ Anthropic's Claude Managed Agents commoditized the agent-ops layer. Value moved 
 - Open computer-use bridge — `ComputerUseHandler`, `MockComputerUseBackend`, `COMPUTER_USE_BACKEND` env var swap
 - DAN/DAPN docs — `docs/dev_docs/dan/`, `docs/dev_docs/primitives/`, updated README/ROADMAP
 
-**Verification gate (all must pass before merge):**
-1. `scripts/run-all.sh` starts clean, all services healthy
-2. Register `agents/finance-dashboard-agent/` with registry
-3. POST a goal that routes to finance-dashboard-agent
-4. `canvas_manifest` SSE event arrives in browser DevTools
-5. CanvasKit dashboard renders: MetricCard + LineChart + DataTable + AlertFeed
-6. `git grep __canvas__` returns only intended files
-7. Stack runs fully with `PAYMENT_MODE=mock`, no paid service required
+**Verification gate (all must pass before calling M0 done and pushing to `origin/main`):**
+
+| # | Gate | Owner sign-off |
+|---|------|----------------|
+| 1 | `scripts/run-all.sh` starts clean, all services healthy | ⬜ |
+| 2 | Register `agents/finance-dashboard-agent/` with registry | ⬜ (auto via `seed-live-agents.sh` after stack up) |
+| 3 | POST a goal that routes to finance-dashboard-agent | ⬜ |
+| 4 | `canvas_manifest` SSE event in browser DevTools (Network → EventStream) | ⬜ |
+| 5 | CanvasKit dashboard renders: MetricCard + LineChart + DataTable + AlertFeed | ⬜ |
+| 6 | `git grep __canvas__` returns only intended runtime files | ✅ |
+| 7 | Stack runs with `PAYMENT_MODE=mock` (LLM keys still required for inference) | ⬜ |
+
+**Automated gates 1, 2, 6, 7:** `./scripts/m0-verify.sh` (with stack running). Gates 3–5 remain manual (browser).
+
+**Quick path (local dev):** `./scripts/run-all.sh` → `./scripts/m0-verify.sh` → goal: *"Show me my portfolio dashboard"* → DevTools `canvas_manifest`.
+
+**Sandbox path (M1 stack):** `make -f deploy/sandbox/Makefile up` + `make seed` — same gates 3–5 apply.
+
+Gates 6–7 and all built code are on `main` (local). **Not yet on `origin/main`** until gates 1–5 pass and you push.
 
 ---
 
