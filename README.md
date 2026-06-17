@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;The+road+to+DAN+starts+here." alt="Orcha" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;Apps+assembled+from+agents.+Not+chat.;The+road+to+DAN+starts+here." alt="Orcha" />
 
 **The open runtime for multi-protocol AI agent orchestration the DAN foundation.**
 
@@ -43,14 +43,15 @@ emerge run     # serve locally and register with the runtime
 | **v1.2 — Harness** | 🔧 Next | DAG executor, retry/fallback, semantic judging |
 | **v2 — DAN Alpha** | 🌐 Planned | Gossip mesh, `emerge-node`, agents find each other |
 | **v3 — DAN** | 🚀 Horizon | Observe→Think→Act, knowledge graph, no central coordinator |
+| **DAPN** | 🏗 Building | Apps assembled from agents over the mesh — bespoke dashboard, not a chat answer |
 
-## Where we're going: DAN
+## Where we're going: DAN + DAPN
 
-DAN is a **self-organizing civilization of AI agents** — with communication, memory, economics, reputation, and reproduction. Not a marketplace. Not an API gateway. A civilization. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
+DAN is a **self-organizing civilization of AI agents** — with communication, memory, economics, reputation, and reproduction. Not a marketplace. Not an API gateway. A civilization.
 
-The `ExecutionObserver` seam is already in the codebase — a no-op today, the DAN hook tomorrow.
+DAPN is the surface above DAN. Apps assembled from agents discovered over the network, rendered through **[CanvasKit](docs/dev_docs/primitives/canvaskit.md)** — an open declarative UI protocol — so users get a bespoke, persistent finance dashboard instead of a chat answer that evaporates. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
 
-> **Read the full vision:** [INCEPTION.md](INCEPTION.md)
+> **Read the full vision:** [INCEPTION.md](INCEPTION.md) · **[Five Primitives](docs/dev_docs/primitives/README.md)**
 
 ## Quickstart
 
@@ -94,6 +95,7 @@ Three paths — no prior discussion needed for any of them:
 |------|-------|----------------|
 | **New bridge** | `templates/your-first-bridge/` | Adds a protocol — highest leverage contribution |
 | **New agent** | `agents/` | Grows the fleet, stress-tests the runtime |
+| **CanvasKit component** | `frontend/src/components/canvas/` | Earns per-render in every deployed app |
 | **DAN spec** | [`docs/dev_docs/dan/`](docs/dev_docs/dan/) | Shape Phase 0–2 via RFC issues |
 
 → [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](docs/bridges.md) · [Open a RFC](https://github.com/azank1/orcha/issues/new?labels=rfc)
