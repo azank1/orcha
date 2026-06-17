@@ -1,8 +1,10 @@
 # Phase 0 — Gossip
 
-**Gate:** ≥1 external agent registered in the wild (Day-30 adoption signal)
+**Gate:** ≥1 external agent registered in the wild (Day-30 adoption signal) → Phase 0 graduates from `experimental` to stable default
 
-Once an agent that Orcha's team didn't write registers with the runtime, Phase 0 engineering begins. The gate is simple by design — one real external registration signals that the ecosystem is alive.
+**Current status:** Experimental spikes exist in [`node/`](../../../node/) (TCP transport). Opt in via `network.experimental: true` in emerge.yaml or `ORCHA_DAN_EXPERIMENTAL=true`. The gate governs graduation to stable — not the start of engineering.
+
+Once an agent that Orcha's team didn't write registers with the runtime, Phase 0 engineering prioritizes production libp2p. The gate is simple by design — one real external registration signals that the ecosystem is alive.
 
 ---
 
@@ -175,6 +177,7 @@ identity:
 # NEW — DAN Network Configuration
 network:
   enabled: true
+  experimental: true   # remove when Phase 0 gate passes (Day-30 external agent)
 
   gossip:
     bootstrap_peers:

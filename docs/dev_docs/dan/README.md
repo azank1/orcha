@@ -2,7 +2,7 @@
 
 This directory contains the contributor specs for each DAN phase. Read [INCEPTION.md](../../../INCEPTION.md) first for the full context and the civilization thesis.
 
-**Unified plan index:** [MASTER-PLAN.md](../MASTER-PLAN.md) · **Scope / SRS mapping:** [SCOPE-MAP.md](../SCOPE-MAP.md) · **DAPN primitives:** [primitives/README.md](../primitives/README.md)
+**Unified plan index:** [MASTER-PLAN.md](../MASTER-PLAN.md) · **Canonical milestones:** [SCOPE-MAP.md](../SCOPE-MAP.md) · **DAPN primitives:** [primitives/README.md](../primitives/README.md)
 
 ## What DAN is
 

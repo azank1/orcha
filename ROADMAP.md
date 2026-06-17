@@ -33,10 +33,10 @@ Reliability work for production-grade orchestration. Does not block launch.
 
 ## 🌐 v2 — DAN Alpha (gated on Day-30 adoption signal)
 
-**No DAN engineering starts before ≥1 external agent registers in the wild.**
+**No DAN engineering graduates to stable default before ≥1 external agent registers in the wild.** Phase 0 code may ship behind `ORCHA_DAN_EXPERIMENTAL=true` / `network.experimental: true` until the Day-30 gate.
 
 ### Phase 0 — Gossip
-Gate: ≥1 external agent registered (Day-30)
+Gate: ≥1 external agent registered (Day-30) → graduates from experimental flag to stable
 
 - [`emerge-node`](docs/dev_docs/dan/phase-0-gossip.md) sidecar + libp2p GossipSub
 - Domain topic architecture: `orcha/intents/{domain}`, `orcha/knowledge/{domain}`

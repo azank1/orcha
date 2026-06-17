@@ -161,6 +161,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+if os.getenv("SANDBOX_MODE", "").lower() == "true":
+    from .sandbox_guard import SandboxGuardMiddleware
+
+    app.add_middleware(SandboxGuardMiddleware)
+    logger.info("SandboxGuardMiddleware active (SANDBOX_MODE=true)")
+
 # Routers — imported after `app` to avoid circular imports  # noqa: E402
 from .agents.routes import router as agents_router  # noqa: E402
 from .auth.routes import router as auth_router  # noqa: E402

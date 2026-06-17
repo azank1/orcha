@@ -74,6 +74,7 @@ dist/
 .env.production
 .env.*
 !.env.example
+!.env.sandbox.example
 
 # Docker
 .dockerignore
