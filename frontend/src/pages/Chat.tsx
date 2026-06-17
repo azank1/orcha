@@ -20,6 +20,7 @@ import { useSSE } from '../hooks/useSSE'
 import { useSessionStatusSync } from '../hooks/useSessionStatusSync'
 import { cn } from '../components/ui/cn'
 import { buildChatTimeline } from '../lib/buildChatTimeline'
+import { CanvasRenderer } from '../components/canvas'
 import { queryClient } from '../lib/queryClient'
 import type {
   AgentClarificationMetadata,
@@ -56,7 +57,7 @@ export function Chat() {
   const { refetchSessionDetails } = useSessionStatusSync()
 
   const chatTimeline = useMemo(
-    () => buildChatTimeline(store.messages, store.toolTrace),
+    () => buildChatTimeline(store.messages, store.toolTrace, store.canvases),
     [store.messages, store.toolTrace],
   )
 
@@ -261,6 +262,10 @@ export function Chat() {
                 item.kind === 'message' ? (
                   <li key={item.msg.id} className="list-none">
                     <MessageBubble message={item.msg} />
+                  </li>
+                ) : item.kind === 'canvas' ? (
+                  <li key={item.entry.id} className="list-none">
+                    <CanvasRenderer manifest={item.entry.manifest} />
                   </li>
                 ) : (
                   <ToolTimelineRow key={item.trace.call_id} trace={item.trace} />

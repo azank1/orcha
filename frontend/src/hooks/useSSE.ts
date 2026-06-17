@@ -172,6 +172,11 @@ export function useSSE() {
           s.appendSessionLog(`Auth complete: ${event.interrupt_type}`)
           break
         }
+        case 'canvas_manifest': {
+          const seq = useSessionStore.getState().timelineSeq + 1
+          s.addCanvas({ id: event.manifest_id, manifest: event.manifest, sortIndex: seq })
+          break
+        }
       }
     },
     [],
