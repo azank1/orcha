@@ -2,6 +2,8 @@
 
 This directory contains the contributor specs for each DAN phase. Read [INCEPTION.md](../../../INCEPTION.md) first for the full context and the civilization thesis.
 
+**Unified plan index:** [MASTER-PLAN.md](../MASTER-PLAN.md) · **Scope / SRS mapping:** [SCOPE-MAP.md](../SCOPE-MAP.md) · **DAPN primitives:** [primitives/README.md](../primitives/README.md)
+
 ## What DAN is
 
 DAN is the evolution of Orcha from a centralized orchestration runtime into a **self-organizing civilization of AI agents** — where agents find each other, form task meshes, coordinate autonomously, and exchange value — without any central coordinator.

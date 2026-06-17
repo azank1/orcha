@@ -74,8 +74,6 @@ ship an example agent with its `emerge.yaml`.
 - [ ] A short note in [`protocols.md`](protocols.md).
 
 Open a **Bridge request** issue first to align on the design.
-<<<<<<< HEAD
-=======
 
 ---
 
@@ -94,4 +92,3 @@ These are confirmed gaps — implement any of them and the PR is very likely to 
 | **WebSocket (streaming)** | ⭐⭐⭐ Hard | Real-time agent outputs; streaming protocol through the existing output normalizer |
 
 **Branch naming:** `feat/bridge-<protocol-slug>` (e.g., `feat/bridge-openapi`, `feat/bridge-n8n`, `feat/bridge-langchain`)
->>>>>>> 3ca6dd0 (feat(beta): CanvasKit demo agent, canvas_manifest SSE wiring, computer-use bridge)

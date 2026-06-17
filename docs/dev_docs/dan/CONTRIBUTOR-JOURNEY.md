@@ -2,7 +2,19 @@
 
 Internal execution doc: how the **network**, **users**, **maintainers**, and **repo** evolve together.
 
-Public entry: [`../../join.md`](../../join.md). Thesis: [`../../../INCEPTION.md`](../../../INCEPTION.md). PDF: [`../EmergeOS-DAN.pdf`](../EmergeOS-DAN.pdf). Milestones: [`milestones.md`](milestones.md).
+Public entry: [`../../join.md`](../../join.md). Thesis: [`../../../INCEPTION.md`](../../../INCEPTION.md). PDF: [`../EmergeOS-DAN.pdf`](../EmergeOS-DAN.pdf). Milestones: [`milestones.md`](milestones.md). **Unified index:** [`../MASTER-PLAN.md`](../MASTER-PLAN.md).
+
+### Naming: Phase 0–4 vs D0–D3
+
+| Public name | Engineering sprint | Notes |
+|-------------|-------------------|-------|
+| Phase 0 — Gossip | **D0** | Discovery, signed manifests, gossip index |
+| Phase 1 — Autonomy | **D1** *spike only* | Validators/attestations spike — **not** full `@autonomous` loop (see [`gap-analysis.md`](gap-analysis.md)) |
+| Phase 2 — Knowledge | **D2** | LanceDB, knowledge gossip |
+| Phase 3 — Trust | **D3** | PoF, chain — only if four gates pass |
+| Phase 4 — Open Network | *(post-D3)* | See [`ROADMAP.md`](../../../ROADMAP.md) |
+
+Deliverable IDs **P0–P4** live in [`milestones.md`](milestones.md). OSS launch uses **M0–M3** ([`../oss-launch/sprint-plan.md`](../oss-launch/sprint-plan.md)).
 
 ---
 
@@ -492,7 +504,7 @@ Local LanceDB/sqlite-vec per agent + gossip `KNOWLEDGE_BROADCAST` (PDF). Merges 
 | Query collective domain knowledge | Central global knowledge graph |
 | Auto-share high-confidence fragments | Encrypted domain keys at scale (hard P2P) |
 
-Spec: [`D2-knowledge.md`](D2-knowledge.md). Implementation: not started.
+Spec: [`phase-2-knowledge.md`](phase-2-knowledge.md). Implementation: not started.
 
 **Growth signal:** cross-operator knowledge queries; routing improvement from shared fragments.
 
@@ -500,7 +512,7 @@ Spec: [`D2-knowledge.md`](D2-knowledge.md). Implementation: not started.
 
 ## Phase D3 — Trustless settlement
 
-**Outcome:** Chain/token **only if** all four gates pass ([`D3-settlement-gates.md`](D3-settlement-gates.md)).
+**Outcome:** Chain/token **only if** all four gates pass ([`phase-3-trust.md`](phase-3-trust.md), [`INCEPTION.md`](../../../INCEPTION.md#chain--token-layer)).
 
 | Role | Can (eventually) | Cannot (until gates) |
 |---|---|---|
@@ -566,4 +578,4 @@ The moat grows **with the network graph**, not with hidden code. Inception moves
 | D0 exit | External operator completes AC-D0 without maintainer SSH |
 | D1 entry | D0 signed identity in production path |
 | D1 exit | ≥1 external validator in reputation index; mock fee splits visible |
-| D3 entry | All four gates in D3-settlement-gates.md |
+| D3 entry | All four gates in [`phase-3-trust.md`](phase-3-trust.md) / [`INCEPTION.md`](../../../INCEPTION.md#chain--token-layer) |

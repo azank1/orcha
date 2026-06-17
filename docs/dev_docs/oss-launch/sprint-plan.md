@@ -7,6 +7,8 @@ already partly carved — no ignitic/wallet-service/landing_page/deploy).
 
 **This doc lives in `docs/dev_docs/` and is excluded from the public carve.**
 
+**See also:** [MASTER-PLAN.md](../MASTER-PLAN.md) (unified milestone index) · [SCOPE-MAP.md](../SCOPE-MAP.md) (layer mapping + SRS slot)
+
 ## Milestones
 
 | Milestone | Theme | Status |
