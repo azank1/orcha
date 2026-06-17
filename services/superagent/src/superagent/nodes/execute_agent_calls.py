@@ -492,6 +492,19 @@ async def execute_agent_calls_node(
                         },
                         pending_events,
                     )
+            # Handle agent-produced UIManifest (CanvasKit dashboard)
+            ui_manifest = result.get("ui_manifest")
+            if ui_manifest is not None:
+                await _emit_invocation(
+                    config,
+                    {
+                        "type": "canvas_manifest",
+                        "manifest_id": f"canvas-{call_id}",
+                        "manifest": ui_manifest,
+                        "call_id": call_id,
+                    },
+                    pending_events,
+                )
         except AuthInterruptRequired as exc:
             # Node-level interrupt: suspends the graph until the user provides credentials.
             # On the first call interrupt() raises GraphInterrupt; on node re-execution

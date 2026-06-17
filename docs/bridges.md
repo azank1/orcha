@@ -83,6 +83,7 @@ These are confirmed gaps — implement any of them and the PR is very likely to 
 
 | Protocol | Difficulty | Why it matters |
 |----------|-----------|----------------|
+| **Computer-use** | ⭐ Easy (backend adapter) | Reference bridge — already ships as open interface. Swap `MockComputerUseBackend` for a real screenshot/action provider via `COMPUTER_USE_BACKEND` env var. See `handlers/computer_use_handler.py`. |
 | **OpenAPI / Swagger** | ⭐ Easy | Turns any documented REST API into an Orcha agent — the largest surface area of any bridge |
 | **n8n webhooks** | ⭐ Easy | Connects the no-code automation ecosystem; n8n users can expose their workflows as agents |
 | **LangChain** | ⭐⭐ Medium | Largest agent framework by adoption; a bridge makes Orcha the orchestration layer for LangChain agents |
