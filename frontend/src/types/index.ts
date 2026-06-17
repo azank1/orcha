@@ -212,6 +212,7 @@ export type SSEEvent =
     }
   | { type: 'error'; error: string }
   | { type: 'auth_complete'; interrupt_type: string; message?: string }
+  | { type: 'canvas_manifest'; manifest_id: string; manifest: import('./canvas').UIManifest; title?: string }
 
 // ── Workflows ─────────────────────────────────────────────────────────────────
 export type WorkflowStatus = 'active' | 'inactive' | 'scheduled'

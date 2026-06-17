@@ -1,0 +1,39 @@
+import type { AlertFeedSpec } from '../../types/canvas'
+
+const SEVERITY_STYLES = {
+  info:    { dot: 'bg-semantic-info',    text: 'text-semantic-info',    bg: 'bg-semantic-info/10' },
+  warning: { dot: 'bg-semantic-warning', text: 'text-semantic-warning', bg: 'bg-semantic-warning/10' },
+  error:   { dot: 'bg-semantic-error',   text: 'text-semantic-error',   bg: 'bg-semantic-error/10' },
+  success: { dot: 'bg-semantic-success', text: 'text-semantic-success', bg: 'bg-semantic-success/10' },
+} as const
+
+export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
+  return (
+    <div className="rounded-xl bg-surface-elevated border border-surface-border overflow-hidden">
+      {spec.title && (
+        <div className="px-5 py-3 border-b border-surface-border">
+          <p className="text-[13px] font-semibold text-text-heading">{spec.title}</p>
+        </div>
+      )}
+      <ul className="divide-y divide-surface-border">
+        {spec.alerts.map((alert) => {
+          const s = SEVERITY_STYLES[alert.severity]
+          return (
+            <li key={alert.id} className={`flex items-start gap-3 px-4 py-3 ${s.bg}`}>
+              <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
+              <div className="min-w-0 flex-1">
+                <p className={`text-[13px] font-medium ${s.text}`}>{alert.title}</p>
+                {alert.body && (
+                  <p className="mt-0.5 text-[12px] text-text-secondary">{alert.body}</p>
+                )}
+              </div>
+              {alert.timestamp && (
+                <span className="shrink-0 text-[11px] text-text-secondary">{alert.timestamp}</span>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
