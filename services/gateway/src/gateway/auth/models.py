@@ -9,6 +9,7 @@ class TokenPayload(BaseModel):
     user_id: str
     email: str
     jti: str  # JWT ID — used for revocation
+    is_guest: bool = False
 
 
 class RegisterRequest(BaseModel):

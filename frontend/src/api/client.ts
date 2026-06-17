@@ -111,6 +111,10 @@ export const auth = {
       body: JSON.stringify({ email, password }),
     }),
 
+  /** Hosted sandbox: no signup — one guest message per token (SANDBOX_MODE). */
+  guest: () =>
+    apiFetch<AuthResponse>('/auth/guest', { method: 'GET' }),
+
   logout: () =>
     apiFetch<void>('/auth/logout', { method: 'POST' }),
 }

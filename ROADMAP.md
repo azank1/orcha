@@ -1,6 +1,8 @@
 # Orcha Roadmap
 
 > For the full DAN vision — the civilization thesis, five deficiencies, and architecture layers — read [INCEPTION.md](INCEPTION.md).
+>
+> **Internal milestones:** v1 ≈ M0–M2 · v2 DAN Alpha ≈ M4–M5 · v3 DAN ≈ M6–M7 — see [docs/dev_docs/SCOPE-MAP.md](docs/dev_docs/SCOPE-MAP.md).
 
 This is the public trajectory for Orcha. It describes direction, not dated commitments. Each phase is gated on the phase before it being validated by real adoption — we build the next layer only when the current one is earned.
 

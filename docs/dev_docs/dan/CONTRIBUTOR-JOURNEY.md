@@ -14,7 +14,7 @@ Public entry: [`../../join.md`](../../join.md). Thesis: [`../../../INCEPTION.md`
 | Phase 3 — Trust | **D3** | PoF, chain — only if four gates pass |
 | Phase 4 — Open Network | *(post-D3)* | See [`ROADMAP.md`](../../../ROADMAP.md) |
 
-Deliverable IDs **P0–P4** live in [`milestones.md`](milestones.md). OSS launch uses **M0–M3** ([`../oss-launch/sprint-plan.md`](../oss-launch/sprint-plan.md)).
+Deliverable IDs **P0–P4** live in [`milestones.md`](milestones.md). **Canonical milestones M0–M7:** [`../SCOPE-MAP.md`](../SCOPE-MAP.md) · index [`../MASTER-PLAN.md`](../MASTER-PLAN.md).
 
 ---
 

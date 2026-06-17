@@ -6,6 +6,7 @@ interface AuthState {
   email: string | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string, displayName?: string) => Promise<void>
+  guestLogin: () => Promise<void>
   logout: () => Promise<void>
   initFromStorage: () => void
 }
@@ -31,6 +32,12 @@ export const useAuthStore = create<AuthState>((set) => ({
     setAccessToken(data.access_token)
     localStorage.setItem('refresh_token', data.refresh_token)
     set({ isAuthenticated: true, email })
+  },
+
+  guestLogin: async () => {
+    const data = await auth.guest()
+    setAccessToken(data.access_token)
+    set({ isAuthenticated: true, email: 'guest' })
   },
 
   logout: async () => {

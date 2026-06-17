@@ -1,5 +1,7 @@
 # Orcha OSS Launch — Sprint / Milestone Plan
 
+> **Superseded for execution tracking by [SCOPE-MAP.md](../SCOPE-MAP.md) (M0–M7).** This file records the **Foundation F0–F3** work completed before the current milestone system.
+
 Internal execution plan derived from `MetaOrcha_OSS_Launch_Plan.md`,
 `OSS-Technical-Scope.md`, and `launch-runbook.md`, reconciled against the actual
 state of `azank1/orcha` (this checkout was the stale `main` snapshot @ `9c13c49`,
@@ -9,14 +11,14 @@ already partly carved — no ignitic/wallet-service/landing_page/deploy).
 
 **See also:** [MASTER-PLAN.md](../MASTER-PLAN.md) (unified milestone index) · [SCOPE-MAP.md](../SCOPE-MAP.md) (layer mapping + SRS slot)
 
-## Milestones
+## Milestones (Foundation F0–F3 — historical)
 
 | Milestone | Theme | Status |
 |---|---|---|
-| **M0** | Open/closed seam, DID lock, governance + spec | ✅ Done |
-| **M1** | Developer experience: emerge CLI/SDK, templates, docs | ✅ Done |
-| **M2** | Branding, CI expansion, credential hygiene, ungate dev surfaces | ✅ Core done |
-| **M3** | Launch ops (non-code): 5-min test, demo, Discord, PyPI, publish | ⬜ Owner-driven |
+| **F0** (was M0) | Open/closed seam, DID lock, governance + spec | ✅ Done |
+| **F1** (was M1) | Developer experience: emerge CLI/SDK, templates, docs | ✅ Done |
+| **F2** (was M2) | Branding, CI expansion, credential hygiene, ungate dev surfaces | ✅ Core done |
+| **F3** (was M3) | Launch ops (non-code): 5-min test, demo, Discord, PyPI, publish | ⬜ Superseded by SCOPE-MAP M2–M3 |
 
 ### M0 — Foundation ✅
 - `ExecutionObserver` hook (NoOp default) wired post-OutputNormalizer in the

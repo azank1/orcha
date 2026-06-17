@@ -4,7 +4,9 @@ COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
 ARG VITE_GATEWAY_URL=/api
+ARG VITE_SANDBOX_MODE=false
 ENV VITE_GATEWAY_URL=${VITE_GATEWAY_URL}
+ENV VITE_SANDBOX_MODE=${VITE_SANDBOX_MODE}
 RUN npm run build
 
 FROM nginx:alpine

@@ -18,6 +18,10 @@ import logging
 import os
 from datetime import UTC, datetime
 
+from jose import JWTError
+
+from ..auth.jwt import decode_access_token
+
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -25,11 +29,18 @@ from starlette.responses import JSONResponse
 logger = logging.getLogger(__name__)
 
 _MAX_DAILY = int(os.getenv("SANDBOX_MAX_DAILY_MESSAGES", "500"))
+_GUEST_MAX = int(os.getenv("SANDBOX_GUEST_MAX_MESSAGES", "1"))
 
 _CAP_BODY = {
     "detail": "Sandbox daily limit reached. The demo resets at midnight UTC. "
     "Run locally for unlimited access: https://github.com/azank1/orcha",
     "code": "SANDBOX_DAILY_LIMIT",
+}
+
+_GUEST_CAP_BODY = {
+    "detail": "Guest demo allows one message. Sign up or run locally for unlimited access: "
+    "https://github.com/azank1/orcha",
+    "code": "SANDBOX_GUEST_LIMIT",
 }
 
 
@@ -56,6 +67,27 @@ class SandboxGuardMiddleware(BaseHTTPMiddleware):
         redis = getattr(request.app.state, "redis", None)
         if redis is None:
             return await call_next(request)
+
+        auth = request.headers.get("authorization", "")
+        if auth.lower().startswith("bearer "):
+            token = auth[7:].strip()
+            try:
+                payload = decode_access_token(token)
+                if payload.is_guest:
+                    guest_key = f"sandbox:guest:{payload.user_id}:messages"
+                    try:
+                        guest_count = await redis.incr(guest_key)
+                        if guest_count == 1:
+                            await redis.expire(guest_key, 86400)
+                        if guest_count > _GUEST_MAX:
+                            return JSONResponse(status_code=429, content=_GUEST_CAP_BODY)
+                    except Exception:
+                        logger.debug(
+                            "SandboxGuard: guest limit check failed — bypassing",
+                            exc_info=True,
+                        )
+            except (ValueError, JWTError):
+                pass
 
         today = datetime.now(UTC).strftime("%Y-%m-%d")
         key = f"sandbox:messages:{today}"

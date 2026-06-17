@@ -164,6 +164,7 @@ services:
       dockerfile: frontend/Dockerfile
       args:
         VITE_GATEWAY_URL: /api
+        VITE_SANDBOX_MODE: "true"
     container_name: sandbox-frontend
     networks: [sandbox-net]
 
