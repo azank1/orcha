@@ -74,3 +74,24 @@ ship an example agent with its `emerge.yaml`.
 - [ ] A short note in [`protocols.md`](protocols.md).
 
 Open a **Bridge request** issue first to align on the design.
+<<<<<<< HEAD
+=======
+
+---
+
+## Wanted bridges
+
+These are confirmed gaps — implement any of them and the PR is very likely to merge. Each row links to a tracking issue with the `good first issue` and `bridge` labels.
+
+| Protocol | Difficulty | Why it matters |
+|----------|-----------|----------------|
+| **Computer-use** | ⭐ Easy (backend adapter) | Reference bridge — already ships as open interface. Swap `MockComputerUseBackend` for a real screenshot/action provider via `COMPUTER_USE_BACKEND` env var. See `handlers/computer_use_handler.py`. |
+| **OpenAPI / Swagger** | ⭐ Easy | Turns any documented REST API into an Orcha agent — the largest surface area of any bridge |
+| **n8n webhooks** | ⭐ Easy | Connects the no-code automation ecosystem; n8n users can expose their workflows as agents |
+| **LangChain** | ⭐⭐ Medium | Largest agent framework by adoption; a bridge makes Orcha the orchestration layer for LangChain agents |
+| **Slack events** | ⭐⭐ Medium | Human-in-the-loop via Slack; surfaces clarification modals as Slack messages |
+| **gRPC** | ⭐⭐⭐ Hard | Covers internal service mesh agents; protobuf schema drives capability extraction |
+| **WebSocket (streaming)** | ⭐⭐⭐ Hard | Real-time agent outputs; streaming protocol through the existing output normalizer |
+
+**Branch naming:** `feat/bridge-<protocol-slug>` (e.g., `feat/bridge-openapi`, `feat/bridge-n8n`, `feat/bridge-langchain`)
+>>>>>>> 3ca6dd0 (feat(beta): CanvasKit demo agent, canvas_manifest SSE wiring, computer-use bridge)

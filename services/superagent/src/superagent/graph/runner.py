@@ -142,6 +142,11 @@ def _message_chunk_text_delta(msg_chunk: AIMessageChunk) -> str:
     return ""
 
 
+_AGENT_INVOCATION_TYPES = frozenset(
+    ("invocation_start", "invocation_progress", "invocation_result", "canvas_manifest")
+)
+
+
 def _parse_custom_agent_invocation(chunk: Any) -> dict[str, Any] | None:
     """Turn a 'custom' stream chunk into a SuperAgent SSE dict, if applicable."""
     if not isinstance(chunk, dict):
@@ -150,18 +155,10 @@ def _parse_custom_agent_invocation(chunk: Any) -> dict[str, Any] | None:
         data = chunk.get("data")
         if isinstance(data, dict):
             t = data.get("type")
-            if t in (
-                "invocation_start",
-                "invocation_progress",
-                "invocation_result",
-            ):
+            if t in _AGENT_INVOCATION_TYPES:
                 return data
     t = chunk.get("type")
-    if t in (
-        "invocation_start",
-        "invocation_progress",
-        "invocation_result",
-    ):
+    if t in _AGENT_INVOCATION_TYPES:
         return chunk
     return None
 
@@ -717,11 +714,7 @@ def _extract_events(
     for p in pending:
         if not isinstance(p, dict):
             continue
-        if p.get("type") not in (
-            "invocation_start",
-            "invocation_progress",
-            "invocation_result",
-        ):
+        if p.get("type") not in _AGENT_INVOCATION_TYPES:
             continue
         key = _invocation_dedupe_key(p)
         if key in inv_seen:

@@ -3,11 +3,16 @@
 Plain text / JSON MCP results pass through unchanged. Binary MCP payloads (bytes or
 content-list blobs) are uploaded via artifact_store. File paths on disk are NOT
 interpreted here — the model must call save_artifact after MCP tools that write files.
+
+Canvas envelopes: if an agent returns {"__canvas__": True, "manifest": {...}, "summary": "..."}
+(or a JSON string of that shape), normalize() sets "ui_manifest" in the result dict and
+the execute_agent_calls node emits a canvas_manifest SSE event.
 """
 
 from __future__ import annotations
 
 import base64
+import json
 import mimetypes
 from typing import Any
 
@@ -22,6 +27,25 @@ class OutputNormalizer:
     """
 
     @staticmethod
+    def _detect_canvas_envelope(raw: Any) -> dict[str, Any] | None:
+        """Return the UIManifest dict if raw is a canvas envelope, else None.
+
+        A canvas envelope is any dict (or JSON string) with ``__canvas__: true``
+        and a ``manifest`` key whose value matches the UIManifest schema.
+        """
+        candidate = raw
+        if isinstance(raw, str):
+            try:
+                candidate = json.loads(raw)
+            except (json.JSONDecodeError, TypeError, ValueError):
+                return None
+        if isinstance(candidate, dict) and candidate.get("__canvas__") is True:
+            manifest = candidate.get("manifest")
+            if isinstance(manifest, dict) and manifest.get("version") == "1.0":
+                return manifest
+        return None
+
+    @staticmethod
     async def normalize(
         raw_output: Any,
         protocol: str,
@@ -32,25 +56,45 @@ class OutputNormalizer:
         Normalise raw handler output.
 
         Returns dict:
-            "content"  — str content for ToolMessage
-            "artifact" — ArtifactRef | None if binary content was stored
+            "content"    — str content for ToolMessage
+            "artifact"   — ArtifactRef | None if binary content was stored
+            "ui_manifest" — UIManifest dict | None if agent returned a canvas envelope
         """
+        ui_manifest = OutputNormalizer._detect_canvas_envelope(raw_output)
+        if ui_manifest is not None:
+            summary: str
+            if isinstance(raw_output, str):
+                try:
+                    parsed = json.loads(raw_output)
+                    summary = str(parsed.get("summary", "Dashboard rendered."))
+                except Exception:
+                    summary = "Dashboard rendered."
+            elif isinstance(raw_output, dict):
+                summary = str(raw_output.get("summary", "Dashboard rendered."))
+            else:
+                summary = "Dashboard rendered."
+            return {"content": summary, "artifact": None, "ui_manifest": ui_manifest}
+
         if isinstance(raw_output, str):
-            return {"content": raw_output, "artifact": None}
+            return {"content": raw_output, "artifact": None, "ui_manifest": None}
 
         if isinstance(raw_output, dict):
-            return await OutputNormalizer._normalise_dict(raw_output, session_id, user_id)
+            result = await OutputNormalizer._normalise_dict(raw_output, session_id, user_id)
+            result.setdefault("ui_manifest", None)
+            return result
 
         if isinstance(raw_output, bytes):
-            return await persist_agent_output_bytes(
+            result = await persist_agent_output_bytes(
                 raw_output,
                 "application/octet-stream",
                 "output.bin",
                 session_id,
                 user_id,
             )
+            result.setdefault("ui_manifest", None)
+            return result
 
-        return {"content": str(raw_output), "artifact": None}
+        return {"content": str(raw_output), "artifact": None, "ui_manifest": None}
 
     @staticmethod
     async def _normalise_dict(

@@ -271,6 +271,16 @@ class ExecutionMiddleware:
                 config=config,
                 call_id=call_id,
             )
+        if protocol == "COMPUTER_USE":
+            from ..handlers.computer_use_handler import ComputerUseHandler
+
+            handler = ComputerUseHandler(auth_headers=auth_headers)
+            return await handler.execute(
+                args=args,
+                transport=transport,
+                config=config,
+                call_id=call_id,
+            )
         return f"Unsupported protocol: {protocol}"
 
     def _auto_update_checklist(
