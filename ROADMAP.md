@@ -85,6 +85,37 @@ Gate: Legal/regulatory review complete; community ready to run infrastructure
 
 ---
 
+## 🏗 DAPN — Decentralized Agentic App Network
+
+**DAN is the substrate. DAPN is the surface.**
+
+Apps are just compositions of agents. A finance tracker is a market data agent + a sync agent + a notification agent + a budget categorization agent, bound together by a manifest, with a UI on top. DAPN assembles that composition on demand, deploys it, and runs it. The user never writes code. The developer who built the market data agent earns every time it syncs a user's portfolio.
+
+This is how SaaS gets replaced — not by building a better SaaS, but by making SaaS unnecessary.
+
+### The Four Planes
+
+| Plane | What | Status |
+|-------|------|--------|
+| **Plane 1 — Execution** | Request → response; the SuperAgent runtime today | ✅ Built |
+| **Plane 2 — Studio** | App Builder: conversational interview → AppManifest → live app | 📐 Planned |
+| **Plane 3 — Runtime** | Always-on daemon: OrchFlow triggers agents 24/7 | 📐 Planned |
+| **Plane 4 — Consumer** | The rendered app — CanvasKit makes this genuinely excellent | 🔧 Building |
+
+### The Five Primitives
+
+| Primitive | Role | Status |
+|-----------|------|--------|
+| **[CanvasKit](docs/dev_docs/primitives/canvaskit.md)** | Declarative UI protocol — what makes Plane 4 genuinely good | 🔧 v0.1 |
+| **[AgentKey](docs/dev_docs/primitives/agentkey.md)** | Per-action capability tokens — OAuth for autonomous agents | 📐 Spec |
+| **[ManifestKit](docs/dev_docs/primitives/manifestkit.md)** | Versioned schemas — AppManifest, AutomationManifest, UIManifest | 📐 Spec |
+| **[OrchFlow](docs/dev_docs/primitives/orchflow.md)** | Automation substrate — cron, webhooks, Kafka event consumers | 📐 Spec |
+| **[ConnectKit](docs/dev_docs/primitives/connectkit.md)** | Typed integration interface — any API, normalized schema | 📐 Spec |
+
+The primitives are open-source under Apache 2.0 / MIT. If they become the standard, any platform building AI-native apps adopts them. That's the moat: not a closed platform feature — a standard.
+
+---
+
 ## Chain / token layer
 
 Deferred until **all four** criteria hold:
