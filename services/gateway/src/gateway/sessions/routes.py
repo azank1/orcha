@@ -52,9 +52,7 @@ async def _assert_session_owner(
         resp.raise_for_status()
         owner = resp.json()["user_id"]
         # Re-seed Redis so subsequent requests are fast
-        await redis.set(
-            f"gateway:session:{session_id}", owner, ex=_SESSION_TTL
-        )
+        await redis.set(f"gateway:session:{session_id}", owner, ex=_SESSION_TTL)
     if owner != user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -133,7 +131,9 @@ async def get_session_transcript(
     payload: Annotated[TokenPayload, Depends(require_auth)],
 ) -> TranscriptListResponse:
     sa = request.app.state.superagent
-    await _assert_session_owner(session_id, payload.user_id, request.app.state.redis, sa)
+    await _assert_session_owner(
+        session_id, payload.user_id, request.app.state.redis, sa
+    )
     resp = await sa.get(
         f"/sessions/{session_id}/transcript",
         params={"user_id": payload.user_id},
@@ -154,7 +154,9 @@ async def send_message(
     payload: Annotated[TokenPayload, Depends(require_auth)],
 ) -> StreamingResponse:
     redis = request.app.state.redis
-    await _assert_session_owner(session_id, payload.user_id, redis, request.app.state.superagent)
+    await _assert_session_owner(
+        session_id, payload.user_id, redis, request.app.state.superagent
+    )
     session_credentials = await _get_session_credentials(session_id, redis)
     sa_body = {
         "user_id": payload.user_id,
@@ -182,7 +184,9 @@ async def resume_session(
     payload: Annotated[TokenPayload, Depends(require_auth)],
 ) -> StreamingResponse:
     redis = request.app.state.redis
-    await _assert_session_owner(session_id, payload.user_id, redis, request.app.state.superagent)
+    await _assert_session_owner(
+        session_id, payload.user_id, redis, request.app.state.superagent
+    )
     session_credentials = await _get_session_credentials(session_id, redis)
     # Forward the resume value dict directly — SuperAgent runner passes it verbatim
     # to Command(resume=value) which becomes the return value of interrupt().
@@ -246,7 +250,12 @@ async def session_status(
     request: Request,
     payload: Annotated[TokenPayload, Depends(require_auth)],
 ) -> SessionStatusResponse:
-    await _assert_session_owner(session_id, payload.user_id, request.app.state.redis, request.app.state.superagent)
+    await _assert_session_owner(
+        session_id,
+        payload.user_id,
+        request.app.state.redis,
+        request.app.state.superagent,
+    )
     sa = request.app.state.superagent
     resp = await sa.get(f"/sessions/{session_id}/status")
     resp.raise_for_status()

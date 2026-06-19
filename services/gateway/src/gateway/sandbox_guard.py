@@ -79,7 +79,9 @@ class SandboxGuardMiddleware(BaseHTTPMiddleware):
                         if guest_count == 1:
                             await redis.expire(guest_key, 86400)
                         if guest_count > _GUEST_MAX:
-                            return JSONResponse(status_code=429, content=_GUEST_CAP_BODY)
+                            return JSONResponse(
+                                status_code=429, content=_GUEST_CAP_BODY
+                            )
                     except Exception:
                         logger.debug(
                             "SandboxGuard: guest limit check failed — bypassing",
@@ -96,9 +98,13 @@ class SandboxGuardMiddleware(BaseHTTPMiddleware):
             if count == 1:
                 await redis.expire(key, 90000)  # 25h — covers DST edge
             if count > _MAX_DAILY:
-                logger.warning("Sandbox daily message cap reached: %d/%d", count, _MAX_DAILY)
+                logger.warning(
+                    "Sandbox daily message cap reached: %d/%d", count, _MAX_DAILY
+                )
                 return JSONResponse(status_code=429, content=_CAP_BODY)
         except Exception:
-            logger.debug("SandboxGuard: Redis unavailable — bypassing cap", exc_info=True)
+            logger.debug(
+                "SandboxGuard: Redis unavailable — bypassing cap", exc_info=True
+            )
 
         return await call_next(request)

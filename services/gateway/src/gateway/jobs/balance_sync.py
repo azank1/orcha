@@ -64,9 +64,7 @@ async def run_wallet_balance_sync(
 # ── Internal ──────────────────────────────────────────────────────────────────
 
 
-async def _do_balance_sync(
-    db: object, redis: object, chain: str, rpc_url: str
-) -> None:
+async def _do_balance_sync(db: object, redis: object, chain: str, rpc_url: str) -> None:
     if chain not in ("base_sepolia", "base"):
         logger.debug("Balance sync: chain=%s not EVM — skipping", chain)
         return

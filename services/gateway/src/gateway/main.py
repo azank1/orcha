@@ -102,7 +102,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 run_wallet_balance_sync,
                 "interval",
                 seconds=settings.wallet_balance_sync_interval_seconds,
-                args=[db, app.state.redis, settlement_chain, settings.base_sepolia_rpc_url],
+                args=[
+                    db,
+                    app.state.redis,
+                    settlement_chain,
+                    settings.base_sepolia_rpc_url,
+                ],
                 id="wallet_balance_sync",
                 replace_existing=True,
             )
