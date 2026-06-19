@@ -210,8 +210,8 @@ class MCPAdapter(BaseAdapter):
                         if "=" in item
                     )
                     return parts.get("price"), parts.get("asset")
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug("x402 header probe failed for %s: %s", tool_id, exc)
 
         return None, None
 
