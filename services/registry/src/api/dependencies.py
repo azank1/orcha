@@ -3,9 +3,9 @@
 import os
 from typing import Annotated
 
-from common.database.src.generated_client import Prisma
 from fastapi import Header, HTTPException, status
 
+from common.database.src.generated_client import Prisma
 from common.utils.src.auth import validate_pat_token_format, verify_pat_token
 
 # Global database instance

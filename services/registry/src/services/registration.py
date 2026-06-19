@@ -7,6 +7,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import yaml
+
 from common.database.src.generated_client.fields import Json as PrismaJson
 
 from ..adapters import A2AAdapter, CapabilityData, HarvestResult, MCPAdapter
