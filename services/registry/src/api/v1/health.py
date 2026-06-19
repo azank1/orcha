@@ -3,8 +3,9 @@
 from datetime import UTC, datetime
 from typing import Annotated
 
-from common.database.src.generated_client import Prisma
 from fastapi import APIRouter, Depends
+
+from common.database.src.generated_client import Prisma
 
 from ...config import settings
 from ...models.api_responses import HealthCheckResponse
