@@ -6,9 +6,9 @@ from datetime import UTC, datetime
 import grpc
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from common.database.src.generated_client import Prisma
 from google.protobuf.timestamp_pb2 import Timestamp
 
-from common.database.src.generated_client import Prisma
 from common.proto.src import registry_pb2, registry_pb2_grpc
 
 from ..config import settings

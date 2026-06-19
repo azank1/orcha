@@ -205,9 +205,7 @@ class MCPAdapter(BaseAdapter):
                 header = response.headers.get("X-Microtransaction", "")
                 if header:
                     parts = dict(
-                        item.split("=", 1)
-                        for item in header.split(";")
-                        if "=" in item
+                        item.split("=", 1) for item in header.split(";") if "=" in item
                     )
                     return parts.get("price"), parts.get("asset")
         except Exception as exc:

@@ -4,6 +4,7 @@ import logging
 import math
 from typing import Annotated, Any
 
+from common.database.src.generated_client import Prisma
 from fastapi import (
     APIRouter,
     Depends,
@@ -15,7 +16,6 @@ from fastapi import (
     status,
 )
 
-from common.database.src.generated_client import Prisma
 from common.kafka.src import KafkaProducer, KafkaTopics
 
 from ...models.api_responses import (
