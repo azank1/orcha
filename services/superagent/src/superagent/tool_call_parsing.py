@@ -7,8 +7,7 @@ from typing import Any, Protocol
 
 
 class ToolCallArgsStrategy(Protocol):
-    def normalize_args(self, args: dict[str, Any]) -> dict[str, Any]:
-        ...
+    def normalize_args(self, args: dict[str, Any]) -> dict[str, Any]: ...
 
 
 class DefaultArgsStrategy:
@@ -61,13 +60,25 @@ def normalize_stream_tool_calls(
                     args = json.loads(args or "{}")
                 except Exception:
                     args = {"raw": args}
-            out.append({"id": tid, "name": name, "args": normalize_args(args, model_name=model_name)})
+            out.append(
+                {
+                    "id": tid,
+                    "name": name,
+                    "args": normalize_args(args, model_name=model_name),
+                }
+            )
             continue
 
         tid = str(getattr(tc, "id", "") or "")
         name = str(getattr(tc, "name", "") or "")
         args = getattr(tc, "args", {}) or {}
-        out.append({"id": tid, "name": name, "args": normalize_args(args, model_name=model_name)})
+        out.append(
+            {
+                "id": tid,
+                "name": name,
+                "args": normalize_args(args, model_name=model_name),
+            }
+        )
     return out
 
 

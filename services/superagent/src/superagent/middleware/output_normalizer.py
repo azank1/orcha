@@ -79,7 +79,9 @@ class OutputNormalizer:
             return {"content": raw_output, "artifact": None, "ui_manifest": None}
 
         if isinstance(raw_output, dict):
-            result = await OutputNormalizer._normalise_dict(raw_output, session_id, user_id)
+            result = await OutputNormalizer._normalise_dict(
+                raw_output, session_id, user_id
+            )
             result.setdefault("ui_manifest", None)
             return result
 

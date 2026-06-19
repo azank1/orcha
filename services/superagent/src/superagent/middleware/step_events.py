@@ -44,9 +44,7 @@ async def fan_out_step_complete(record: StepResult) -> None:
         finally:
             await producer.stop()
     except Exception:
-        logger.exception(
-            "fan_out_step_complete failed for call_id=%s", record.call_id
-        )
+        logger.exception("fan_out_step_complete failed for call_id=%s", record.call_id)
 
 
 def schedule_fan_out(record: StepResult) -> None:

@@ -50,7 +50,9 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     from .startup.platform_mcp_baseline import load_baseline_from_manifests
     from .startup.platform_tool_seeder import PlatformToolSeeder
 
-    _registry_client = RegistryClient(settings.registry_service_url, settings.registry_internal_key)
+    _registry_client = RegistryClient(
+        settings.registry_service_url, settings.registry_internal_key
+    )
     await PlatformToolSeeder(_registry_client, settings.emerge_tools_dir).seed()
     load_baseline_from_manifests(settings.emerge_tools_dir)
 

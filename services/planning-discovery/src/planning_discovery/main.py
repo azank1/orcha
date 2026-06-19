@@ -144,7 +144,9 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down %s…", settings.service_name)
 
     if _consumer:
-        await _consumer.stop()  # cancels the internal task and closes the aiokafka consumer
+        await (
+            _consumer.stop()
+        )  # cancels the internal task and closes the aiokafka consumer
         logger.info("Manifest consumer stopped")
 
     if _pool:
@@ -193,7 +195,9 @@ async def _catchup_index_missing_embeddings(
         logger.info("Catch-up indexing: all active agents already have embeddings")
         return
 
-    logger.info("Catch-up indexing: %d agent(s) missing embeddings — indexing now", len(rows))
+    logger.info(
+        "Catch-up indexing: %d agent(s) missing embeddings — indexing now", len(rows)
+    )
     for row in rows:
         agent_id = row["id"]
         try:
@@ -212,7 +216,9 @@ async def _catchup_index_missing_embeddings(
             await storage.upsert(agent_id, templated, embeddings)
             logger.info("Catch-up indexed agent %s", agent_id)
         except Exception:
-            logger.exception("Catch-up indexing failed for agent %s — skipping", agent_id)
+            logger.exception(
+                "Catch-up indexing failed for agent %s — skipping", agent_id
+            )
 
 
 # ── FastAPI app ────────────────────────────────────────────────────────────────

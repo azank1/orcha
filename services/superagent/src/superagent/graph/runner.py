@@ -242,7 +242,11 @@ async def _yield_multistream_events(
         # LangGraph suspends by raising GraphInterrupt((Interrupt(value=dict, ...), )).
         # gi.args[0] is a tuple of Interrupt objects — the actual payload is at [0].value.
         interrupt_objs = gi.args[0] if gi.args else ()
-        first = interrupt_objs[0] if isinstance(interrupt_objs, (tuple, list)) and interrupt_objs else None
+        first = (
+            interrupt_objs[0]
+            if isinstance(interrupt_objs, (tuple, list)) and interrupt_objs
+            else None
+        )
         raw_payload = getattr(first, "value", None) or {}
         if not isinstance(raw_payload, dict):
             raw_payload = {}
@@ -665,8 +669,7 @@ class SessionRunner:
     ) -> dict[str, Any]:
         """Merge session-scoped CRM / campaign dicts without running a chat turn."""
         config = _merge_graph_config(
-            thread_config
-            or {"configurable": {"thread_id": session_id}}
+            thread_config or {"configurable": {"thread_id": session_id}}
         )
         snapshot = await self._graph.aget_state(config)
         if not snapshot or not snapshot.values:

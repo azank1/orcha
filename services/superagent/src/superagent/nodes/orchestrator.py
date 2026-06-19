@@ -75,28 +75,39 @@ def _candidates_to_tools(candidates: list[dict]) -> list[dict]:
             for cap in c.get("capabilities", []):
                 if (cap.get("capability_type") or "TOOL").upper() != "TOOL":
                     continue
-                tools.append({
+                tools.append(
+                    {
+                        "type": "function",
+                        "function": {
+                            "name": f"{safe_id}__{cap.get('capability_id', '')}",
+                            "description": f"[{c.get('agent_name', '')}] {cap.get('description', '')}",
+                            "parameters": cap.get("input_schema")
+                            or {"type": "object", "properties": {}},
+                        },
+                    }
+                )
+        else:
+            tools.append(
+                {
                     "type": "function",
                     "function": {
-                        "name": f"{safe_id}__{cap.get('capability_id', '')}",
-                        "description": f"[{c.get('agent_name', '')}] {cap.get('description', '')}",
-                        "parameters": cap.get("input_schema") or {"type": "object", "properties": {}},
+                        "name": f"delegate__{safe_id}",
+                        "description": f"Delegate task to {c.get('agent_name', '')}: {c.get('agent_description', '')}",
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                                "task": {
+                                    "type": "string",
+                                    "description": "Natural-language task description",
+                                }
+                            },
+                            "required": ["task"],
+                        },
                     },
-                })
-        else:
-            tools.append({
-                "type": "function",
-                "function": {
-                    "name": f"delegate__{safe_id}",
-                    "description": f"Delegate task to {c.get('agent_name', '')}: {c.get('agent_description', '')}",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {"task": {"type": "string", "description": "Natural-language task description"}},
-                        "required": ["task"],
-                    },
-                },
-            })
+                }
+            )
     return tools
+
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +195,7 @@ def _format_artifacts(artifacts: dict[str, Any]) -> str:
         size_kb = getattr(ref, "size_bytes", 0) // 1024
         lines.append(
             f"- ID: {art_id} | Filename: {filename} | Type: {mime} | Size: {size_kb}KB\n"
-            f"  → stage_artifact(artifact_id=\"{art_id}\") for a local `path`, then doc-parse "
+            f'  → stage_artifact(artifact_id="{art_id}") for a local `path`, then doc-parse '
             f"with file_path / image_path / html_file, or doc-convert with source_path. "
             f"After MCP writes an output file under /tmp/, call save_artifact(local_path=…)."
         )
@@ -413,7 +424,9 @@ async def orchestrator_llm_node(
                     "PnD candidates call failed — continuing without external tools"
                 )
 
-    all_tools = system_tools + _dedupe_tools_by_name(get_baseline_openai_tools() + pnd_tools)
+    all_tools = system_tools + _dedupe_tools_by_name(
+        get_baseline_openai_tools() + pnd_tools
+    )
     lc_messages = _build_lc_messages(state)
 
     logger.debug(
@@ -440,9 +453,7 @@ async def orchestrator_llm_node(
     bound = chat.bind_tools(all_tools) if all_tools else chat
 
     try:
-        accumulated = await _accumulate_chat_stream(
-            bound, lc_messages, config, sid
-        )
+        accumulated = await _accumulate_chat_stream(bound, lc_messages, config, sid)
     except asyncio.CancelledError:
         logger.info("orchestrator_llm: stream cancelled session_id=%s", sid)
         raise

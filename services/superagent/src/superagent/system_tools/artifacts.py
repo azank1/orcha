@@ -44,7 +44,9 @@ async def _read_artifact(args: dict[str, Any], state: dict[str, Any]) -> Any:
     }
 
 
-async def _stage_artifact(args: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
+async def _stage_artifact(
+    args: dict[str, Any], state: dict[str, Any]
+) -> dict[str, Any]:
     """Copy artifact bytes from S3 to /tmp/{session_id}/… for doc-parse / doc-convert file_path.
 
     Returns a small JSON payload (path only) — never file body in the LLM context.
@@ -105,7 +107,10 @@ async def _stage_artifact(args: dict[str, Any], state: dict[str, Any]) -> dict[s
 
 async def _save_artifact(args: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
     """Read a file under /tmp/{session_id}/, upload as AGENT_OUTPUT, return artifact metadata."""
-    from ..artifact_store import persist_agent_output_file, save_artifact_success_payload
+    from ..artifact_store import (
+        persist_agent_output_file,
+        save_artifact_success_payload,
+    )
 
     session_id = (state.get("session_id") or "").strip()
     user_id = (state.get("user_id") or "").strip()
@@ -126,8 +131,7 @@ async def _save_artifact(args: dict[str, Any], state: dict[str, Any]) -> dict[st
         return {
             "ok": False,
             "error": (
-                f"local_path must resolve to an existing file under "
-                f"/tmp/{session_id}/"
+                f"local_path must resolve to an existing file under /tmp/{session_id}/"
             ),
         }
 

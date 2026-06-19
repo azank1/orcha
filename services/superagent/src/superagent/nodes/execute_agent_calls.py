@@ -300,8 +300,10 @@ async def execute_agent_calls_node(
             )
             try:
                 result = await SYSTEM_TOOL_REGISTRY.call(tool_name, args, state)
-                if tool_name == "save_artifact" and isinstance(result, dict) and result.get(
-                    "ok"
+                if (
+                    tool_name == "save_artifact"
+                    and isinstance(result, dict)
+                    and result.get("ok")
                 ):
                     aid = result.get("artifact_id")
                     if aid:
@@ -520,7 +522,9 @@ async def execute_agent_calls_node(
                 and (resume_value.get("status") or "").lower() == "complete"
             ):
                 vault_key = str(resume_value.get("vault_key") or "").strip()
-                credential_value = str(resume_value.get("credential_value") or "").strip()
+                credential_value = str(
+                    resume_value.get("credential_value") or ""
+                ).strip()
                 if vault_key and credential_value:
                     from ..vault.client import VaultClient
 

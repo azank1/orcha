@@ -333,9 +333,7 @@ def rows_to_langchain(rows: list[Any]) -> list[BaseMessage]:
                 att = ti.get("artifact_attachments")
                 if isinstance(att, list) and att:
                     user_kw["artifact_attachments"] = att
-            out.append(
-                HumanMessage(content=r.content, additional_kwargs=user_kw)
-            )
+            out.append(HumanMessage(content=r.content, additional_kwargs=user_kw))
         elif role == enums.TranscriptRole.ASSISTANT:
             tc = r.tool_calls
             tool_calls: list[dict[str, Any]] = []

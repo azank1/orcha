@@ -104,7 +104,10 @@ class Settings(BaseSettings):
                 "OPENROUTER_API_KEY must be set when using OpenRouter. "
                 "Add it to your .env file or environment."
             )
-        if self.llm_embedding_dimension is not None and self.llm_embedding_dimension <= 0:
+        if (
+            self.llm_embedding_dimension is not None
+            and self.llm_embedding_dimension <= 0
+        ):
             raise ValueError("LLM_EMBEDDING_DIMENSION must be a positive integer")
         return self
 
