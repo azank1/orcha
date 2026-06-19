@@ -436,7 +436,7 @@ jobs:
 
       - name: Build check
         run: |
-          uv run python -m py_compile services/planning-discovery/src/main.py
+          uv run python -m py_compile services/planning-discovery/src/planning_discovery/main.py
           echo "Build check passed"
 
   # ============================================================================
