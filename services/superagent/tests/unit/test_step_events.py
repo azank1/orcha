@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from superagent.middleware.observers import StepResult
 from superagent.middleware.step_events import fan_out_step_complete, step_result_payload
 

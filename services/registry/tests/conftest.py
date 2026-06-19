@@ -7,9 +7,8 @@ from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from dotenv import load_dotenv
-
 from common.database.src.generated_client import Prisma
+from dotenv import load_dotenv
 
 # Load test environment variables
 TEST_ENV_FILE = Path(__file__).parent.parent / ".env.test"

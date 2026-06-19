@@ -14,15 +14,15 @@ from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 from langgraph.errors import GraphInterrupt
 from langgraph.types import Command
 
-from ..runtime.session_cancel import (
-    register_run,
-    signal_cancel,
-    unregister_run,
-)
 from ..pnd.candidate_compat import (
     cand_agent_id,
     cand_agent_name,
     cand_protocol_type,
+)
+from ..runtime.session_cancel import (
+    register_run,
+    signal_cancel,
+    unregister_run,
 )
 from .state import default_state
 

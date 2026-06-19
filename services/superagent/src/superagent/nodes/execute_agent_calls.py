@@ -15,6 +15,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.errors import GraphInterrupt
 from langgraph.types import interrupt
 
+from ..graph.state import ArtifactRef
 from ..middleware.manifest_cache import MANIFEST_CACHE
 from ..middleware.oauth_grants import (
     capability_grant_key as _redis_cap_key,
@@ -25,8 +26,6 @@ from ..middleware.oauth_grants import (
 from ..middleware.oauth_grants import (
     store_grants_for_strategy,
 )
-from ..runtime.session_cancel import is_cancelled, session_id_from_config
-from ..graph.state import ArtifactRef
 from ..middleware.preflight import AuthInterruptRequired, PreFlightError
 from ..persistence.transcript_store import TRANSCRIPT_TOOL_META_KEY
 from ..pnd.candidate_compat import (
@@ -37,6 +36,7 @@ from ..pnd.candidate_compat import (
     cap_capability_id,
 )
 from ..pricing.guard import PaymentInterrupt
+from ..runtime.session_cancel import is_cancelled, session_id_from_config
 
 logger = logging.getLogger(__name__)
 

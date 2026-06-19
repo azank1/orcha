@@ -14,9 +14,8 @@ import asyncio
 import json
 import logging
 import re
-from typing import Any
-
 import re as _re
+from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
@@ -24,12 +23,12 @@ from langchain_openai import ChatOpenAI
 from openai import AsyncOpenAI
 
 from ..config import settings
+from ..pnd.gate import pnd_gate
 from ..runtime.session_cancel import (
     get_cancel_event,
     is_cancelled,
     session_id_from_config,
 )
-from ..pnd.gate import pnd_gate
 from ..startup.platform_mcp_baseline import get_baseline_openai_tools
 from ..tool_call_parsing import normalize_stream_tool_calls
 
