@@ -354,6 +354,7 @@ class HybridSearchPipeline:
         if self._cross_encoder is None:
             import logging as _logging
             import warnings
+
             from sentence_transformers import CrossEncoder
 
             # Suppress the harmless `position_ids` UNEXPECTED key warning that

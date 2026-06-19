@@ -631,6 +631,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --all-extras --all-groups
 
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
       - name: Validate fleet emerge.yaml manifests
         run: uv run pytest services/registry/tests/test_fleet_manifests.py --verbose
 

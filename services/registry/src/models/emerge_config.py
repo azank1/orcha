@@ -122,9 +122,7 @@ class EmergeConfig(BaseModel):
 
     def validate_did_format(self) -> bool:
         """Validate that ID follows the Orcha DID format (user or platform)."""
-        return self.identity.id.startswith(
-            ("did:orcha:agent:", "did:orcha:system:")
-        )
+        return self.identity.id.startswith(("did:orcha:agent:", "did:orcha:system:"))
 
     def validate_protocol_type(self) -> bool:
         """Validate protocol type is supported."""

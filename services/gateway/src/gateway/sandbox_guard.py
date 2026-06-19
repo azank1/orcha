@@ -19,12 +19,11 @@ import os
 from datetime import UTC, datetime
 
 from jose import JWTError
-
-from ..auth.jwt import decode_access_token
-
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+
+from ..auth.jwt import decode_access_token
 
 logger = logging.getLogger(__name__)
 
