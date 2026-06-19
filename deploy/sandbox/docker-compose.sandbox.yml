@@ -5,7 +5,7 @@
 # Nothing in this file contains credentials.
 
 x-python-build: &python-build
-  context: .
+  context: ../..
   dockerfile: services/registry/Dockerfile   # overridden per-service
 
 services:
@@ -15,7 +15,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg15
     container_name: sandbox-postgres
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -92,10 +92,12 @@ services:
 
   registry:
     build:
-      context: .
+      context: ../..
       dockerfile: services/registry/Dockerfile
     container_name: sandbox-registry
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
+    ports:
+      - "127.0.0.1:8000:8000"
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -108,10 +110,10 @@ services:
 
   planning-discovery:
     build:
-      context: .
+      context: ../..
       dockerfile: services/planning-discovery/Dockerfile
     container_name: sandbox-pnd
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -119,17 +121,28 @@ services:
     depends_on:
       postgres: {condition: service_healthy}
       kafka: {condition: service_healthy}
-      ollama: {condition: service_healthy}
+      ollama: {condition: service_started}
     networks: [sandbox-net]
 
   superagent:
     build:
-      context: .
+      context: ../..
       dockerfile: services/superagent/Dockerfile
     container_name: sandbox-superagent
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
       REDIS_URL: redis://redis:6379/0
+      PND_SERVICE_URL: http://planning-discovery:8001
+      REGISTRY_SERVICE_URL: http://registry:8000
+      REGISTRY_INTERNAL_KEY: ${REGISTRY_INTERNAL_KEY:-dev-internal-secret}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      VAULT_KEY: ${VAULT_KEY}
+      S3_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      ARTIFACT_S3_BUCKET: emerge-artifacts-local
       PAYMENT_MODE: mock
     depends_on:
       redis: {condition: service_healthy}
@@ -138,15 +151,22 @@ services:
 
   gateway:
     build:
-      context: .
+      context: ../..
       dockerfile: services/gateway/Dockerfile
     container_name: sandbox-gateway
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
       REDIS_URL: redis://redis:6379/1
       SUPERAGENT_URL: http://superagent:8002
       REGISTRY_URL: http://registry:8000
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      GATEWAY_INSTANCE_ID: sandbox-gateway-1
+      S3_ENDPOINT_URL: http://localstack:4566
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_REGION: us-east-1
+      ARTIFACT_S3_BUCKET: emerge-artifacts-local
       PAYMENT_MODE: mock
       SANDBOX_MODE: "true"
       SANDBOX_MAX_DAILY_MESSAGES: ${SANDBOX_MAX_DAILY_MESSAGES:-500}
@@ -160,7 +180,7 @@ services:
 
   frontend:
     build:
-      context: .
+      context: ../..
       dockerfile: frontend/Dockerfile
       args:
         VITE_GATEWAY_URL: /api
@@ -172,57 +192,57 @@ services:
 
   finance-dashboard:
     build:
-      context: .
+      context: ../..
       dockerfile: agents/finance-dashboard-agent/Dockerfile
     container_name: sandbox-finance-dashboard
     networks: [sandbox-net]
 
   search-agent:
     build:
-      context: .
+      context: ../..
       dockerfile: agents/search-agent/Dockerfile
     container_name: sandbox-search-agent
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     environment:
       SERPER_API_KEY: ${SERPER_API_KEY:-}
     networks: [sandbox-net]
 
   web-scraper:
     build:
-      context: .
+      context: ../..
       dockerfile: agents/web-scraper/Dockerfile
     container_name: sandbox-web-scraper
     networks: [sandbox-net]
 
   lead-gen:
     build:
-      context: .
-      dockerfile: agents/lead-gen-agent/Dockerfile
+      context: ../../agents/lead-gen-agent
+      dockerfile: Dockerfile
     container_name: sandbox-lead-gen
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     networks: [sandbox-net]
 
   notion-research:
     build:
-      context: .
+      context: ../..
       dockerfile: agents/notion-research/Dockerfile
     container_name: sandbox-notion-research
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     networks: [sandbox-net]
 
   ecommerce:
     build:
-      context: .
-      dockerfile: agents/ecommerce-automation/Dockerfile
+      context: ../../agents/ecommerce-automation
+      dockerfile: Dockerfile
     container_name: sandbox-ecommerce
     networks: [sandbox-net]
 
   gws-orchestrator:
     build:
-      context: .
-      dockerfile: agents/google-workspace-orchestrator/Dockerfile
+      context: ../../agents/google-workspace-orchestrator
+      dockerfile: Dockerfile
     container_name: sandbox-gws-orchestrator
-    env_file: .env.sandbox
+    env_file: ../../.env.sandbox
     networks: [sandbox-net]
 
   # ── Reverse Proxy ────────────────────────────────────────────────────────────
@@ -231,7 +251,7 @@ services:
     image: nginx:alpine
     container_name: sandbox-nginx
     volumes:
-      - ./deploy/sandbox/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - "80:80"
     depends_on:
