@@ -1,8 +1,10 @@
 import type { ChatMessage, ToolInvocationTrace } from '../types'
+import type { CanvasEntry } from '../types/canvas'
 
 export type ChatTimelineItem =
   | { kind: 'message'; msg: ChatMessage }
   | { kind: 'tool'; trace: ToolInvocationTrace }
+  | { kind: 'canvas'; entry: CanvasEntry }
 
 function orderForMessage(msg: ChatMessage, index: number): number {
   if (msg.sortIndex != null) return msg.sortIndex
@@ -15,10 +17,11 @@ function orderForTool(trace: ToolInvocationTrace, index: number): number {
   return Number.MAX_SAFE_INTEGER - 10000 + index
 }
 
-/** Merge user / agent messages and tool runs in SSE arrival order (via sortIndex). */
+/** Merge user / agent messages, tool runs, and canvas manifests in SSE arrival order. */
 export function buildChatTimeline(
   messages: ChatMessage[],
   toolTrace: ToolInvocationTrace[],
+  canvases: CanvasEntry[] = [],
 ): ChatTimelineItem[] {
   type Row = ChatTimelineItem & { order: number }
   const rows: Row[] = [
@@ -32,9 +35,16 @@ export function buildChatTimeline(
       trace,
       order: orderForTool(trace, i),
     })),
+    ...canvases.map((entry) => ({
+      kind: 'canvas' as const,
+      entry,
+      order: entry.sortIndex,
+    })),
   ]
   rows.sort((a, b) => a.order - b.order)
-  return rows.map((r) =>
-    r.kind === 'message' ? { kind: 'message', msg: r.msg } : { kind: 'tool', trace: r.trace },
-  )
+  return rows.map((r) => {
+    if (r.kind === 'message') return { kind: 'message', msg: r.msg }
+    if (r.kind === 'canvas') return { kind: 'canvas', entry: r.entry }
+    return { kind: 'tool', trace: r.trace }
+  })
 }

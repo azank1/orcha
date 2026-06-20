@@ -102,7 +102,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
                 run_wallet_balance_sync,
                 "interval",
                 seconds=settings.wallet_balance_sync_interval_seconds,
-                args=[db, app.state.redis, settlement_chain, settings.base_sepolia_rpc_url],
+                args=[
+                    db,
+                    app.state.redis,
+                    settlement_chain,
+                    settings.base_sepolia_rpc_url,
+                ],
                 id="wallet_balance_sync",
                 replace_existing=True,
             )
@@ -160,6 +165,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+if os.getenv("SANDBOX_MODE", "").lower() == "true":
+    from .sandbox_guard import SandboxGuardMiddleware
+
+    app.add_middleware(SandboxGuardMiddleware)
+    logger.info("SandboxGuardMiddleware active (SANDBOX_MODE=true)")
 
 # Routers — imported after `app` to avoid circular imports  # noqa: E402
 from .agents.routes import router as agents_router  # noqa: E402

@@ -50,7 +50,9 @@ class PlatformToolSeeder:
             try:
                 manifest = yaml.safe_load(yaml_path.read_text())
             except Exception:
-                logger.exception("Failed to parse manifest %s — skipping", yaml_path.name)
+                logger.exception(
+                    "Failed to parse manifest %s — skipping", yaml_path.name
+                )
                 continue
 
             missing_keys = self._missing_platform_env_keys(manifest)
@@ -77,10 +79,7 @@ class PlatformToolSeeder:
     def _missing_platform_env_keys(manifest: dict) -> list[str]:
         """Return env keys declared as platform_env but absent from os.environ."""
         missing: list[str] = []
-        strategies = (
-            manifest.get("security", {})
-            .get("auth_strategies", []) or []
-        )
+        strategies = manifest.get("security", {}).get("auth_strategies", []) or []
         for strategy in strategies:
             if strategy.get("type") == "platform_env":
                 key = (strategy.get("config") or {}).get("env_key", "")

@@ -182,6 +182,37 @@ class MCPAdapter(BaseAdapter):
         except Exception as exc:
             raise ConnectionError(f"Failed to harvest MCP agent: {exc}") from exc
 
+    async def _extract_x402(
+        self, tool_id: str, metadata: dict[str, Any]
+    ) -> tuple[str | None, str | None]:
+        """Return (price, asset) from tool metadata or X-Microtransaction header."""
+        x402 = metadata.get("x402", {})
+        if x402.get("price") and x402.get("asset"):
+            return x402["price"], x402["asset"]
+
+        # Probe the endpoint with a dry-run call and check for the payment header.
+        try:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 0,
+                "method": "tools/call",
+                "params": {"name": tool_id, "arguments": {}},
+            }
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    self.endpoint, json=payload, timeout=self.timeout
+                )
+                header = response.headers.get("X-Microtransaction", "")
+                if header:
+                    parts = dict(
+                        item.split("=", 1) for item in header.split(";") if "=" in item
+                    )
+                    return parts.get("price"), parts.get("asset")
+        except Exception as exc:
+            logger.debug("x402 header probe failed for %s: %s", tool_id, exc)
+
+        return None, None
+
     async def _harvest_tools(self) -> list[CapabilityData]:
         payload = {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}
         async with httpx.AsyncClient() as client:
@@ -189,6 +220,8 @@ class MCPAdapter(BaseAdapter):
             tools = []
             if "result" in response and "tools" in response["result"]:
                 for tool in response["result"]["tools"]:
+                    metadata = tool.get("metadata", {})
+                    x402 = metadata.get("x402", {})
                     tools.append(
                         CapabilityData(
                             type="tool",
@@ -197,6 +230,8 @@ class MCPAdapter(BaseAdapter):
                             description=tool.get("description", ""),
                             input_schema=tool.get("inputSchema"),
                             output_schema=tool.get("outputSchema"),
+                            x402_price=x402.get("price"),
+                            x402_asset=x402.get("asset"),
                         )
                     )
             return tools

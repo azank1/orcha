@@ -18,6 +18,8 @@ class CapabilityData(BaseModel):
     uri_template: str | None = None
     mime_type: str | None = None
     arguments: list[dict[str, Any]] | None = None
+    x402_price: str | None = None
+    x402_asset: str | None = None
 
 
 class HarvestResult(BaseModel):

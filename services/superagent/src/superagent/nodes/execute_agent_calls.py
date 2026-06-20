@@ -15,6 +15,7 @@ from langchain_core.runnables import RunnableConfig
 from langgraph.errors import GraphInterrupt
 from langgraph.types import interrupt
 
+from ..graph.state import ArtifactRef
 from ..middleware.manifest_cache import MANIFEST_CACHE
 from ..middleware.oauth_grants import (
     capability_grant_key as _redis_cap_key,
@@ -25,8 +26,6 @@ from ..middleware.oauth_grants import (
 from ..middleware.oauth_grants import (
     store_grants_for_strategy,
 )
-from ..runtime.session_cancel import is_cancelled, session_id_from_config
-from ..graph.state import ArtifactRef
 from ..middleware.preflight import AuthInterruptRequired, PreFlightError
 from ..persistence.transcript_store import TRANSCRIPT_TOOL_META_KEY
 from ..pnd.candidate_compat import (
@@ -37,6 +36,7 @@ from ..pnd.candidate_compat import (
     cap_capability_id,
 )
 from ..pricing.guard import PaymentInterrupt
+from ..runtime.session_cancel import is_cancelled, session_id_from_config
 
 logger = logging.getLogger(__name__)
 
@@ -300,8 +300,10 @@ async def execute_agent_calls_node(
             )
             try:
                 result = await SYSTEM_TOOL_REGISTRY.call(tool_name, args, state)
-                if tool_name == "save_artifact" and isinstance(result, dict) and result.get(
-                    "ok"
+                if (
+                    tool_name == "save_artifact"
+                    and isinstance(result, dict)
+                    and result.get("ok")
                 ):
                     aid = result.get("artifact_id")
                     if aid:
@@ -492,6 +494,19 @@ async def execute_agent_calls_node(
                         },
                         pending_events,
                     )
+            # Handle agent-produced UIManifest (CanvasKit dashboard)
+            ui_manifest = result.get("ui_manifest")
+            if ui_manifest is not None:
+                await _emit_invocation(
+                    config,
+                    {
+                        "type": "canvas_manifest",
+                        "manifest_id": f"canvas-{call_id}",
+                        "manifest": ui_manifest,
+                        "call_id": call_id,
+                    },
+                    pending_events,
+                )
         except AuthInterruptRequired as exc:
             # Node-level interrupt: suspends the graph until the user provides credentials.
             # On the first call interrupt() raises GraphInterrupt; on node re-execution
@@ -507,7 +522,9 @@ async def execute_agent_calls_node(
                 and (resume_value.get("status") or "").lower() == "complete"
             ):
                 vault_key = str(resume_value.get("vault_key") or "").strip()
-                credential_value = str(resume_value.get("credential_value") or "").strip()
+                credential_value = str(
+                    resume_value.get("credential_value") or ""
+                ).strip()
                 if vault_key and credential_value:
                     from ..vault.client import VaultClient
 

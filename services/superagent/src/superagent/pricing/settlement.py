@@ -92,9 +92,7 @@ async def settle_invocation(
 
     # ── Revenue split ─────────────────────────────────────────────────────────
     try:
-        developer_payout, platform_cut, validator_cut = compute_revenue_split(
-            base_fee
-        )
+        developer_payout, platform_cut, validator_cut = compute_revenue_split(base_fee)
         validator_did = os.getenv("VALIDATOR_DID", "").strip()
         if validator_did and validator_cut > 0:
             logger.info(

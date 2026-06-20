@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import pytest
-
 from superagent.middleware.observers import (
     ExecutionObserver,
     NoOpObserver,

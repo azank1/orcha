@@ -151,10 +151,14 @@ async def download_file(
         raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE) from None
 
     if row is None or row.status != "READY":
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Artifact not found"
+        )
 
     if row.user_id != payload.user_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
+        )
 
     # If LocalStack / no real AWS, stream bytes directly; otherwise redirect to pre-signed URL.
     if settings.s3_endpoint_url:

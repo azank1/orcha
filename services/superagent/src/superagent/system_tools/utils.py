@@ -25,7 +25,6 @@ async def _get_datetime(args: dict[str, Any], state: dict[str, Any]) -> dict[str
     }
 
 
-
 async def _list_tools(args: dict[str, Any], state: dict[str, Any]) -> dict[str, Any]:
     """List all tools currently available to the orchestrator."""
     from .registry import SYSTEM_TOOL_REGISTRY

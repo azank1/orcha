@@ -1,7 +1,6 @@
 """Unit tests for OutputNormalizer."""
 
 import pytest
-
 from superagent.middleware.output_normalizer import OutputNormalizer
 
 

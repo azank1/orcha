@@ -40,7 +40,9 @@ class Settings(BaseSettings):
 
     # S3 / Artifact storage (boto3 — LocalStack in dev, real AWS in prod)
     artifact_s3_bucket: str = "emerge-artifacts-local"
-    s3_endpoint_url: str | None = None  # None = real AWS; set to http://localstack:4566 for dev
+    s3_endpoint_url: str | None = (
+        None  # None = real AWS; set to http://localstack:4566 for dev
+    )
     aws_access_key_id: str = "test"
     aws_secret_access_key: str = "test"
     aws_region: str = "us-east-1"

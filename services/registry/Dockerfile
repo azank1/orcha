@@ -28,25 +28,33 @@ COPY pyproject.toml uv.lock ./
 COPY common/database ./common/database
 COPY common/proto ./common/proto
 COPY common/utils ./common/utils
+COPY common/kafka ./common/kafka
 
 # Copy service package
 COPY services/registry/pyproject.toml ./services/registry/
 
 # Install dependencies
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --package registry-service
 
 # ============================================================================
 # Stage 3: Builder (Generate Prisma client and gRPC stubs)
 # ============================================================================
 FROM dependencies AS builder
 
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
+
 # Generate Prisma client
 WORKDIR /app/common/database
-RUN uv run prisma generate
+ENV HOME=/app \
+    PATH="/app/.venv/bin:$PATH"
+RUN mkdir -p /app/.cache/prisma-python && \
+    prisma generate && prisma py fetch
 
 # Generate gRPC stubs
 WORKDIR /app/common/proto
-RUN uv run python -m grpc_tools.protoc \
+RUN uv pip install --python /app/.venv/bin/python --no-cache-dir grpcio-tools && \
+    /app/.venv/bin/python -m grpc_tools.protoc \
     -I./src \
     --python_out=./src \
     --grpc_python_out=./src \
@@ -61,11 +69,12 @@ FROM base AS runtime
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser && \
-    chown -R appuser:appuser /app
+    mkdir -p /app/.cache && chown -R appuser:appuser /app
 
 # Copy installed dependencies from builder
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 COPY --from=builder --chown=appuser:appuser /app/common /app/common
+COPY --from=builder --chown=appuser:appuser /app/.cache /app/.cache
 
 # Copy service source code
 COPY --chown=appuser:appuser services/registry/src ./services/registry/src
@@ -76,7 +85,8 @@ USER appuser
 
 # Set Python path
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="/app:$PYTHONPATH"
+    PYTHONPATH="/app:/app/common/proto/src:$PYTHONPATH" \
+    HOME=/app
 
 # Expose ports
 EXPOSE 8000 50051

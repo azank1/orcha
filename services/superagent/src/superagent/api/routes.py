@@ -32,9 +32,9 @@ from .models import (
     ResumeRequest,
     SessionContextPatchRequest,
     SessionContextPatchResponse,
-    SessionStopResponse,
     SessionDetailResponse,
     SessionStatusResponse,
+    SessionStopResponse,
     StoreAgentEnvRequest,
     TranscriptEntryDTO,
     TranscriptListResponse,
@@ -269,7 +269,9 @@ async def patch_session_context(
             error=str(raw.get("error") or "patch_failed"),
         )
     merged = raw.get("merged") or {}
-    return SessionContextPatchResponse(ok=True, merged=merged if isinstance(merged, dict) else {})
+    return SessionContextPatchResponse(
+        ok=True, merged=merged if isinstance(merged, dict) else {}
+    )
 
 
 @router.get("/health", response_model=HealthResponse)

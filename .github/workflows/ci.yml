@@ -144,14 +144,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --all-extras --all-groups
 
-      - name: Cache Ruff
-        uses: actions/cache@v4
-        with:
-          path: .ruff_cache
-          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
-          restore-keys: |
-            ${{ runner.os }}-ruff-
-
       - name: Generate Prisma client
         run: |
           cd common/database
@@ -178,7 +170,7 @@ jobs:
 
       - name: Lint with ruff
         run: |
-          uv run ruff check services/registry/src/ common/ --cache-dir .ruff_cache
+          uv run ruff check services/registry/src/ common/ --no-cache
 
       - name: Format check with ruff
         run: |
@@ -255,17 +247,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --all-extras --all-groups
 
-      - name: Cache Ruff
-        uses: actions/cache@v4
-        with:
-          path: .ruff_cache
-          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
-          restore-keys: |
-            ${{ runner.os }}-ruff-
-
       - name: Lint common packages
         run: |
-          uv run ruff check common/ --cache-dir .ruff_cache
+          uv run ruff check common/ --no-cache
 
       - name: Format check with ruff
         run: |
@@ -384,14 +368,6 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --all-extras --all-groups
 
-      - name: Cache Ruff
-        uses: actions/cache@v4
-        with:
-          path: .ruff_cache
-          key: ${{ runner.os }}-ruff-${{ hashFiles('**/pyproject.toml', '**/*.py') }}
-          restore-keys: |
-            ${{ runner.os }}-ruff-
-
       - name: Generate Prisma client
         run: |
           cd common/database
@@ -408,7 +384,7 @@ jobs:
 
       - name: Lint with ruff
         run: |
-          uv run ruff check services/planning-discovery/src/ common/ --cache-dir .ruff_cache
+          uv run ruff check services/planning-discovery/src/ common/ --no-cache
 
       - name: Format check with ruff
         run: |
@@ -436,7 +412,7 @@ jobs:
 
       - name: Build check
         run: |
-          uv run python -m py_compile services/planning-discovery/src/main.py
+          uv run python -m py_compile services/planning-discovery/src/planning_discovery/main.py
           echo "Build check passed"
 
   # ============================================================================
@@ -630,6 +606,11 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --frozen --all-extras --all-groups
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
 
       - name: Validate fleet emerge.yaml manifests
         run: uv run pytest services/registry/tests/test_fleet_manifests.py --verbose

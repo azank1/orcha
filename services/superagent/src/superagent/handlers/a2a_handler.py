@@ -49,9 +49,9 @@ from .base import AgentHandler
 
 logger = logging.getLogger(__name__)
 
-_POLL_INITIAL = 0.5   # first status check after 500 ms
-_POLL_MAX = 2.0       # cap per interval
-_MAX_POLLS = 240      # 240 × avg ~2 s ≈ 8-minute budget
+_POLL_INITIAL = 0.5  # first status check after 500 ms
+_POLL_MAX = 2.0  # cap per interval
+_MAX_POLLS = 240  # 240 × avg ~2 s ≈ 8-minute budget
 
 # Maps raw A2A / LangGraph interrupt_type strings → canonical InterruptType.
 # Unknown values fall back to AGENT_CLARIFICATION.
@@ -234,7 +234,13 @@ def _build_lead_gen_a2a_parts(task: str, state: dict[str, Any]) -> list[dict[str
     inferred = _infer_crm_choice_from_task(task)
     if inferred and "crm_type" not in opts_src:
         opts_src["crm_type"] = inferred
-    allow = ("crm_type", "write_to_crm", "send_outreach_email", "max_leads", "tenant_id")
+    allow = (
+        "crm_type",
+        "write_to_crm",
+        "send_outreach_email",
+        "max_leads",
+        "tenant_id",
+    )
     blob = {k: opts_src[k] for k in allow if k in opts_src}
     if blob:
         parts.append({"kind": "data", "data": blob})
@@ -244,9 +250,13 @@ def _build_lead_gen_a2a_parts(task: str, state: dict[str, Any]) -> list[dict[str
 def _infer_crm_choice_from_task(task: str) -> str | None:
     """Infer preferred CRM from user task text for CRM_SETUP auto-resume."""
     text = (task or "").lower()
-    if any(k in text for k in ("excel", "xlsx", "spreadsheet in excel", "export to excel")):
+    if any(
+        k in text for k in ("excel", "xlsx", "spreadsheet in excel", "export to excel")
+    ):
         return "excel"
-    if any(k in text for k in ("google sheet", "google sheets", "gsheet", "spreadsheet")):
+    if any(
+        k in text for k in ("google sheet", "google sheets", "gsheet", "spreadsheet")
+    ):
         return "gsheets"
     if "notion" in text:
         return "notion"
@@ -529,10 +539,12 @@ class A2AHandler(AgentHandler):
                     # Auto-resume CRM setup when user intent already names a CRM.
                     # This removes an unnecessary confirmation turn ("select Excel")
                     # while still allowing downstream OAuth/auth interrupts as needed.
-                    if (
-                        interrupt_type == InterruptType.CRM_SETUP
-                        and preferred_crm in {"hubspot", "gsheets", "notion", "excel"}
-                    ):
+                    if interrupt_type == InterruptType.CRM_SETUP and preferred_crm in {
+                        "hubspot",
+                        "gsheets",
+                        "notion",
+                        "excel",
+                    }:
                         auto_answer = json.dumps({"crm_type": preferred_crm})
                         logger.info(
                             "a2a_handler: auto-resume CRM setup agent=%s task=%s crm=%s",
@@ -618,7 +630,8 @@ class A2AHandler(AgentHandler):
                 action_description=extra_meta.get("action_description") or question,
                 risk_level=extra_meta.get("risk_level") or "medium",
                 agent_display_name=agent_display,
-                capability_name=extra_meta.get("capability_name") or (str(pending_tool) if pending_tool else ""),
+                capability_name=extra_meta.get("capability_name")
+                or (str(pending_tool) if pending_tool else ""),
             )
         elif interrupt_type == InterruptType.AGENT_OAUTH_CALLBACK:
             # Agent-managed OAuth: the agent already built the auth_url and embedded

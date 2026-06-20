@@ -22,18 +22,26 @@ COPY pyproject.toml uv.lock ./
 
 COPY common/database ./common/database
 COPY common/utils ./common/utils
+COPY common/internal-commons ./common/internal-commons
 
 COPY services/gateway/pyproject.toml ./services/gateway/
 
-RUN uv sync --frozen --no-dev
+RUN uv sync --frozen --no-dev --package gateway && \
+    uv pip install --python /app/.venv/bin/python --no-cache-dir python-multipart
 
 # ============================================================================
 # Stage 3: Builder (Generate Prisma client + fetch engine binary)
 # ============================================================================
 FROM dependencies AS builder
 
+RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app/common/database
-RUN uv run prisma generate && uv run prisma py fetch
+ENV HOME=/app \
+    PATH="/app/.venv/bin:$PATH"
+RUN mkdir -p /app/.cache/prisma-python && \
+    prisma generate && prisma py fetch
 
 WORKDIR /app
 
@@ -42,10 +50,12 @@ WORKDIR /app
 # ============================================================================
 FROM base AS runtime
 
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+RUN useradd -m -u 1000 appuser && \
+    mkdir -p /app/.cache && chown -R appuser:appuser /app
 
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 COPY --from=builder --chown=appuser:appuser /app/common /app/common
+COPY --from=builder --chown=appuser:appuser /app/.cache /app/.cache
 
 COPY --chown=appuser:appuser services/gateway/src ./services/gateway/src
 COPY --chown=appuser:appuser services/gateway/.env.example ./services/gateway/.env.example
@@ -53,7 +63,8 @@ COPY --chown=appuser:appuser services/gateway/.env.example ./services/gateway/.e
 USER appuser
 
 ENV PATH="/app/.venv/bin:$PATH" \
-    PYTHONPATH="/app:$PYTHONPATH"
+    PYTHONPATH="/app:$PYTHONPATH" \
+    HOME=/app
 
 EXPOSE 8080
 

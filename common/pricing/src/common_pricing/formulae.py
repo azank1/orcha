@@ -42,9 +42,9 @@ def split_revenue_dan(
     coordinator_cut = (
         base_fee * Decimal(coordinator_share_bps) / Decimal(10000)
     ).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
-    validator_cut = (
-        base_fee * Decimal(validator_share_bps) / Decimal(10000)
-    ).quantize(Decimal("0.00000001"), rounding=ROUND_HALF_UP)
+    validator_cut = (base_fee * Decimal(validator_share_bps) / Decimal(10000)).quantize(
+        Decimal("0.00000001"), rounding=ROUND_HALF_UP
+    )
     agent_share = base_fee - coordinator_cut - validator_cut
     if agent_share < 0:
         raise ValueError("fee shares exceed base_fee")

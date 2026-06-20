@@ -6,7 +6,6 @@ import logging
 from decimal import Decimal
 
 import pytest
-
 from superagent.pricing.settlement import compute_revenue_split
 
 

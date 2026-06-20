@@ -9,6 +9,7 @@ import logging
 import mimetypes
 import uuid
 from pathlib import Path
+
 from .graph.state import ArtifactRef
 
 logger = logging.getLogger(__name__)
@@ -142,9 +143,7 @@ async def persist_agent_output_file(
 
     guessed, _ = mimetypes.guess_type(str(file_path))
     mime_type = mime_type_override or guessed or "application/octet-stream"
-    filename = (
-        Path(target_filename).name if target_filename else file_path.name
-    )
+    filename = Path(target_filename).name if target_filename else file_path.name
     return await persist_agent_output_bytes(
         data, mime_type, filename, session_id, user_id
     )

@@ -1,9 +1,11 @@
-"""Auth endpoints: register, login, refresh, logout, and OAuth agent callbacks."""
+"""Auth endpoints: register, login, refresh, logout, sandbox guest, and OAuth callbacks."""
 
 from __future__ import annotations
 
 import hashlib
 import logging
+import os
+import uuid
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, Any
 
@@ -50,6 +52,40 @@ async def _issue_tokens(
         }
     )
     return TokenResponse(access_token=access_token, refresh_token=raw_refresh)
+
+
+@router.get("/guest", response_model=TokenResponse)
+async def sandbox_guest(request: Request) -> TokenResponse:
+    """No-auth first session for hosted sandbox (SANDBOX_MODE=true only).
+
+    Issues a short-lived guest JWT. Guest users may send one message per account
+    (enforced by SandboxGuardMiddleware). No refresh token — call again for a new guest.
+    """
+    if os.getenv("SANDBOX_MODE", "").lower() != "true":
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+
+    db = request.app.state.db
+    guest_id = uuid.uuid4().hex[:12]
+    email = f"guest-{guest_id}@sandbox.orcha.local"
+    user = await db.user.create(
+        data={
+            "email": email,
+            "display_name": "Sandbox Guest",
+            "password_hash": None,
+        }
+    )
+    if settings.payment_mode == "mock":
+        try:
+            await db.user.update(
+                where={"id": user.id},
+                data={"credits_usd": 5000.0},
+            )
+        except Exception:
+            logger.exception("Failed to seed guest credits for user=%s", user.id)
+
+    access_token, _jti = create_access_token(user.id, email, guest=True)
+    logger.info("Sandbox guest session issued: user=%s", user.id)
+    return TokenResponse(access_token=access_token, refresh_token="")
 
 
 @router.post("/register", response_model=TokenResponse, status_code=201)

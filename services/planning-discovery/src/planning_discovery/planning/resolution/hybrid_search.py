@@ -42,10 +42,11 @@ def _embed_cache_set(query: str, model: str, vec: list[float]) -> None:
         _embed_cache.pop(next(iter(_embed_cache)))
     _embed_cache[(query, model)] = vec
 
+
 # ms-marco-MiniLM-L-6-v2 outputs raw logits (not probabilities).
 # Empirical ranges: highly relevant ~5–12, relevant ~0–5, irrelevant < 0.
-_CE_HIGH_THRESHOLD   =  5.0
-_CE_MEDIUM_THRESHOLD =  0.0
+_CE_HIGH_THRESHOLD = 5.0
+_CE_MEDIUM_THRESHOLD = 0.0
 
 
 class HybridSearchPipeline:
@@ -70,7 +71,9 @@ class HybridSearchPipeline:
         self._llm = llm_provider
         self._embedding_model = embedding_model
         self._top_k = top_k
-        self._cross_encoder: Any = None  # loaded on first search; call warm_up() at startup
+        self._cross_encoder: Any = (
+            None  # loaded on first search; call warm_up() at startup
+        )
 
     async def search(
         self,
@@ -293,8 +296,10 @@ class HybridSearchPipeline:
         for agent, score in zip(agents, scores, strict=False):
             agent["cross_encoder_score"] = float(score)
             agent["confidence"] = (
-                "high" if score > _CE_HIGH_THRESHOLD
-                else "medium" if score > _CE_MEDIUM_THRESHOLD
+                "high"
+                if score > _CE_HIGH_THRESHOLD
+                else "medium"
+                if score > _CE_MEDIUM_THRESHOLD
                 else "low"
             )
 
@@ -354,6 +359,7 @@ class HybridSearchPipeline:
         if self._cross_encoder is None:
             import logging as _logging
             import warnings
+
             from sentence_transformers import CrossEncoder
 
             # Suppress the harmless `position_ids` UNEXPECTED key warning that

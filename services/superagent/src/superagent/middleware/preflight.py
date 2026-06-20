@@ -372,9 +372,7 @@ class PreFlightManager:
         connect_url = f"{transport_endpoint.rstrip('/')}/oauth/{path}/connect"
         try:
             async with httpx.AsyncClient(timeout=5.0) as client:
-                resp = await client.get(
-                    connect_url, params={"tenant_id": session_id}
-                )
+                resp = await client.get(connect_url, params={"tenant_id": session_id})
                 resp.raise_for_status()
                 return resp.json().get("auth_url", "")
         except Exception:

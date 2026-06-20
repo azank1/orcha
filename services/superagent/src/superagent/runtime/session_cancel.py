@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+
 logger = logging.getLogger(__name__)
 
 _lock = asyncio.Lock()

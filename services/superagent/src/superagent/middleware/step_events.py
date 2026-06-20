@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 from dataclasses import asdict
@@ -45,9 +44,7 @@ async def fan_out_step_complete(record: StepResult) -> None:
         finally:
             await producer.stop()
     except Exception:
-        logger.exception(
-            "fan_out_step_complete failed for call_id=%s", record.call_id
-        )
+        logger.exception("fan_out_step_complete failed for call_id=%s", record.call_id)
 
 
 def schedule_fan_out(record: StepResult) -> None:

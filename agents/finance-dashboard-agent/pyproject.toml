@@ -1,0 +1,16 @@
+[project]
+name = "finance-dashboard-agent"
+version = "1.0.0"
+description = "Finance portfolio dashboard agent — returns a CanvasKit UIManifest"
+requires-python = ">=3.12"
+dependencies = [
+    "mcp[cli]>=1.3.0",
+    "fastmcp>=2.0.0",
+    "starlette>=0.41.0",
+    "uvicorn>=0.30.0",
+    "python-dotenv>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

@@ -12,6 +12,7 @@ import type {
   ToolInvocationPhase,
   ToolInvocationTrace,
 } from '../types'
+import type { CanvasEntry } from '../types/canvas'
 import type { TranscriptEntryDTO } from '../types/transcript'
 import { coerceTokenCount } from '../lib/coerceTokenCount'
 import { reduceSessionDetailsFromStatus } from '../lib/sessionDetailsReducer'
@@ -40,6 +41,7 @@ interface SessionState {
   crmModalOpen: boolean
   integrationsModalOpen: boolean
   toolTrace: ToolInvocationTrace[]
+  canvases: CanvasEntry[]
   /** Increments for each timeline-visible row (messages + tools) */
   timelineSeq: number
 
@@ -91,6 +93,7 @@ interface SessionState {
     base_fee?: string
   }) => void
   clearToolTrace: () => void
+  addCanvas: (entry: CanvasEntry) => void
   reset: () => void
 }
 
@@ -112,6 +115,7 @@ const initialState = {
   crmModalOpen: false,
   integrationsModalOpen: false,
   toolTrace: [] as ToolInvocationTrace[],
+  canvases: [] as CanvasEntry[],
   timelineSeq: 0,
 }
 
@@ -312,6 +316,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }),
 
   clearToolTrace: () => set({ toolTrace: [] }),
+
+  addCanvas: (entry) =>
+    set((s) => ({ canvases: [...s.canvases, entry] })),
 
   hydrateFromSessionStatus: (data) => {
     if (data.status === 'not_found') return

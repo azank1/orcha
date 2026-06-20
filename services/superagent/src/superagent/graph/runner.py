@@ -14,15 +14,15 @@ from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 from langgraph.errors import GraphInterrupt
 from langgraph.types import Command
 
-from ..runtime.session_cancel import (
-    register_run,
-    signal_cancel,
-    unregister_run,
-)
 from ..pnd.candidate_compat import (
     cand_agent_id,
     cand_agent_name,
     cand_protocol_type,
+)
+from ..runtime.session_cancel import (
+    register_run,
+    signal_cancel,
+    unregister_run,
 )
 from .state import default_state
 
@@ -142,6 +142,11 @@ def _message_chunk_text_delta(msg_chunk: AIMessageChunk) -> str:
     return ""
 
 
+_AGENT_INVOCATION_TYPES = frozenset(
+    ("invocation_start", "invocation_progress", "invocation_result", "canvas_manifest")
+)
+
+
 def _parse_custom_agent_invocation(chunk: Any) -> dict[str, Any] | None:
     """Turn a 'custom' stream chunk into a SuperAgent SSE dict, if applicable."""
     if not isinstance(chunk, dict):
@@ -150,18 +155,10 @@ def _parse_custom_agent_invocation(chunk: Any) -> dict[str, Any] | None:
         data = chunk.get("data")
         if isinstance(data, dict):
             t = data.get("type")
-            if t in (
-                "invocation_start",
-                "invocation_progress",
-                "invocation_result",
-            ):
+            if t in _AGENT_INVOCATION_TYPES:
                 return data
     t = chunk.get("type")
-    if t in (
-        "invocation_start",
-        "invocation_progress",
-        "invocation_result",
-    ):
+    if t in _AGENT_INVOCATION_TYPES:
         return chunk
     return None
 
@@ -245,7 +242,11 @@ async def _yield_multistream_events(
         # LangGraph suspends by raising GraphInterrupt((Interrupt(value=dict, ...), )).
         # gi.args[0] is a tuple of Interrupt objects — the actual payload is at [0].value.
         interrupt_objs = gi.args[0] if gi.args else ()
-        first = interrupt_objs[0] if isinstance(interrupt_objs, (tuple, list)) and interrupt_objs else None
+        first = (
+            interrupt_objs[0]
+            if isinstance(interrupt_objs, (tuple, list)) and interrupt_objs
+            else None
+        )
         raw_payload = getattr(first, "value", None) or {}
         if not isinstance(raw_payload, dict):
             raw_payload = {}
@@ -668,8 +669,7 @@ class SessionRunner:
     ) -> dict[str, Any]:
         """Merge session-scoped CRM / campaign dicts without running a chat turn."""
         config = _merge_graph_config(
-            thread_config
-            or {"configurable": {"thread_id": session_id}}
+            thread_config or {"configurable": {"thread_id": session_id}}
         )
         snapshot = await self._graph.aget_state(config)
         if not snapshot or not snapshot.values:
@@ -717,11 +717,7 @@ def _extract_events(
     for p in pending:
         if not isinstance(p, dict):
             continue
-        if p.get("type") not in (
-            "invocation_start",
-            "invocation_progress",
-            "invocation_result",
-        ):
+        if p.get("type") not in _AGENT_INVOCATION_TYPES:
             continue
         key = _invocation_dedupe_key(p)
         if key in inv_seen:

@@ -1,6 +1,8 @@
 # Orcha Roadmap
 
 > For the full DAN vision — the civilization thesis, five deficiencies, and architecture layers — read [INCEPTION.md](INCEPTION.md).
+>
+> **Internal milestones:** v1 ≈ M0–M2 · v2 DAN Alpha ≈ M4–M5 · v3 DAN ≈ M6–M7 — see [docs/dev_docs/SCOPE-MAP.md](docs/dev_docs/SCOPE-MAP.md).
 
 This is the public trajectory for Orcha. It describes direction, not dated commitments. Each phase is gated on the phase before it being validated by real adoption — we build the next layer only when the current one is earned.
 
@@ -33,10 +35,10 @@ Reliability work for production-grade orchestration. Does not block launch.
 
 ## 🌐 v2 — DAN Alpha (gated on Day-30 adoption signal)
 
-**No DAN engineering starts before ≥1 external agent registers in the wild.**
+**No DAN engineering graduates to stable default before ≥1 external agent registers in the wild.** Phase 0 code may ship behind `ORCHA_DAN_EXPERIMENTAL=true` / `network.experimental: true` until the Day-30 gate.
 
 ### Phase 0 — Gossip
-Gate: ≥1 external agent registered (Day-30)
+Gate: ≥1 external agent registered (Day-30) → graduates from experimental flag to stable
 
 - [`emerge-node`](docs/dev_docs/dan/phase-0-gossip.md) sidecar + libp2p GossipSub
 - Domain topic architecture: `orcha/intents/{domain}`, `orcha/knowledge/{domain}`
@@ -82,6 +84,37 @@ Gate: Legal/regulatory review complete; community ready to run infrastructure
 - Native token mainnet
 - `emerge-node` open source release
 - Orcha becomes one participant in the network, not the coordinator
+
+---
+
+## 🏗 DAPN — Decentralized Agentic App Network
+
+**DAN is the substrate. DAPN is the surface.**
+
+Apps are just compositions of agents. A finance tracker is a market data agent + a sync agent + a notification agent + a budget categorization agent, bound together by a manifest, with a UI on top. DAPN assembles that composition on demand, deploys it, and runs it. The user never writes code. The developer who built the market data agent earns every time it syncs a user's portfolio.
+
+This is how SaaS gets replaced — not by building a better SaaS, but by making SaaS unnecessary.
+
+### The Four Planes
+
+| Plane | What | Status |
+|-------|------|--------|
+| **Plane 1 — Execution** | Request → response; the SuperAgent runtime today | ✅ Built |
+| **Plane 2 — Studio** | App Builder: conversational interview → AppManifest → live app | 📐 Planned |
+| **Plane 3 — Runtime** | Always-on daemon: OrchFlow triggers agents 24/7 | 📐 Planned |
+| **Plane 4 — Consumer** | The rendered app — CanvasKit makes this genuinely excellent | 🔧 Building |
+
+### The Five Primitives
+
+| Primitive | Role | Status |
+|-----------|------|--------|
+| **[CanvasKit](docs/dev_docs/primitives/canvaskit.md)** | Declarative UI protocol — what makes Plane 4 genuinely good | 🔧 v0.1 |
+| **[AgentKey](docs/dev_docs/primitives/agentkey.md)** | Per-action capability tokens — OAuth for autonomous agents | 📐 Spec |
+| **[ManifestKit](docs/dev_docs/primitives/manifestkit.md)** | Versioned schemas — AppManifest, AutomationManifest, UIManifest | 📐 Spec |
+| **[OrchFlow](docs/dev_docs/primitives/orchflow.md)** | Automation substrate — cron, webhooks, Kafka event consumers | 📐 Spec |
+| **[ConnectKit](docs/dev_docs/primitives/connectkit.md)** | Typed integration interface — any API, normalized schema | 📐 Spec |
+
+The primitives are open-source under Apache 2.0 / MIT. If they become the standard, any platform building AI-native apps adopts them. That's the moat: not a closed platform feature — a standard.
 
 ---
 

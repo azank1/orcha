@@ -15,7 +15,7 @@ def _sanitise(agent_id: str) -> str:
 
 
 def candidates_to_openai_tool_schemas(
-    candidates: list["ToolCandidate"],
+    candidates: list[ToolCandidate],
 ) -> list[dict[str, Any]]:
     """Convert a list of ToolCandidate objects to OpenAI function-calling tool schemas."""
     tools: list[dict[str, Any]] = []

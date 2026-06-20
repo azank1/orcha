@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { NavBar } from '../components/layout/NavBar'
 import { Sidebar } from '../components/layout/Sidebar'
@@ -21,19 +21,52 @@ const SAMPLE_PROMPTS = [
   'Security scan on my domain',
 ]
 
+const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
+
 export function Home() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [guestBootstrapping, setGuestBootstrapping] = useState(SANDBOX_MODE)
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
+  const guestLogin = useAuthStore((s) => s.guestLogin)
   const sessionSidebarOpen = useSessionSidebarStore((s) => s.isOpen)
   const { setSessionId, addMessage, reset } = useSessionStore()
   const { streamResponse } = useSSE()
 
+  useEffect(() => {
+    if (!SANDBOX_MODE || isAuthenticated) {
+      setGuestBootstrapping(false)
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        await guestLogin()
+      } catch {
+        /* fall through to sign-in prompt */
+      } finally {
+        if (!cancelled) setGuestBootstrapping(false)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [guestLogin, isAuthenticated])
+
   const handleSubmit = async (message: string, _artifactIds: string[] = []) => {
     if (!isAuthenticated) {
-      navigate('/login')
-      return
+      if (SANDBOX_MODE) {
+        try {
+          await guestLogin()
+        } catch {
+          navigate('/login')
+          return
+        }
+      } else {
+        navigate('/login')
+        return
+      }
     }
     setLoading(true)
     try {
@@ -108,7 +141,7 @@ export function Home() {
             onChange={setInput}
             onSubmit={handleSubmit}
             placeholder="Describe a task for your agent hive…"
-            disabled={loading}
+            disabled={loading || guestBootstrapping}
             size="home"
           />
         </div>
@@ -119,7 +152,7 @@ export function Home() {
             <button
               key={prompt}
               onClick={() => handleSubmit(prompt)}
-              disabled={loading}
+              disabled={loading || guestBootstrapping}
               className="h-9 px-3 rounded-md bg-surface-overlay border border-surface-border text-[12px] text-text-secondary hover:text-text-body hover:border-surface-borderLight transition-colors duration-150 disabled:opacity-50"
             >
               {prompt}
@@ -130,7 +163,11 @@ export function Home() {
         {/* Gate note */}
         {!isAuthenticated && (
           <p className="mt-4 text-[12px] text-text-disabled text-center">
-            Sign in required to start a session
+            {SANDBOX_MODE && guestBootstrapping
+              ? 'Starting guest demo session…'
+              : SANDBOX_MODE
+                ? 'Try a goal — guest demo allows one message'
+                : 'Sign in required to start a session'}
           </p>
         )}
       </main>

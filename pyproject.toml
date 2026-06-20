@@ -101,7 +101,13 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["common_database", "common_kafka", "common_llm", "common_proto", "common_utils", "planning_discovery_service", "registry_service", "gateway"]
+# Imports use the dotted namespace form (e.g. `from common.database.src...`),
+# so the top-level `common` package must be declared first-party explicitly.
+# Without this, ruff's auto-detection diverges between local and CI
+# (installed vs namespace package), producing non-deterministic import-sort
+# results. `common` covers all common.* submodules; the underscore aliases
+# remain for any packages imported by their installed dist name.
+known-first-party = ["common", "common_database", "common_kafka", "common_llm", "common_proto", "common_utils", "planning_discovery_service", "registry_service", "gateway"]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S", "PT", "A002"] # relax security + pytest-style + builtin-shadowing in test helpers

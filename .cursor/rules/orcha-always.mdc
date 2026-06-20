@@ -1,0 +1,65 @@
+---
+description: Orcha project identity, OSS hard constraints, and milestone context. Always active.
+alwaysApply: true
+---
+
+# Orcha — Always-On Rules
+
+## What This Project Is
+
+Orcha is an open-source multi-protocol AI agent orchestration runtime. Users submit a free-text goal; Orcha decomposes it into a DAG of agent calls across MCP, A2A, ACP, and COMPUTER_USE protocols, executes them, and renders results as a live dashboard via CanvasKit — not a text reply. The runtime runs fully with `PAYMENT_MODE=mock` and no closed-service dependency.
+
+## Current Milestone
+
+- **M0 — OSS Launch Gate**: merged on `main`; automated gates pass via `./scripts/m0-verify.sh`; gates 3–5 (browser) pending sign-off
+- **M1 — Hosted Sandbox**: built (`deploy/sandbox/`); deploy + `SANDBOX_MAX_DAILY_MESSAGES` before public URL
+- **M2 — Demo + Launch**: in progress (hero clip, Show HN)
+- **M4–M7 (DAN/DAPN)**: planned — defer to ROADMAP.md; do not implement
+
+## Branch Convention
+
+`az/<type>/<description>` — e.g. `az/feat/sandbox-deploy`, `az/dan/phase-0-gossip`
+
+Never push to `main` directly without review.
+
+## OSS Hard Rules (non-negotiable)
+
+These are constraints, not suggestions. Violating any of them blocks the OSS gate.
+
+1. **Mock-first:** The full stack must run with `PAYMENT_MODE=mock`. Do not introduce any hard dependency on a paid/closed/hosted service. If a feature requires an external service, provide a mock fallback.
+
+2. **Public brand = Orcha only.** Never write "MetaOrcha", "metaorcha", or any other internal name in any committed file — code, docs, comments, or config.
+
+3. **No secrets in files.** No API keys, credentials, tokens, or service account files. `.env.*` files are gitignored (except `.env.example` and `.env.sandbox.example`). Use env vars via `.env` files, never hardcoded.
+
+4. **DID namespace is fixed:**
+   - User agents: `did:orcha:agent:<identifier>`
+   - Platform tools: `did:orcha:system:<identifier>`
+   - Do NOT use `did:emerge:`, `did:metaorcha:`, bare names, or any other prefix.
+
+5. **emerge.yaml schema is versioned.** Breaking changes (removing or renaming required fields) must go through the RFC process in `docs/spec/governance.md`. Do not change the schema without an RFC when external agents could exist.
+
+6. **No token announcement.** Do not write token launch timelines, tokenomics, or announcements anywhere until all 4 DAN gates pass (see ROADMAP.md).
+
+7. **Closed-service adapters** (GodHands, etc.) are named only in adapter-specific internal docs. Never appear in product text, README, public docs, or code comments.
+
+## Defer to ROADMAP — Do Not Implement
+
+If a request touches any of the following, add it to ROADMAP.md and stop:
+
+- DAN gossip network, autonomous loop, knowledge layer, trust/consensus layer (M4–M7)
+- CanvasKit per-render billing or marketplace
+- Token launch, staking, on-chain governance
+- Studio, OrchFlow, or any product name not in the current README
+- Any "what about X?" that isn't M0/M1/M2 scope
+
+## Source of Truth Docs
+
+- Requirements: `docs/srs.md`
+- Milestone index: `docs/dev_docs/MASTER-PLAN.md`
+- Scope boundaries: `docs/dev_docs/SCOPE-MAP.md`
+- M0 gates: `docs/dev_docs/M0-VERIFICATION.md`
+- M0 automation: `scripts/m0-verify.sh`
+- M2 demo: `docs/dev_docs/M2-DEMO.md`
+- Schema spec: `docs/spec/emerge-yaml.schema.json`
+- Governance: `docs/spec/governance.md`
