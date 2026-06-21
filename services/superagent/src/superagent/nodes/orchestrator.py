@@ -439,7 +439,6 @@ async def orchestrator_llm_node(
         ", ".join(t["function"]["name"] for t in all_tools),
     )
 
-    chat = _get_chat_llm()
     chat = ChatOpenAI(
         model=settings.orchestrator_model,
         api_key=settings.openrouter_api_key,
@@ -447,6 +446,7 @@ async def orchestrator_llm_node(
         streaming=True,
         stream_usage=True,  # include usage chunk in stream so completion_tokens is real
         temperature=0,
+        max_tokens=4096,
     )
     _assert_openai_compatible_tool_names(all_tools)
     bound = chat.bind_tools(all_tools) if all_tools else chat

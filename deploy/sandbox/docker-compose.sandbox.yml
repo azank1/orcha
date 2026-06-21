@@ -118,6 +118,9 @@ services:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       LLM_PROVIDER: openrouter
+      OLLAMA_BASE_URL: http://ollama:11434
+      LLM_EMBEDDING_PROVIDER: ollama
+      LLM_EMBEDDING_MODEL: nomic-embed-text
     depends_on:
       postgres: {condition: service_healthy}
       kafka: {condition: service_healthy}

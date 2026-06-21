@@ -58,7 +58,7 @@ export function Chat() {
 
   const chatTimeline = useMemo(
     () => buildChatTimeline(store.messages, store.toolTrace, store.canvases),
-    [store.messages, store.toolTrace],
+    [store.messages, store.toolTrace, store.canvases],
   )
 
   const { data: transcriptData } = useQuery({

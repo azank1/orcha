@@ -15,9 +15,9 @@ class Settings(BaseSettings):
     openrouter_base_url: str = "https://openrouter.ai/api/v1"
     # Orchestration LLM (OpenRouter id). Override with ORCHESTRATOR_MODEL — prefer a small/cheap
     # model here (e.g. Haiku, Gemini Flash); keep sonnet only if you need heavier reasoning.
-    orchestrator_model: str = "anthropic/claude-3.5-haiku"
+    orchestrator_model: str = "anthropic/claude-haiku-4.5"
     # PnD gate Tier-3 classifier — cheap model is fine (same env pattern as orchestrator).
-    small_model: str = "anthropic/claude-3.5-haiku"
+    small_model: str = "anthropic/claude-haiku-4.5"
 
     # Infrastructure
     redis_url: str
