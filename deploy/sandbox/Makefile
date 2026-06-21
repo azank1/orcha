@@ -1,7 +1,7 @@
 COMPOSE = docker compose -f deploy/sandbox/docker-compose.sandbox.yml --env-file .env.sandbox
 ROOT    = $(shell git rev-parse --show-toplevel)
 
-.PHONY: up down logs status seed check-env pull-models
+.PHONY: up down logs status seed check-env pull-models init-db
 
 check-env:
 	@test -f $(ROOT)/.env.sandbox || (echo "ERROR: .env.sandbox not found. Copy .env.sandbox.example and fill in secrets." && exit 1)
@@ -29,7 +29,13 @@ logs:
 status:
 	$(COMPOSE) ps
 
-seed:
+init-db:
+	@echo "Applying PnD vector/FTS schema (idempotent)..."
+	@docker exec -i sandbox-postgres psql -U postgres metaorcha \
+	  < $(ROOT)/services/planning-discovery/scripts/db/001_create_vector_indices.sql
+	@echo "  schema ready."
+
+seed: init-db
 	@echo "Seeding agents into registry..."
 	@sleep 5
 	cd $(ROOT) && REGISTRY_URL=http://localhost:8000 ./scripts/seed-sandbox-agents.sh
