@@ -12,6 +12,24 @@ function phaseLabel(phase: ToolInvocationPhase): string {
   return 'Done'
 }
 
+const PROTOCOL_BADGE: Record<string, { label: string; className: string }> = {
+  mcp:          { label: 'MCP',          className: 'border-blue-500/40 bg-blue-500/10 text-blue-400' },
+  a2a:          { label: 'A2A',          className: 'border-purple-500/40 bg-purple-500/10 text-purple-400' },
+  computer_use: { label: 'COMPUTER_USE', className: 'border-amber-500/40 bg-amber-500/10 text-amber-400' },
+  acp:          { label: 'ACP',          className: 'border-green-500/40 bg-green-500/10 text-green-400' },
+}
+
+function ProtocolBadge({ protocol }: { protocol?: string }) {
+  if (!protocol) return null
+  const p = PROTOCOL_BADGE[protocol.toLowerCase()]
+  if (!p) return null
+  return (
+    <span className={cn('shrink-0 rounded-sm border px-2 py-0.5 text-caption font-semibold uppercase tracking-wide', p.className)}>
+      {p.label}
+    </span>
+  )
+}
+
 function phaseBadgeClass(phase: ToolInvocationPhase): string {
   if (phase === 'running') {
     return 'bg-brand-primary-dim text-brand-primary-light border-blue-500/30'
@@ -56,6 +74,7 @@ export function ToolRunCard({ trace }: ToolRunCardProps) {
         >
           {statusLabel}
         </span>
+        <ProtocolBadge protocol={trace.protocol} />
         <span className="min-w-0 flex-1 truncate font-mono text-caption text-text-secondary">
           {trace.tool_name}
         </span>

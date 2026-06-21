@@ -52,7 +52,7 @@ export function DataTable({ spec }: { spec: DataTableSpec }) {
             {spec.rows.map((row, i) => (
               <tr
                 key={i}
-                className="border-b border-surface-border last:border-0 hover:bg-surface-overlay/40 transition-colors"
+                className={`border-b border-surface-border last:border-0 hover:bg-surface-overlay/40 transition-colors ${i % 2 === 1 ? 'bg-surface-overlay/20' : ''}`}
               >
                 {spec.columns.map((col) => (
                   <td

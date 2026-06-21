@@ -1,10 +1,10 @@
 import type { AlertFeedSpec } from '../../types/canvas'
 
 const SEVERITY_STYLES = {
-  info:    { dot: 'bg-semantic-info',    text: 'text-semantic-info',    bg: 'bg-semantic-info/10' },
-  warning: { dot: 'bg-semantic-warning', text: 'text-semantic-warning', bg: 'bg-semantic-warning/10' },
-  error:   { dot: 'bg-semantic-error',   text: 'text-semantic-error',   bg: 'bg-semantic-error/10' },
-  success: { dot: 'bg-semantic-success', text: 'text-semantic-success', bg: 'bg-semantic-success/10' },
+  info:    { dot: 'bg-semantic-info',    text: 'text-semantic-info',    bg: 'bg-semantic-info/10',    border: 'border-l-2 border-l-semantic-info' },
+  warning: { dot: 'bg-semantic-warning', text: 'text-semantic-warning', bg: 'bg-semantic-warning/10', border: 'border-l-2 border-l-semantic-warning' },
+  error:   { dot: 'bg-semantic-error',   text: 'text-semantic-error',   bg: 'bg-semantic-error/10',   border: 'border-l-2 border-l-semantic-error' },
+  success: { dot: 'bg-semantic-success', text: 'text-semantic-success', bg: 'bg-semantic-success/10', border: 'border-l-2 border-l-semantic-success' },
 } as const
 
 export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
@@ -19,7 +19,7 @@ export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
         {spec.alerts.map((alert) => {
           const s = SEVERITY_STYLES[alert.severity]
           return (
-            <li key={alert.id} className={`flex items-start gap-3 px-4 py-3 ${s.bg}`}>
+            <li key={alert.id} className={`flex items-start gap-3 px-4 py-3 ${s.bg} ${s.border}`}>
               <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
               <div className="min-w-0 flex-1">
                 <p className={`text-[13px] font-medium ${s.text}`}>{alert.title}</p>

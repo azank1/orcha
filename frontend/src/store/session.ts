@@ -81,6 +81,7 @@ interface SessionState {
     tool_name: string
     agent_id: string
     inputs?: Record<string, unknown>
+    protocol?: string
   }) => void
   toolTraceProgress: (callId: string, line: string) => void
   toolTraceFinalize: (p: {
@@ -269,6 +270,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
         inputs: p.inputs && typeof p.inputs === 'object' ? p.inputs : {},
         progressLines: [],
         content_preview: '',
+        protocol: p.protocol,
         sortIndex: seq,
         startedAt,
       }

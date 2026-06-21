@@ -15,10 +15,10 @@ import { sessionTitleFromMessage } from '../lib/sessionTitle'
 import { queryClient } from '../lib/queryClient'
 
 const SAMPLE_PROMPTS = [
-  'Check inbox for urgent emails',
-  'Find senior engineer roles',
-  'Research AI agent trends',
-  'Security scan on my domain',
+  'Show me my portfolio performance and top holdings',
+  'Search for NVDA earnings coverage this week',
+  'Research AI agent frameworks and summarize trends',
+  'Scrape the Alpaca dashboard and screenshot it',
 ]
 
 const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
@@ -130,8 +130,9 @@ export function Home() {
         <h1 className="text-[38px] font-bold text-text-heading text-center leading-tight max-w-[760px] mb-4">
           What can I help you orchestrate?
         </h1>
-        <p className="text-body-lg text-text-secondary text-center max-w-[560px] mb-8">
-          I'm your SuperAgent — I discover, compose, and run agents to complete complex tasks end-to-end.
+        <p className="text-body-lg text-text-secondary text-center max-w-[600px] mb-8">
+          Type a goal. Orcha discovers the right agents, composes them across MCP, A2A, and COMPUTER_USE,
+          and renders the result as a live dashboard — not a chat reply.
         </p>
 
         {/* Prompt input */}
@@ -160,13 +161,21 @@ export function Home() {
           ))}
         </div>
 
+        {/* Agents footnote */}
+        <p className="mt-6 text-[11px] text-text-disabled text-center">
+          {'→ powered by '}
+          <a href="/agents" className="underline underline-offset-2 hover:text-text-secondary transition-colors">
+            live agents
+          </a>
+        </p>
+
         {/* Gate note */}
         {!isAuthenticated && (
-          <p className="mt-4 text-[12px] text-text-disabled text-center">
+          <p className="mt-3 text-[12px] text-text-disabled text-center">
             {SANDBOX_MODE && guestBootstrapping
               ? 'Starting guest demo session…'
               : SANDBOX_MODE
-                ? 'Try a goal — guest demo allows one message'
+                ? 'Try a goal — no account needed'
                 : 'Sign in required to start a session'}
           </p>
         )}

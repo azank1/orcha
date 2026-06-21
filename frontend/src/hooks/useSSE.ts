@@ -44,6 +44,7 @@ export function useSSE() {
             tool_name: event.tool_name,
             agent_id: event.agent_id,
             inputs: event.inputs,
+            protocol: event.protocol,
           })
           if (event.agent_id && !event.agent_id.startsWith('_')) {
             s.updateAgent(event.agent_id, { status: 'running' })

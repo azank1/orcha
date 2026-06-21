@@ -148,6 +148,8 @@ export interface ToolInvocationTrace {
   inputs: Record<string, unknown>
   progressLines: string[]
   content_preview: string
+  /** Protocol used by this invocation: mcp | a2a | computer_use | acp */
+  protocol?: string
   /** Monotonic per session — used to interleave with agent messages */
   sortIndex?: number
   /** Client clock when invocation.start arrived */
