@@ -55,11 +55,11 @@ def _performance_series(days: int) -> list[dict]:
 
 def _positions_table() -> tuple[list[dict], list[dict]]:
     columns = [
-        {"key": "symbol", "label": "Symbol"},
-        {"key": "shares", "label": "Shares", "format": "number"},
-        {"key": "price", "label": "Price", "format": "currency"},
-        {"key": "value", "label": "Market Value", "format": "currency"},
-        {"key": "pnl_pct", "label": "P&L %", "format": "percent"},
+        {"key": "symbol", "label": "Symbol", "type": "text"},
+        {"key": "shares", "label": "Shares", "type": "number"},
+        {"key": "price", "label": "Price", "type": "currency"},
+        {"key": "value", "label": "Market Value", "type": "currency"},
+        {"key": "pnl_pct", "label": "P&L %", "type": "percent"},
     ]
     rows = [
         {"symbol": "AAPL", "shares": 42, "price": 213.45, "value": 8964.90, "pnl_pct": 0.127},
@@ -143,62 +143,61 @@ async def get_portfolio_dashboard(
 
     manifest = {
         "version": "1.0",
-        "title": f"Portfolio — {user_id or 'Demo Account'}",
+        "title": f"Portfolio — {user_id or 'Demo Account'} (sample data)",
         "layout": "dashboard",
         "components": [
             {
                 "type": "metric_card",
+                "id": "total_value",
                 "label": "Total Value",
                 "value": f"${total_value:,.0f}",
-                "delta": f"+{total_pnl_pct*100:.1f}%",
+                "delta": round(total_pnl_pct * 100, 1),
                 "trend": "up",
                 "unit": "USD",
             },
             {
                 "type": "metric_card",
+                "id": "day_pnl",
                 "label": "Day P&L",
                 "value": f"+${day_pnl:,.0f}",
-                "delta": f"+{day_pnl_pct*100:.2f}%",
+                "delta": round(day_pnl_pct * 100, 2),
                 "trend": "up",
                 "unit": "USD",
             },
             {
                 "type": "metric_card",
+                "id": "open_positions",
                 "label": "Open Positions",
                 "value": str(len(rows)),
-                "delta": "",
-                "trend": "neutral",
             },
             {
                 "type": "metric_card",
+                "id": "active_alerts",
                 "label": "Active Alerts",
                 "value": str(len(alerts)),
-                "delta": "1 new",
-                "trend": "down",
+                "sub_label": "1 new",
             },
             {
                 "type": "line_chart",
+                "id": "performance_chart",
                 "title": f"{days}-Day Performance",
                 "x_key": "date",
-                "series": [
-                    {
-                        "key": "value",
-                        "label": "Portfolio Value",
-                        "color": "#6366f1",
-                    }
-                ],
+                "y_keys": ["value"],
+                "colors": ["#6366f1"],
                 "data": perf_series,
             },
             {
                 "type": "data_table",
+                "id": "positions_table",
                 "title": "Open Positions",
                 "columns": columns,
                 "rows": rows,
             },
             {
                 "type": "alert_feed",
+                "id": "alerts_feed",
                 "title": "Alerts",
-                "items": alerts,
+                "alerts": alerts,
             },
         ],
     }

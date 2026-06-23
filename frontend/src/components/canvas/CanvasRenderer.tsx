@@ -47,7 +47,9 @@ export function CanvasRenderer({
   manifest: UIManifest
   className?: string
 }) {
-  const isDashboard = manifest.layout === 'dashboard'
+  const layout = manifest.layout ?? 'dashboard'
+  const components = Array.isArray(manifest.components) ? manifest.components : []
+  const isDashboard = layout === 'dashboard'
 
   return (
     <div className={`rounded-xl overflow-hidden ${className}`}>
@@ -59,10 +61,10 @@ export function CanvasRenderer({
           <h3 className="text-[15px] font-semibold text-text-heading">{manifest.title}</h3>
         </div>
       )}
-      <div className={GRID_CLASS[manifest.layout]}>
-        {manifest.components.map((spec) => (
+      <div className={GRID_CLASS[layout] ?? GRID_CLASS.dashboard}>
+        {components.map((spec, i) => (
           <div
-            key={spec.id}
+            key={spec.id ?? `${spec.type}-${i}`}
             className={isDashboard && isDashboardWide(spec) ? 'col-span-2' : ''}
           >
             <CanvasComponentRenderer spec={spec} />

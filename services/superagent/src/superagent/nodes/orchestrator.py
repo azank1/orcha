@@ -59,7 +59,7 @@ def _get_chat_llm() -> ChatOpenAI:
             base_url=settings.openrouter_base_url,
             streaming=True,
             temperature=0,
-            max_tokens=4096,
+            max_tokens=1024,
         )
     return _chat_llm
 
@@ -446,7 +446,7 @@ async def orchestrator_llm_node(
         streaming=True,
         stream_usage=True,  # include usage chunk in stream so completion_tokens is real
         temperature=0,
-        max_tokens=4096,
+        max_tokens=1024,
     )
     _assert_openai_compatible_tool_names(all_tools)
     bound = chat.bind_tools(all_tools) if all_tools else chat

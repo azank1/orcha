@@ -12,14 +12,37 @@ import type { LineChartSpec } from '../../types/canvas'
 const DEFAULT_COLORS = ['#3B6EF8', '#00C8E8', '#A855F7', '#22C55E', '#F59E0B']
 
 export function LineChart({ spec }: { spec: LineChartSpec }) {
-  const colors = spec.colors ?? DEFAULT_COLORS
+  const raw = spec as LineChartSpec & {
+    series?: { key: string; color?: string }[]
+  }
+  const yKeys =
+    raw.y_keys ??
+    raw.series?.map((s) => s.key).filter(Boolean) ??
+    []
+  const colors =
+    raw.colors ??
+    raw.series?.map((s) => s.color).filter((c): c is string => Boolean(c)) ??
+    DEFAULT_COLORS
+  const data = Array.isArray(raw.data) ? raw.data : []
+
+  if (yKeys.length === 0) {
+    return (
+      <div className="rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
+        {spec.title && (
+          <p className="mb-3 text-[13px] font-semibold text-text-heading">{spec.title}</p>
+        )}
+        <p className="text-[12px] text-text-secondary">Chart data unavailable.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
       {spec.title && (
         <p className="mb-3 text-[13px] font-semibold text-text-heading">{spec.title}</p>
       )}
       <ResponsiveContainer width="100%" height={180}>
-        <ReLineChart data={spec.data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
+        <ReLineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
           <XAxis
             dataKey={spec.x_key}
@@ -40,7 +63,7 @@ export function LineChart({ spec }: { spec: LineChartSpec }) {
               fontSize: 12,
             }}
           />
-          {spec.y_keys.map((key, i) => (
+          {yKeys.map((key, i) => (
             <Line
               key={key}
               type="monotone"

@@ -320,7 +320,10 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   clearToolTrace: () => set({ toolTrace: [] }),
 
   addCanvas: (entry) =>
-    set((s) => ({ canvases: [...s.canvases, entry] })),
+    set((s) => ({
+      canvases: [...s.canvases, entry],
+      timelineSeq: entry.sortIndex ?? s.timelineSeq + 1,
+    })),
 
   hydrateFromSessionStatus: (data) => {
     if (data.status === 'not_found') return

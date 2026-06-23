@@ -8,6 +8,9 @@ const SEVERITY_STYLES = {
 } as const
 
 export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
+  const raw = spec as AlertFeedSpec & { items?: AlertFeedSpec['alerts'] }
+  const alerts = raw.alerts ?? raw.items ?? []
+
   return (
     <div className="rounded-xl bg-surface-elevated border border-surface-border overflow-hidden">
       {spec.title && (
@@ -16,10 +19,10 @@ export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
         </div>
       )}
       <ul className="divide-y divide-surface-border">
-        {spec.alerts.map((alert) => {
-          const s = SEVERITY_STYLES[alert.severity]
+        {alerts.map((alert, i) => {
+          const s = SEVERITY_STYLES[alert.severity] ?? SEVERITY_STYLES.info
           return (
-            <li key={alert.id} className={`flex items-start gap-3 px-4 py-3 ${s.bg} ${s.border}`}>
+            <li key={alert.id ?? `alert-${i}`} className={`flex items-start gap-3 px-4 py-3 ${s.bg} ${s.border}`}>
               <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${s.dot}`} />
               <div className="min-w-0 flex-1">
                 <p className={`text-[13px] font-medium ${s.text}`}>{alert.title}</p>
