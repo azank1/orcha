@@ -54,6 +54,52 @@ cloudflared tunnel --url http://localhost:80
 
 For a stable HN link, use Cloudflare orange-cloud proxy or a named tunnel — pin the URL in [SHOW-HN.md](../../docs/dev_docs/SHOW-HN.md) before posting.
 
+## Vercel frontend + local backend (recommended for Show HN)
+
+Deploy the static React SPA to Vercel while the backend runs locally behind a Cloudflare tunnel. The browser talks directly to the tunnel URL — Vercel only serves HTML/JS/CSS.
+
+**Step 1 — Deploy frontend to Vercel**
+
+Connect the repo in [vercel.com/new](https://vercel.com/new). The `vercel.json` at the repo root configures the build automatically. In Vercel → Settings → Environment Variables, add:
+
+```
+VITE_GATEWAY_URL = https://<your-tunnel>.trycloudflare.com/api
+VITE_SANDBOX_MODE = true
+```
+
+Redeploy after setting env vars (Vercel bakes them in at build time).
+
+**Step 2 — Start the backend and expose via tunnel**
+
+```bash
+make -f deploy/sandbox/Makefile up
+make -f deploy/sandbox/Makefile seed
+cloudflared tunnel --url http://localhost:80
+# → prints https://<random>.trycloudflare.com (update VITE_GATEWAY_URL on Vercel)
+```
+
+**Step 3 — Allow the Vercel domain in CORS**
+
+Add your Vercel URL to `CORS_ORIGINS` in `.env.sandbox`, then rebuild the gateway:
+
+```bash
+# In .env.sandbox:
+CORS_ORIGINS=http://localhost:3000,https://app.metaorcha.ai,https://orcha.vercel.app
+
+docker compose -f deploy/sandbox/docker-compose.sandbox.yml up -d --build gateway
+```
+
+**Stable tunnel (named, requires Cloudflare account + domain)**
+
+```bash
+cloudflared tunnel create orcha-sandbox
+cloudflared tunnel route dns orcha-sandbox sandbox.yourdomain.com
+cloudflared tunnel run --url http://localhost:80 orcha-sandbox
+# → stable https://sandbox.yourdomain.com — no URL change on restart
+```
+
+With a stable URL, set `VITE_GATEWAY_URL` once in Vercel and leave it.
+
 ## Demo validation
 
 ```bash
