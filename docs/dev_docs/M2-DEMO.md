@@ -25,6 +25,10 @@ Show me my portfolio performance, search for NVDA earnings coverage, and screens
 ```bash
 # After stack is up and agents seeded:
 ./scripts/m2-demo-validate.sh
+
+# Automated SSE check (single run or 5-run protocol):
+GATEWAY_URL=http://localhost/api ./scripts/m2-gates-live.sh
+GATEWAY_URL=http://localhost/api M2_RUNS=5 M2_PASS=4 ./scripts/m2-gates-live.sh
 ```
 
 ## Hero clip must show

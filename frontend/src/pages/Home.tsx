@@ -14,11 +14,26 @@ import { useSSE } from '../hooks/useSSE'
 import { sessionTitleFromMessage } from '../lib/sessionTitle'
 import { queryClient } from '../lib/queryClient'
 
-const SAMPLE_PROMPTS = [
-  'Show me my portfolio performance and top holdings',
-  'Search for NVDA earnings coverage this week',
-  'Research AI agent frameworks and summarize trends',
-  'Scrape the Alpaca dashboard and screenshot it',
+const M2_DEMO_GOAL =
+  'Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard'
+
+const SAMPLE_PROMPTS: { label: string; message: string }[] = [
+  {
+    label: 'Portfolio dashboard',
+    message: 'Show me my portfolio performance and top holdings',
+  },
+  {
+    label: '3-protocol demo (portfolio + search + screenshot)',
+    message: M2_DEMO_GOAL,
+  },
+  {
+    label: 'NVDA earnings search',
+    message: 'Search for NVDA earnings coverage this week',
+  },
+  {
+    label: 'Research AI agent frameworks',
+    message: 'Research AI agent frameworks and summarize trends',
+  },
 ]
 
 const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
@@ -151,15 +166,22 @@ export function Home() {
         <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-[760px]">
           {SAMPLE_PROMPTS.map((prompt) => (
             <button
-              key={prompt}
-              onClick={() => handleSubmit(prompt)}
+              key={prompt.message}
+              onClick={() => handleSubmit(prompt.message)}
               disabled={loading || guestBootstrapping}
               className="h-9 px-3 rounded-md bg-surface-overlay border border-surface-border text-[12px] text-text-secondary hover:text-text-body hover:border-surface-borderLight transition-colors duration-150 disabled:opacity-50"
             >
-              {prompt}
+              {prompt.label}
             </button>
           ))}
         </div>
+
+        {SANDBOX_MODE && (
+          <p className="mt-4 text-[12px] text-text-disabled text-center max-w-[560px]">
+            Sandbox uses pre-seeded demo agents. Portfolio numbers are illustrative — not connected
+            to your accounts.
+          </p>
+        )}
 
         {/* Agents footnote */}
         <p className="mt-6 text-[11px] text-text-disabled text-center">

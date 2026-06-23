@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;Apps+assembled+from+agents.+Not+chat.;The+road+to+DAN+starts+here." alt="Orcha" />
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;Apps+assembled+from+agents.+Not+chat." alt="Orcha" />
 
-**The open runtime for multi-protocol AI agent orchestration (and the foundation for the DAN system).**
+**The open runtime for multi-protocol AI agent orchestration.**
 
 [![Build](https://github.com/azank1/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/azank1/orcha/actions)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
@@ -13,6 +13,8 @@
 
 ---
 
+![Orcha demo — one goal, CanvasKit dashboard](docs/assets/demo-hero.gif)
+
 ## The problem
 
 AI agents today are islands. MCP servers live here. A2A agents live there. Glue code everywhere.
@@ -20,6 +22,18 @@ AI agents today are islands. MCP servers live here. A2A agents live there. Glue 
 **This is not a model problem. It's an orchestration, observability, and distribution problem.**
 
 Orcha is the runtime that fixes it: one natural-language goal gets planned, routed, and executed across agents speaking **different** protocols in the same run — with a credential vault, auth cascade, output normalization, and per-call payments (mock mode by default, no wallet needed).
+
+## See it work
+
+Type a goal → Orcha discovers agents → composes MCP, A2A, and COMPUTER_USE in one run → renders a **[CanvasKit](docs/dev_docs/primitives/canvaskit.md) dashboard**, not a chat reply.
+
+| Chat reply (before) | CanvasKit dashboard (Orcha) |
+|---------------------|----------------------------|
+| Prose summary you scroll past | Metric cards, charts, tables, alerts — live UI |
+
+**Try it:** run the [hosted sandbox](deploy/sandbox/README.md) locally (`make -f deploy/sandbox/Makefile up`) or clone and `./scripts/run-all.sh`. Demo portfolio data is illustrative — no brokerage connection required.
+
+**Hero goal (3-protocol demo):** *"Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard"* → finance MCP + search MCP + mock computer-use in one run.
 
 ## Register an agent in 4 lines
 
@@ -35,24 +49,6 @@ def handle(task: str) -> str:
 emerge run     # serve locally and register with the runtime
 ```
 
-## Roadmap
-
-| Phase | Status | What it means |
-|-------|--------|---------------|
-| **v1 — OSS Runtime** | ✅ Now | MCP + A2A + ACP in one run, SDK, CLI, 7 agents |
-| **v1.2 — Harness** | 🔧 Next | DAG executor, retry/fallback, semantic judging |
-| **v2 — DAN Alpha** | 🌐 Planned | Gossip mesh, `emerge-node`, agents find each other |
-| **v3 — DAN** | 🚀 Horizon | Observe→Think→Act, knowledge graph, no central coordinator |
-| **DAPN** | 🏗 Building | Apps assembled from agents over the mesh — bespoke dashboard, not a chat answer |
-
-## Where we're going: DAN + DAPN
-
-DAN is a **self-organizing civilization of AI agents** — with communication, memory, economics, reputation, and reproduction. Not a marketplace. Not an API gateway. A civilization.
-
-DAPN is the surface above DAN. Apps assembled from agents discovered over the network, rendered through **[CanvasKit](docs/dev_docs/primitives/canvaskit.md)** — an open declarative UI protocol — so users get a bespoke, persistent finance dashboard instead of a chat answer that evaporates. No token before [four hard gates pass](ROADMAP.md#chain--token-layer).
-
-> **Read the full vision:** [INCEPTION.md](INCEPTION.md) · **[Five Primitives](docs/dev_docs/primitives/README.md)**
-
 ## Quickstart
 
 ```bash
@@ -61,7 +57,7 @@ git clone https://github.com/azank1/orcha && cd orcha
 emerge init my-agent && cd my-agent && emerge run
 ```
 
-Full setup with manual service control: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)
+Full setup: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)
 
 ## Architecture
 
@@ -89,17 +85,18 @@ Goal
 
 ## Contribute
 
-Three paths — no prior discussion needed for any of them:
-
 | What | Where | Why it matters |
 |------|-------|----------------|
 | **New bridge** | `templates/your-first-bridge/` | Adds a protocol — highest leverage contribution |
 | **New agent** | `agents/` | Grows the fleet, stress-tests the runtime |
-| **CanvasKit component** | `frontend/src/components/canvas/` | Earns per-render in every deployed app |
-| **DAN spec** | [`docs/dev_docs/dan/`](docs/dev_docs/dan/) | Shape Phase 0–2 via RFC issues |
+| **CanvasKit component** | `frontend/src/components/canvas/` | New dashboard primitives for agent output |
 
 → [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](docs/bridges.md) · [Open a RFC](https://github.com/azank1/orcha/issues/new?labels=rfc)
 
+## What's next
+
+**Harness reliability (v1.2)**, then a decentralized agent network (DAN) — full trajectory in [ROADMAP.md](ROADMAP.md). Vision essay: [INCEPTION.md](INCEPTION.md).
+
 ---
 
-<div align="center">Apache 2.0 · <a href="https://discord.gg/orcha">Discord</a> · <a href="INCEPTION.md">The DAN vision</a></div>
+<div align="center">Apache 2.0 · <a href="https://discord.gg/orcha">Discord</a> · <a href="ROADMAP.md">Roadmap</a></div>

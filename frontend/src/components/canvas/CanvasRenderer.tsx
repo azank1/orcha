@@ -22,6 +22,14 @@ function CanvasComponentRenderer({ spec }: { spec: CanvasComponent }) {
   }
 }
 
+const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
+
+function isDemoManifest(manifest: UIManifest): boolean {
+  if (SANDBOX_MODE) return true
+  const title = manifest.title?.toLowerCase() ?? ''
+  return title.includes('sample data') || title.includes('demo')
+}
+
 const GRID_CLASS: Record<UIManifest['layout'], string> = {
   dashboard: 'grid grid-cols-2 gap-4',
   single:    'flex flex-col gap-4',
@@ -54,11 +62,16 @@ export function CanvasRenderer({
   return (
     <div className={`rounded-xl overflow-hidden ${className}`}>
       {manifest.title && (
-        <div className="mb-3 flex items-center gap-2">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
           <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
             Canvas
           </span>
           <h3 className="text-[15px] font-semibold text-text-heading">{manifest.title}</h3>
+          {isDemoManifest(manifest) && (
+            <span className="rounded-full border border-surface-borderLight bg-surface-overlay px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-text-secondary">
+              Demo data — not connected to your accounts
+            </span>
+          )}
         </div>
       )}
       <div className={GRID_CLASS[layout] ?? GRID_CLASS.dashboard}>

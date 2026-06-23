@@ -36,6 +36,9 @@ for pattern in finance-dashboard search; do
 done
 
 echo
+echo "Automated M2 gate script:"
+echo "  GATEWAY_URL=http://localhost/api M2_RUNS=5 M2_PASS=4 ./scripts/m2-gates-live.sh"
+echo
 echo "Manual step: submit the goal above $RUNS times via UI or API."
 echo "Pass if >=$PASS_THRESHOLD runs hit MCP (finance) + MCP (search) + COMPUTER_USE"
 echo "and canvas_manifest SSE renders MetricCard + LineChart + DataTable + AlertFeed."
