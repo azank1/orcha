@@ -39,6 +39,8 @@ Type a goal → Orcha discovers agents → composes MCP, A2A, and COMPUTER_USE i
 
 ## Register an agent in 4 lines
 
+> Orcha ships the **`emerge` SDK** for agent registration — `emerge init` scaffolds your agent manifest, `emerge register` publishes it to the runtime.
+
 ```python
 import emerge
 

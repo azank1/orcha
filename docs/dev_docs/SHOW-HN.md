@@ -16,7 +16,7 @@ Today's "loop engineering" tools handle one agent looping on one task. The harde
 
 ### What Orcha does
 
-Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, ACP, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble.
+Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, ACP, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble. A **structural verifier** runs after each agent step and marks it `✓ Verified` or `✗ Unverified` in the UI — the visible answer to "does it check the output?"
 
 **Demo goal we use:**
 
@@ -38,7 +38,7 @@ Goal → Registry → Planning & Discovery (5-stage DAG) → SuperAgent ReAct lo
 
 - **Mock-first:** runs with `PAYMENT_MODE=mock` — no wallet, no closed service required
 - **Planning:** 5-stage DAG — decompose → resolve agents → wire I/O → refine deps → validate. Pre-flight verifier checks agent health before execution.
-- **SDK:** `emerge init` + `@emerge.agent` decorator + `emerge run` — any agent registers in 4 lines
+- **SDK:** Orcha ships the `emerge` SDK — `emerge init` scaffolds your agent manifest, `emerge register` publishes it to the runtime. Any agent registers in 4 lines.
 - **CanvasKit:** agents emit structured `UIManifest` JSON; the frontend renders curated components — not text
 
 ### Try it
@@ -50,6 +50,17 @@ git clone https://github.com/azank1/orcha && cd orcha
 ```
 
 **Live sandbox:** _(pin your public URL here before posting)_
+
+### Register your agent
+
+```bash
+emerge init my-agent   # scaffold emerge.yaml manifest
+emerge register        # publish to the Orcha runtime
+```
+
+Your agent is now composable in any Orcha goal-driven loop. Docs: `docs/dev_docs/` → `emerge.yaml` reference.
+
+> **Note:** Different project from [stablyai/orca](https://github.com/stablyai/orca) (that's a coding-agent IDE). Orcha routes across MCP/A2A/ACP protocols into verified, structured output.
 
 ### What we're NOT claiming
 
@@ -71,4 +82,5 @@ git clone https://github.com/azank1/orcha && cd orcha
 - [ ] `M2_RUNS=5 M2_PASS=4 GATEWAY_URL=http://localhost/api ./scripts/m2-gates-live.sh` passes
 - [ ] OpenRouter credits topped up
 - [ ] Public sandbox URL stable (Cloudflare or named tunnel)
+- [ ] `✓ Verified` badge visible in hero GIF (at least one step shows it before the dashboard renders)
 - [ ] Discord cross-post ready

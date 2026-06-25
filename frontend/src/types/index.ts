@@ -158,6 +158,10 @@ export interface ToolInvocationTrace {
   total_cost_usd?: string
   /** Agent base_fee component. */
   base_fee?: string
+  /** Whether the structural verifier passed for this step. */
+  verified?: boolean
+  /** Short reason string from the structural verifier. */
+  verdict_reason?: string
 }
 
 /**
@@ -187,6 +191,10 @@ export type SSEEvent =
       total_cost_usd?: string
       /** Agent base_fee component of total_cost_usd. */
       base_fee?: string
+      /** Whether the structural verifier passed. */
+      verified?: boolean
+      /** Short reason from the structural verifier. */
+      verdict_reason?: string
     }
   | {
       type: 'agents_discovered'

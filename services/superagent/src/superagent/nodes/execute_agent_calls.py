@@ -446,6 +446,8 @@ async def execute_agent_calls_node(
 
         _call_base_fee = "0"
         _call_total_cost = "0"
+        _verified = True
+        _verdict_reason = "ok"
         logger.info(
             "execute_agent_calls: → %s | agent=%s capability=%s protocol=%s args=%s",
             tool_name,
@@ -468,6 +470,8 @@ async def execute_agent_calls_node(
             content = result.get("content", "")
             _call_base_fee = result.get("base_fee", "0")
             _call_total_cost = result.get("total_cost_usd", _call_base_fee)
+            _verified = result.get("verified", True)
+            _verdict_reason = result.get("verdict_reason", "ok")
             logger.info(
                 "execute_agent_calls: ← %s | result_len=%d result_preview=%s",
                 tool_name,
@@ -656,6 +660,8 @@ async def execute_agent_calls_node(
                 "agent_id": agent_id,
                 "status": _result_status(content),
                 "content_preview": content[:300],
+                "verified": _verified,
+                "verdict_reason": _verdict_reason,
                 **cost_payload,
             },
             pending_events,

@@ -66,6 +66,8 @@ export function useSSE() {
             content_preview: event.content_preview,
             total_cost_usd: event.total_cost_usd,
             base_fee: event.base_fee,
+            verified: event.verified,
+            verdict_reason: event.verdict_reason,
           })
           if (event.agent_id && !event.agent_id.startsWith('_')) {
             s.updateAgent(event.agent_id, { status: 'done' })

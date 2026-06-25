@@ -44,6 +44,7 @@ class StepResult:
     total_cost_usd: str = "0"
     completed_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
     metadata: dict[str, Any] = field(default_factory=dict)
+    verdict: dict[str, Any] | None = None
 
 
 @runtime_checkable

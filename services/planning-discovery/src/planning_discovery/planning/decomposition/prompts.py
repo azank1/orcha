@@ -111,7 +111,8 @@ OUTPUT JSON SCHEMA:
       },
       "inputs": {},
       "depends_on": [],
-      "expected_output_schema": {}
+      "expected_output_schema": {},
+      "success_criteria": "Short, checkable condition — e.g. 'Returns non-empty portfolio list with market_value > 0'"
     }
   ],
   "edges": [

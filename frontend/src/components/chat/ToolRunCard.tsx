@@ -19,6 +19,28 @@ const PROTOCOL_BADGE: Record<string, { label: string; className: string }> = {
   acp:          { label: 'ACP',          className: 'border-green-500/40 bg-green-500/10 text-green-400' },
 }
 
+function VerifiedBadge({ verified, reason }: { verified?: boolean; reason?: string }) {
+  if (verified === undefined) return null
+  if (verified) {
+    return (
+      <span
+        className="shrink-0 rounded-sm border border-semantic-success/40 bg-semantic-successDim px-2 py-0.5 text-caption font-semibold text-semantic-success"
+        title={reason || 'Structural check passed'}
+      >
+        ✓ Verified
+      </span>
+    )
+  }
+  return (
+    <span
+      className="shrink-0 rounded-sm border border-semantic-error/40 bg-semantic-errorDim px-2 py-0.5 text-caption font-semibold text-semantic-error"
+      title={reason || 'Structural check failed'}
+    >
+      ✗ Unverified
+    </span>
+  )
+}
+
 function ProtocolBadge({ protocol }: { protocol?: string }) {
   if (!protocol) return null
   const p = PROTOCOL_BADGE[protocol.toLowerCase()]
@@ -75,6 +97,9 @@ export function ToolRunCard({ trace }: ToolRunCardProps) {
           {statusLabel}
         </span>
         <ProtocolBadge protocol={trace.protocol} />
+        {trace.phase !== 'running' && (
+          <VerifiedBadge verified={trace.verified} reason={trace.verdict_reason} />
+        )}
         <span className="min-w-0 flex-1 truncate font-mono text-caption text-text-secondary">
           {trace.tool_name}
         </span>

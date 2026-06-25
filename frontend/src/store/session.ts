@@ -92,6 +92,8 @@ interface SessionState {
     content_preview: string
     total_cost_usd?: string
     base_fee?: string
+    verified?: boolean
+    verdict_reason?: string
   }) => void
   clearToolTrace: () => void
   addCanvas: (entry: CanvasEntry) => void
@@ -311,6 +313,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 agent_id: p.agent_id || t.agent_id,
                 total_cost_usd: p.total_cost_usd ?? t.total_cost_usd,
                 base_fee: p.base_fee ?? t.base_fee,
+                verified: p.verified ?? t.verified,
+                verdict_reason: p.verdict_reason ?? t.verdict_reason,
               }
             : t,
         ),

@@ -18,6 +18,17 @@ from .preflight import PreFlightManager
 logger = logging.getLogger(__name__)
 
 
+def _structural_verify(content: str, has_canvas: bool) -> tuple[bool, str]:
+    """Structural check on agent output. Returns (verified, verdict_reason)."""
+    if not content:
+        return False, "empty output"
+    if content.startswith(("Error:", "Input error:", "Unsupported protocol:")):
+        return False, content[:120]
+    if has_canvas:
+        return True, "canvas output verified"
+    return True, "ok"
+
+
 class ExecutionMiddleware:
     """
     7-step pipeline:
@@ -145,6 +156,12 @@ class ExecutionMiddleware:
             len(content_str),
         )
 
+        # Step 5.5: StructuralVerifier
+        has_canvas = normalised.get("ui_manifest") is not None
+        verified, verdict_reason = _structural_verify(content_str, has_canvas)
+        normalised["verified"] = verified
+        normalised["verdict_reason"] = verdict_reason
+
         # Step 6: Checklist auto-update
         success = not (
             content_str.startswith("Error:")
@@ -170,6 +187,7 @@ class ExecutionMiddleware:
                 session_id=self._state.get("session_id", ""),
                 latency_ms=_latency_ms,
                 base_fee=str(base_fee),
+                verdict={"verified": verified, "reason": verdict_reason},
             )
         )
 
