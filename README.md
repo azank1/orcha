@@ -19,6 +19,8 @@
 
 AI agents today are islands. MCP servers live here. A2A agents live there. Glue code everywhere.
 
+Today's "loop engineering" tools handle one agent looping on one task. The harder problem — composing agents that speak **different protocols** into a single verified run with structured output — has no open-source solution.
+
 **This is not a model problem. It's an orchestration, observability, and distribution problem.**
 
 Orcha is the runtime that fixes it: one natural-language goal gets planned, routed, and executed across agents speaking **different** protocols in the same run — with a credential vault, auth cascade, output normalization, and per-call payments (mock mode by default, no wallet needed).

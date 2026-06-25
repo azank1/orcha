@@ -4,17 +4,19 @@ Internal launch copy. Paste into HN when hero GIF and sandbox URL are ready.
 
 ## Title
 
-**Show HN: Orcha – orchestrate MCP/A2A agents into a live dashboard, not a chat reply**
+**Show HN: Orcha – open runtime for multi-agent loops: any protocol, verified plan, live dashboard output**
 
 ## Body
 
 ### Problem
 
-AI agents are islands. MCP tools live in one repo, A2A agents in another, and every product team writes glue code to stitch them together. Worse: the output is almost always **text** — a summary you read once and forget.
+Everyone's building agent loops. The problem is they stop at the single-agent layer: one model, one tool, one protocol. Real enterprise workflows span **MCP tools, A2A services, legacy desktop apps, and cloud APIs** — different protocols that today's loop tools don't compose. And when you do stitch them together, the output is text that evaporates in a chat bubble.
+
+Today's "loop engineering" tools handle one agent looping on one task. The harder problem — composing agents that speak different protocols into a single **verified**, goal-driven run with structured output — has no open-source solution.
 
 ### What Orcha does
 
-Orcha is an open-source orchestration runtime. You type one goal; it plans a run, routes to the right agents across **MCP, A2A, ACP, and COMPUTER_USE**, and renders the result as a **CanvasKit dashboard** — metric cards, charts, tables — not a chat bubble.
+Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, ACP, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble.
 
 **Demo goal we use:**
 
@@ -27,12 +29,17 @@ In one run you should see: finance dashboard agent (MCP) → search agent (MCP) 
 ### How it works
 
 ```
-Goal → Registry → Planning & Discovery → SuperAgent → protocol handlers → canvas_manifest SSE → React dashboard
+Goal → Registry → Planning & Discovery (5-stage DAG) → SuperAgent ReAct loop
+         ↓ pre-flight plan verifier                        ↓ protocol handlers
+                                              MCP | A2A | ACP | COMPUTER_USE
+                                                        ↓
+                                         canvas_manifest SSE → CanvasKit dashboard
 ```
 
 - **Mock-first:** runs with `PAYMENT_MODE=mock` — no wallet, no closed service required
-- **SDK:** `emerge init` + `@emerge.agent` decorator + `emerge run`
-- **CanvasKit:** agents emit structured `UIManifest` JSON; the frontend renders curated components
+- **Planning:** 5-stage DAG — decompose → resolve agents → wire I/O → refine deps → validate. Pre-flight verifier checks agent health before execution.
+- **SDK:** `emerge init` + `@emerge.agent` decorator + `emerge run` — any agent registers in 4 lines
+- **CanvasKit:** agents emit structured `UIManifest` JSON; the frontend renders curated components — not text
 
 ### Try it
 
