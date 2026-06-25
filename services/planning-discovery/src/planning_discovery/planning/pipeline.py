@@ -29,6 +29,7 @@ from ..ranking import score_candidates
 from ..utils.errors import (
     AmbiguousQueryError,
     NoAgentsFoundError,
+    UserError,
     ValidationFailedError,
 )
 from .decomposition.single_pass_decomposer import SinglePassDecomposer
@@ -129,16 +130,27 @@ class OptimizedPlanningPipeline:
             return_exceptions=True,
         )
 
-        # Surface the first hard failure
-        for result in coverage_results:
-            if isinstance(result, Exception):
-                raise result  # type: ignore[misc]
+        # Degrade gracefully: a per-task "no agents" failure (UserError) drops
+        # that task rather than crashing the whole plan, while a system/retriable
+        # failure (InternalError or unexpected) still surfaces so the caller can
+        # retry. gather() preserves order/length, so the zip stays 1:1.
+        coverage_map: dict[str, CoverageResult] = {}
+        for task, cov in zip(decomp.tasks, coverage_results, strict=True):
+            if isinstance(cov, Exception):
+                if not isinstance(cov, UserError):
+                    raise cov  # type: ignore[misc]
+                logger.warning(
+                    "Stage 2a: no coverage for task %r — skipping (%s)",
+                    task.get("id"),
+                    cov,
+                )
+                continue
+            coverage_map[task["id"]] = cov
 
-        coverage_map: dict[str, CoverageResult] = {
-            task["id"]: cov
-            for task, cov in zip(decomp.tasks, coverage_results, strict=True)
-            if not isinstance(cov, Exception)
-        }
+        if not coverage_map:
+            raise NoAgentsFoundError(
+                f"No agents could be resolved for any task in query: {user_query!r}"
+            )
 
         logger.info(
             "Stage 2a complete — coverage resolved for %d task(s)", len(coverage_map)

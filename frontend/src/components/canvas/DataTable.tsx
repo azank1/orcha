@@ -27,6 +27,21 @@ function cellColor(value: unknown, type?: DataTableSpec['columns'][0]['type']): 
 }
 
 export function DataTable({ spec }: { spec: DataTableSpec }) {
+  // Defensive against schema drift — a malformed manifest must not white-screen.
+  const columns = Array.isArray(spec.columns) ? spec.columns : []
+  const rows = Array.isArray(spec.rows) ? spec.rows : []
+
+  if (columns.length === 0) {
+    return (
+      <div className="rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
+        {spec.title && (
+          <p className="mb-2 text-[13px] font-semibold text-text-heading">{spec.title}</p>
+        )}
+        <p className="text-[12px] text-text-secondary">Table data unavailable.</p>
+      </div>
+    )
+  }
+
   return (
     <div className="rounded-xl bg-surface-elevated border border-surface-border overflow-hidden">
       {spec.title && (
@@ -38,7 +53,7 @@ export function DataTable({ spec }: { spec: DataTableSpec }) {
         <table className="w-full text-[13px]">
           <thead>
             <tr className="border-b border-surface-border">
-              {spec.columns.map((col) => (
+              {columns.map((col) => (
                 <th
                   key={col.key}
                   className="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
@@ -49,12 +64,12 @@ export function DataTable({ spec }: { spec: DataTableSpec }) {
             </tr>
           </thead>
           <tbody>
-            {spec.rows.map((row, i) => (
+            {rows.map((row, i) => (
               <tr
                 key={i}
                 className={`border-b border-surface-border last:border-0 hover:bg-surface-overlay/40 transition-colors ${i % 2 === 1 ? 'bg-surface-overlay/20' : ''}`}
               >
-                {spec.columns.map((col) => (
+                {columns.map((col) => (
                   <td
                     key={col.key}
                     className={`px-4 py-2.5 ${cellColor(row[col.key], col.type)}`}

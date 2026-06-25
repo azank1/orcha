@@ -494,9 +494,9 @@ class SessionRunner:
             logger.info("run_turn: cancelled by kill-switch for session %s", session_id)
             yield {"type": "stopped", "session_id": session_id}
             return
-        except Exception:
+        except Exception as exc:
             logger.exception("run_turn: graph stream error for session %s", session_id)
-            yield {"type": "error", "error": "Internal graph error — see server logs"}
+            yield _classify_stream_error(exc)
             return
         finally:
             await self._clear_active_stream_task(session_id, current_task)
@@ -554,11 +554,11 @@ class SessionRunner:
             )
             yield {"type": "stopped", "session_id": session_id}
             return
-        except Exception:
+        except Exception as exc:
             logger.exception(
                 "resume_from_interrupt: graph stream error for session %s", session_id
             )
-            yield {"type": "error", "error": "Internal graph error — see server logs"}
+            yield _classify_stream_error(exc)
             return
         finally:
             await self._clear_active_stream_task(session_id, current_task)
@@ -690,7 +690,7 @@ class SessionRunner:
 
         aupdate = getattr(self._graph, "aupdate_state", None)
         if callable(aupdate):
-            aupdate(config, updates)
+            await aupdate(config, updates)
             return {"ok": True, "merged": updates}
 
         update_state = getattr(self._graph, "update_state", None)
@@ -700,6 +700,72 @@ class SessionRunner:
 
         logger.error("LangGraph compiled graph has no aupdate_state/update_state")
         return {"ok": False, "error": "patch_unsupported"}
+
+
+def _classify_stream_error(exc: BaseException) -> dict[str, Any]:
+    """Map a graph-stream exception to a typed, user-facing error event.
+
+    The graph stream used to surface every failure as the same opaque
+    "Internal graph error" string, so the UI always offered a blanket retry —
+    even when retrying could not help (exhausted LLM credits, step-budget
+    overflow). This distinguishes transient failures (retry is sensible) from
+    fatal ones, and gives the frontend a ``retriable`` flag + ``category``.
+
+    Type detection is by name/attribute rather than hard imports so the runner
+    keeps no dependency on optional LLM/HTTP client packages.
+    """
+    name = type(exc).__name__
+    status = getattr(exc, "status_code", None) or getattr(
+        getattr(exc, "response", None), "status_code", None
+    )
+
+    # LLM provider credits exhausted (OpenRouter/OpenAI 402) — retry won't help.
+    if status == 402 or "PaymentRequired" in name:
+        return {
+            "type": "error",
+            "category": "llm_credits",
+            "retriable": False,
+            "error": (
+                "LLM provider credits exhausted (402). "
+                "Top up OpenRouter credits, then try again."
+            ),
+        }
+
+    # The orchestration loop hit its recursion/step budget.
+    if "GraphRecursion" in name:
+        return {
+            "type": "error",
+            "category": "step_budget",
+            "retriable": False,
+            "error": (
+                "This run hit its step budget before finishing. "
+                "Try a narrower goal or fewer agents."
+            ),
+        }
+
+    # Rate-limited or transient upstream/server errors — a retry may succeed.
+    if status in (408, 409, 425, 429, 500, 502, 503, 504) or name in (
+        "TimeoutError",
+        "ReadTimeout",
+        "ConnectTimeout",
+        "ConnectError",
+        "APITimeoutError",
+        "RateLimitError",
+    ):
+        return {
+            "type": "error",
+            "category": "transient",
+            "retriable": True,
+            "error": "A transient upstream error interrupted the run. Please retry.",
+        }
+
+    # Unknown/internal — don't promise a retry will help.
+    return {
+        "type": "error",
+        "category": "internal",
+        "retriable": False,
+        "error": "Internal graph error — see server logs.",
+    }
 
 
 def _extract_events(

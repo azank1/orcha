@@ -20,7 +20,11 @@ export function MetricCard({ spec }: { spec: MetricCardSpec }) {
       </span>
       <div className="flex items-baseline gap-2">
         <span className="text-[28px] font-bold leading-none text-text-heading">
-          {typeof spec.value === 'number' ? spec.value.toLocaleString() : spec.value}
+          {spec.value == null
+            ? '—'
+            : typeof spec.value === 'number'
+              ? spec.value.toLocaleString()
+              : spec.value}
         </span>
         {spec.unit && (
           <span className="text-[13px] text-text-secondary">{spec.unit}</span>

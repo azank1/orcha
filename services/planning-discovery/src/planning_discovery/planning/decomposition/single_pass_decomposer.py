@@ -126,7 +126,7 @@ class SinglePassDecomposer:
                 {"role": "user", "content": user_prompt},
             ],
             response_format={"type": "json_object"},
-            temperature=0.3,
+            temperature=0,  # deterministic DAG extraction — reduces planner flakiness
         )
 
         logger.debug("LLM response: %s", response)
@@ -153,7 +153,7 @@ class SinglePassDecomposer:
                 {"role": "user", "content": user_prompt},
             ],
             response_format={"type": "json_object"},
-            temperature=0.2,
+            temperature=0,  # deterministic DAG extraction — reduces planner flakiness
         )
 
         dag = json.loads(response)
