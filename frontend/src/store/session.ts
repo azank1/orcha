@@ -23,10 +23,14 @@ interface TokenUsage {
   total: number
 }
 
+export type RunPhase = 'planning' | 'executing' | null
+
 interface SessionState {
   sessionId: string | null
   sessionName: string | null
   status: SessionStatus
+  runPhase: RunPhase
+  activeAgentName: string | null
   messages: ChatMessage[]
   agents: AgentInfo[]
   checklist: ChecklistTask[]
@@ -52,7 +56,7 @@ interface SessionState {
   addMessage: (msg: ChatMessage) => void
   appendToken: (token: string) => void
   beginStreaming: () => string
-  endStreaming: () => void
+  endStreaming: (markAsThinking?: boolean) => void
   setAgents: (agents: AgentInfo[]) => void
   updateAgent: (agentId: string, patch: Partial<AgentInfo>) => void
   setChecklist: (tasks: ChecklistTask[]) => void
@@ -104,6 +108,8 @@ const initialState = {
   sessionId: null,
   sessionName: null,
   status: 'idle' as SessionStatus,
+  runPhase: null as RunPhase,
+  activeAgentName: null as string | null,
   messages: [],
   agents: [],
   checklist: [],
@@ -127,7 +133,12 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   setSessionId: (id) => set({ sessionId: id }),
   setSessionName: (name) => set({ sessionName: name }),
-  setStatus: (status) => set({ status }),
+  setStatus: (status) =>
+    set((s) => ({
+      status,
+      runPhase: status === 'running' ? (s.runPhase ?? 'planning') : null,
+      activeAgentName: status === 'running' ? s.activeAgentName : null,
+    })),
 
   addMessage: (msg) =>
     set((s) => {
@@ -169,13 +180,17 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     }))
   },
 
-  endStreaming: () => {
+  endStreaming: (markAsThinking = false) => {
     const { streamingMessageId } = get()
     if (!streamingMessageId) return
     set((s) => {
       const id = streamingMessageId
       const messages = s.messages
-        .map((m) => (m.id === id ? { ...m, streaming: false } : m))
+        .map((m) =>
+          m.id === id
+            ? { ...m, streaming: false, streamedAsThinking: markAsThinking || m.streamedAsThinking }
+            : m,
+        )
         .filter(
           (m) =>
             !(
@@ -261,6 +276,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   toolTraceStart: (p) =>
     set((s) => {
+      const activeAgentName = p.agent_id || p.tool_name
       const idx = s.toolTrace.findIndex((t) => t.call_id === p.call_id)
       const seq = s.timelineSeq + 1
       const startedAt = Date.now()
@@ -285,9 +301,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
           sortIndex: prev.sortIndex ?? row.sortIndex,
           startedAt: prev.startedAt ?? row.startedAt,
         }
-        return { toolTrace: next }
+        return { toolTrace: next, runPhase: 'executing', activeAgentName }
       }
-      return { toolTrace: [...s.toolTrace, row], timelineSeq: seq }
+      return { toolTrace: [...s.toolTrace, row], timelineSeq: seq, runPhase: 'executing', activeAgentName }
     }),
 
   toolTraceProgress: (callId, line) =>

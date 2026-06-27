@@ -37,9 +37,12 @@ export function LineChart({ spec }: { spec: LineChartSpec }) {
   }
 
   return (
-    <div className="rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
+    <div className="rounded-xl bg-surface-overlay border border-surface-border px-5 py-4 shadow-sm">
       {spec.title && (
-        <p className="mb-3 text-[13px] font-semibold text-text-heading">{spec.title}</p>
+        <div className="mb-3 flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#3B6EF8] shrink-0" aria-hidden />
+          <p className="text-[13px] font-semibold text-text-heading">{spec.title}</p>
+        </div>
       )}
       <ResponsiveContainer width="100%" height={180}>
         <ReLineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>

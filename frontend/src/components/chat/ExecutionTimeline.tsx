@@ -4,7 +4,7 @@ import { ToolRunCard } from './ToolRunCard'
 /** Tool / agent run row for the interleaved chat timeline */
 export function ToolTimelineRow({ trace }: { readonly trace: ToolInvocationTrace }) {
   return (
-    <li className="list-none border-l-2 border-surface-borderLight pl-4 ml-2">
+    <li className="list-none animate-tool-enter">
       <ToolRunCard trace={trace} />
     </li>
   )

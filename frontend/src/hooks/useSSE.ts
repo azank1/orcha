@@ -38,7 +38,8 @@ export function useSSE() {
           break
         }
         case 'invocation_start': {
-          s.endStreaming()
+          // Mark any streaming message as orchestrator reasoning (thinking block)
+          s.endStreaming(true)
           s.toolTraceStart({
             call_id: event.call_id,
             tool_name: event.tool_name,

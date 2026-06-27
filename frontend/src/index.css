@@ -138,3 +138,33 @@
 .animate-glow-pulse {
   animation: glowPulse 2s ease-in-out infinite;
 }
+
+@keyframes canvasEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-canvas-enter {
+  animation: canvasEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes toolCardEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-tool-enter {
+  animation: toolCardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}

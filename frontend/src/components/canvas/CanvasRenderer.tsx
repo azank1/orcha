@@ -60,25 +60,25 @@ export function CanvasRenderer({
   const isDashboard = layout === 'dashboard'
 
   return (
-    <div className={`rounded-xl overflow-hidden ${className}`}>
-      {manifest.title && (
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-text-secondary">
-            Canvas
+    <div className={`overflow-hidden ${className}`}>
+      <div className="mb-4 flex items-center gap-3">
+        <div className="h-px flex-1 bg-surface-borderLight" />
+        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-widest text-text-disabled">
+          {manifest.title ?? 'Dashboard'}
+        </span>
+        {isDemoManifest(manifest) && (
+          <span className="shrink-0 rounded-full border border-surface-borderLight bg-surface-base px-2 py-0.5 text-[10px] text-text-disabled">
+            Demo data
           </span>
-          <h3 className="text-[15px] font-semibold text-text-heading">{manifest.title}</h3>
-          {isDemoManifest(manifest) && (
-            <span className="rounded-full border border-surface-borderLight bg-surface-overlay px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-text-secondary">
-              Demo data — not connected to your accounts
-            </span>
-          )}
-        </div>
-      )}
+        )}
+        <div className="h-px flex-1 bg-surface-borderLight" />
+      </div>
       <div className={GRID_CLASS[layout] ?? GRID_CLASS.dashboard}>
         {components.map((spec, i) => (
           <div
             key={spec.id ?? `${spec.type}-${i}`}
-            className={isDashboard && isDashboardWide(spec) ? 'col-span-2' : ''}
+            className={`animate-canvas-enter ${isDashboard && isDashboardWide(spec) ? 'col-span-2' : ''}`}
+            style={{ animationDelay: `${i * 180}ms`, opacity: 0, animationFillMode: 'forwards' }}
           >
             <CanvasComponentRenderer spec={spec} />
           </div>

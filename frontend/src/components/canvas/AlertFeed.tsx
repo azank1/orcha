@@ -12,9 +12,10 @@ export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
   const alerts = raw.alerts ?? raw.items ?? []
 
   return (
-    <div className="rounded-xl bg-surface-elevated border border-surface-border overflow-hidden">
+    <div className="rounded-xl bg-surface-overlay border border-surface-border overflow-hidden shadow-sm">
       {spec.title && (
-        <div className="px-5 py-3 border-b border-surface-border">
+        <div className="px-5 py-3 border-b border-surface-border bg-surface-elevated/60 flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-semantic-warning shrink-0" aria-hidden />
           <p className="text-[13px] font-semibold text-text-heading">{spec.title}</p>
         </div>
       )}

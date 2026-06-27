@@ -13,13 +13,20 @@ function TrendArrow({ trend, delta }: { trend?: 'up' | 'down' | 'flat'; delta?: 
 }
 
 export function MetricCard({ spec }: { spec: MetricCardSpec }) {
+  const accentColor =
+    spec.trend === 'up'
+      ? 'border-l-semantic-success'
+      : spec.trend === 'down'
+        ? 'border-l-semantic-error'
+        : 'border-l-brand-primary'
+
   return (
-    <div className="flex flex-col gap-1.5 rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
-      <span className="text-[11px] font-medium uppercase tracking-wide text-text-secondary">
+    <div className={`flex flex-col gap-1.5 rounded-xl bg-surface-overlay border border-surface-border border-l-[3px] ${accentColor} px-5 py-4 shadow-sm`}>
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-text-secondary">
         {spec.label}
       </span>
       <div className="flex items-baseline gap-2">
-        <span className="text-[28px] font-bold leading-none text-text-heading">
+        <span className="text-[30px] font-bold leading-none tracking-tight text-text-heading">
           {spec.value == null
             ? '—'
             : typeof spec.value === 'number'

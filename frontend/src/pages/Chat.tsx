@@ -260,9 +260,20 @@ export function Chat() {
             >
               {chatTimeline.map((item) =>
                 item.kind === 'message' ? (
-                  <li key={item.msg.id} className="list-none">
-                    <MessageBubble message={item.msg} />
-                  </li>
+                  // Hide all agent messages when a canvas exists — the dashboard
+                  // is the output; text summaries are noise.
+                  item.msg.role === 'agent' && store.canvases.length > 0 ? null :
+                  // Also hide streaming/thinking messages — they're internal reasoning.
+                  item.msg.role === 'agent' && (item.msg.streaming || item.msg.streamedAsThinking) ? null :
+                  item.msg.role === 'user' ? (
+                    <li key={item.msg.id} className="list-none">
+                      <MessageBubble message={item.msg} />
+                    </li>
+                  ) : (
+                    <li key={item.msg.id} className="list-none">
+                      <MessageBubble message={item.msg} />
+                    </li>
+                  )
                 ) : item.kind === 'canvas' ? (
                   <li key={item.entry.id} className="list-none">
                     <CanvasRenderer manifest={item.entry.manifest} />
@@ -273,7 +284,7 @@ export function Chat() {
               )}
               {store.status === 'running' && !store.streamingMessageId && (
                 <li className="list-none">
-                  <StreamingDots />
+                  <StreamingDots phase={store.runPhase} agentName={store.activeAgentName} />
                 </li>
               )}
             </ul>

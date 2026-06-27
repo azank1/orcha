@@ -357,6 +357,9 @@ export interface ChatMessage {
   role: MessageRole
   content: string
   streaming?: boolean
+  /** True when this message was the orchestrator's ReAct reasoning that was
+   *  interrupted by a tool call — rendered as a collapsible "Thinking" block. */
+  streamedAsThinking?: boolean
   timestamp: number
   /** Monotonic per session — interleaves with tool cards */
   sortIndex?: number
