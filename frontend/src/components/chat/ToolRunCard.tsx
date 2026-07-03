@@ -41,6 +41,18 @@ function VerifiedBadge({ verified, reason }: { verified?: boolean; reason?: stri
   )
 }
 
+function RetryBadge({ attempt, max }: { attempt?: number; max?: number }) {
+  if (!attempt) return null
+  return (
+    <span
+      className="shrink-0 rounded-sm border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 text-caption font-semibold text-amber-400"
+      title="A transient failure was detected — re-running this step before committing the result."
+    >
+      ↻ Retrying {attempt}/{max ?? attempt + 1}
+    </span>
+  )
+}
+
 function ProtocolBadge({ protocol }: { protocol?: string }) {
   if (!protocol) return null
   const p = PROTOCOL_BADGE[protocol.toLowerCase()]
@@ -117,6 +129,9 @@ export function ToolRunCard({ trace }: ToolRunCardProps) {
           {statusLabel}
         </span>
         <ProtocolBadge protocol={trace.protocol} />
+        {trace.phase === 'running' && trace.retryAttempt ? (
+          <RetryBadge attempt={trace.retryAttempt} max={trace.maxAttempts} />
+        ) : null}
         {trace.phase !== 'running' && (
           <VerifiedBadge verified={trace.verified} reason={trace.verdict_reason} />
         )}

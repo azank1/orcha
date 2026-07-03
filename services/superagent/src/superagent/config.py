@@ -57,6 +57,10 @@ class Settings(BaseSettings):
     compression_threshold: float = 0.85  # compress when usage > 85% of budget
     keep_last_messages: int = 15
 
+    # Verifier retry-gate (v1.3) — bounded re-runs of a step that fails with a
+    # transient error before the result is committed. 0 disables retries.
+    verify_max_retries: int = 2
+
     model_config = SettingsConfigDict(env_file=str(_ENV_FILE), extra="ignore")
 
 

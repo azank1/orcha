@@ -196,6 +196,76 @@ def _result_status(content: str) -> str:
     return "success"
 
 
+async def _execute_with_retry(
+    middleware: Any,
+    *,
+    agent_id: str,
+    capability_id: str,
+    protocol: str,
+    tool_name: str,
+    args: dict[str, Any],
+    call_id: str,
+    config: RunnableConfig,
+    pending_events: list[dict[str, Any]],
+    max_retries: int,
+) -> dict[str, Any]:
+    """Run ``middleware.execute()`` with a bounded retry on transient failures.
+
+    The verifier retry-gate (v1.3): a step that raises a *transient* error
+    (timeout / connection / 429 / 5xx — classified by the Phase-1 taxonomy in
+    ``runner._classify_stream_error``) is re-run up to ``max_retries`` times
+    before its result is committed. The transient exception is raised *before*
+    payment settlement (pipeline step 6.5), so a retry never double-charges.
+
+    Interrupts (auth / payment / graph) and non-retriable errors propagate
+    unchanged to the caller's existing ``except`` handlers — this wrapper only
+    intercepts retriable dispatch failures on the happy path.
+    """
+    # Local import avoids a module-level import cycle (runner ⇄ nodes).
+    from ..graph.runner import _classify_stream_error
+
+    attempt = 0
+    while True:
+        attempt += 1
+        try:
+            return await middleware.execute(
+                agent_id=agent_id,
+                capability_id=capability_id,
+                protocol=protocol,
+                tool_name=tool_name,
+                args=args,
+                call_id=call_id,
+                config=config,
+            )
+        except (AuthInterruptRequired, PaymentInterrupt, GraphInterrupt):
+            raise  # control-flow interrupts are never retried
+        except Exception as exc:
+            cls = _classify_stream_error(exc)
+            if cls.get("retriable") and attempt <= max_retries:
+                await _emit_invocation(
+                    config,
+                    {
+                        "type": "invocation_retry",
+                        "call_id": call_id,
+                        "tool_name": tool_name,
+                        "agent_id": agent_id,
+                        "attempt": attempt,
+                        "max_attempts": max_retries + 1,
+                        "reason": cls.get("category", "transient"),
+                    },
+                    pending_events,
+                )
+                logger.info(
+                    "execute_agent_calls: retry %s (attempt %d/%d) — %s",
+                    tool_name,
+                    attempt,
+                    max_retries + 1,
+                    cls.get("category"),
+                )
+                continue
+            raise
+
+
 async def execute_agent_calls_node(
     state: dict[str, Any],
     config: RunnableConfig,
@@ -457,8 +527,12 @@ async def execute_agent_calls_node(
             json.dumps(args, default=str)[:600],
         )
         try:
+            from ..config import settings as _sa_settings
+
+            _verify_max_retries = max(0, int(getattr(_sa_settings, "verify_max_retries", 2)))
             middleware = ExecutionMiddleware(state=state)
-            result = await middleware.execute(
+            result = await _execute_with_retry(
+                middleware,
                 agent_id=agent_id,
                 capability_id=capability_id,
                 protocol=protocol,
@@ -466,6 +540,8 @@ async def execute_agent_calls_node(
                 args=args,
                 call_id=call_id,
                 config=config,
+                pending_events=pending_events,
+                max_retries=_verify_max_retries,
             )
             content = result.get("content", "")
             _call_base_fee = result.get("base_fee", "0")
@@ -645,6 +721,16 @@ async def execute_agent_calls_node(
         except Exception as exc:
             logger.exception("Agent call %r failed", tool_name)
             content = f"Error: {exc}"
+
+        # v1.3 verdict normalization — any Error content is unverified, no matter
+        # which path produced it (returned string, raised+exhausted retry,
+        # auth-denied, preflight). Previously a raised failure left the
+        # initialized _verified=True, mislabelling failed steps as ✓ Verified.
+        # Success keeps the middleware's structural verdict from pipeline step 5.5.
+        if content.startswith(("Error:", "Input error:", "Unsupported protocol:")):
+            _verified = False
+            if not _verdict_reason or _verdict_reason == "ok":
+                _verdict_reason = content[:120]
 
         cost_payload: dict[str, Any] = {}
         if _call_total_cost and _call_total_cost != "0":

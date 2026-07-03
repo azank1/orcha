@@ -88,6 +88,12 @@ interface SessionState {
     protocol?: string
   }) => void
   toolTraceProgress: (callId: string, line: string) => void
+  toolTraceRetry: (p: {
+    call_id: string
+    attempt: number
+    max_attempts: number
+    reason?: string
+  }) => void
   toolTraceFinalize: (p: {
     call_id: string
     tool_name: string
@@ -315,6 +321,24 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       ),
     })),
 
+  toolTraceRetry: (p) =>
+    set((s) => ({
+      toolTrace: s.toolTrace.map((t) =>
+        t.call_id === p.call_id
+          ? {
+              ...t,
+              phase: 'running',
+              retryAttempt: p.attempt,
+              maxAttempts: p.max_attempts,
+              progressLines: [
+                ...t.progressLines,
+                `Retrying (${p.attempt}/${p.max_attempts})${p.reason ? ` — ${p.reason}` : ''}`,
+              ],
+            }
+          : t,
+      ),
+    })),
+
   toolTraceFinalize: (p) =>
     set((s) => {
       const phase: ToolInvocationPhase = p.status === 'error' ? 'error' : 'success'
@@ -331,6 +355,9 @@ export const useSessionStore = create<SessionState>((set, get) => ({
                 base_fee: p.base_fee ?? t.base_fee,
                 verified: p.verified ?? t.verified,
                 verdict_reason: p.verdict_reason ?? t.verdict_reason,
+                // Clear the retry indicator once the final result lands.
+                retryAttempt: undefined,
+                maxAttempts: undefined,
               }
             : t,
         ),

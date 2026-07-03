@@ -110,6 +110,9 @@ def _invocation_dedupe_key(payload: dict[str, Any]) -> tuple[Any, ...]:
     cid = payload.get("call_id")
     if t == "invocation_progress":
         return (t, cid, payload.get("message", ""))
+    if t == "invocation_retry":
+        # Each retry attempt for the same call is a distinct event.
+        return (t, cid, payload.get("attempt"))
     return (t, cid)
 
 
@@ -143,7 +146,13 @@ def _message_chunk_text_delta(msg_chunk: AIMessageChunk) -> str:
 
 
 _AGENT_INVOCATION_TYPES = frozenset(
-    ("invocation_start", "invocation_progress", "invocation_result", "canvas_manifest")
+    (
+        "invocation_start",
+        "invocation_progress",
+        "invocation_retry",
+        "invocation_result",
+        "canvas_manifest",
+    )
 )
 
 

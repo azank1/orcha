@@ -58,6 +58,15 @@ export function useSSE() {
           }
           break
         }
+        case 'invocation_retry': {
+          s.toolTraceRetry({
+            call_id: event.call_id,
+            attempt: event.attempt,
+            max_attempts: event.max_attempts,
+            reason: event.reason,
+          })
+          break
+        }
         case 'invocation_result': {
           s.toolTraceFinalize({
             call_id: event.call_id,

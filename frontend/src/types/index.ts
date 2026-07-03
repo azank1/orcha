@@ -162,6 +162,10 @@ export interface ToolInvocationTrace {
   verified?: boolean
   /** Short reason string from the structural verifier. */
   verdict_reason?: string
+  /** Current verifier retry attempt (1-based) while a transient step is being re-run. */
+  retryAttempt?: number
+  /** Total attempts allowed (1 + verify_max_retries). */
+  maxAttempts?: number
 }
 
 /**
@@ -180,6 +184,18 @@ export type SSEEvent =
       protocol?: string
     }
   | { type: 'invocation_progress'; call_id: string; status: string; message: string }
+  | {
+      type: 'invocation_retry'
+      call_id: string
+      tool_name: string
+      agent_id: string
+      /** 1-based attempt that just failed and is being retried. */
+      attempt: number
+      /** Total attempts allowed (1 + verify_max_retries). */
+      max_attempts: number
+      /** Transient failure category from the error taxonomy. */
+      reason?: string
+    }
   | {
       type: 'invocation_result'
       call_id: string
