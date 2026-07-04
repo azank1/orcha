@@ -31,6 +31,8 @@ Anthropic's Claude Managed Agents commoditized the agent-ops layer. Value moved 
 
 **Verification log:** [M0-VERIFICATION.md](M0-VERIFICATION.md). **Canonical paths on `main`:** `docs/dev_docs/{SCOPE-MAP,M0-VERIFICATION,M2-DEMO}.md` (not `oss-launch/` — that layout is only on `az/feat/sandbox-deploy`).
 
+**Full-system proof:** [POC.md](POC.md) — `./scripts/poc-e2e.sh` asserts the entire loop (SDK registration → discovery → multi-protocol goal → verification → retry → settlement → metrics) across real service boundaries in one stage-gated run.
+
 **Built (all committed, pushed):**
 - CanvasKit v0.1 — 8 components, UIManifest types, full SSE pipeline frontend↔backend
 - Finance dashboard agent — port 3010, `get_portfolio_dashboard`, returns canvas envelope

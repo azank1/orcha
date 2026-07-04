@@ -63,6 +63,8 @@ emerge init my-agent && cd my-agent && emerge run
 
 Full setup: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)
 
+**Prove it yourself:** `./scripts/poc-e2e.sh` — one script registers a paid agent via the `emerge` SDK, runs a multi-protocol goal, and asserts verification, retry, and settlement end-to-end. Details: [docs/dev_docs/POC.md](docs/dev_docs/POC.md)
+
 ## Architecture
 
 ```

@@ -355,6 +355,8 @@ async def list_agents(
                     health_status=agent.health_status.lower(),
                     protocol_type=agent.protocol_type.lower(),
                     indexed_at=agent.indexed_at,
+                    execution_count=agent.execution_count,
+                    success_rate=agent.success_rate,
                 )
                 for agent in agents
             ],

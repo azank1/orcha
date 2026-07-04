@@ -50,6 +50,8 @@ class AgentListItem(BaseModel):
     health_status: str
     protocol_type: str
     indexed_at: datetime
+    execution_count: int = 0
+    success_rate: float = 0.70
 
 
 class PaginationInfo(BaseModel):
