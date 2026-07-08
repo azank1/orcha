@@ -9,6 +9,13 @@ from typing import Any
 
 from .adk_llm import complete_llm
 from .agent_registry import PLANNER_DOMAIN_IDS, tools_for_domain
+from .canvas import (
+    RENDER_INSTRUCTION,
+    build_data_table,
+    find_table_values,
+    validate_manifest,
+    wrap_envelope,
+)
 from .config import Settings
 from .hitl import hitl_message, tool_requires_hitl
 from .mcp_client import WorkspaceMCPClient
@@ -145,6 +152,7 @@ async def run_workspace_task(
         ]
 
     context_chunks: list[str] = []
+    raw_results: list[dict[str, Any]] = []
     for step_idx, step in enumerate(_toposort([s for s in steps if isinstance(s, dict)])):
         agent = str(step.get("agent") or "workspace_orchestrator")
         goal = str(step.get("goal") or user_query)
@@ -199,6 +207,7 @@ async def run_workspace_task(
                 },
             }
         raw = await mcp.tools_call(tool_name, arguments, bearer)
+        raw_results.append({"tool": tool_name, "raw": raw})
         snippet = json.dumps(raw, indent=2)[:4000]
         logger.info("orchestrator_step_done step=%s tool=%s snippet_len=%d", step_id, tool_name, len(snippet))
         context_chunks.append(f"[{agent}] {tool_name}: {snippet}")
@@ -211,4 +220,52 @@ async def run_workspace_task(
         "Summarize the following workspace tool results for the user. Be concise and actionable.",
         "\n\n".join(context_chunks),
     )
+    summary = summary or ""
+
+    # Agentic CanvasKit render: the LLM composes a manifest from the vetted catalog
+    # based on the actual data (validated, fail-closed). Fall back to a deterministic
+    # data_table for tabular results, then to plain text — never worse than today.
+    manifest = await _render_manifest(settings, raw_results)
+    if manifest is None:
+        for item in raw_results:
+            values = find_table_values(item.get("raw"))
+            if values:
+                manifest = build_data_table(values, title=str(item.get("tool") or "Sheet"))
+                if manifest is not None:
+                    break
+    if manifest is not None:
+        return {"text": wrap_envelope(manifest, summary or "Rendered workspace result.")}
     return {"text": summary or "\n\n".join(context_chunks)}
+
+
+def _compact_results(raw_results: list[dict[str, Any]], max_chars: int = 6000) -> str:
+    """Size-bounded view of raw tool outputs for the render LLM."""
+    if not raw_results:
+        return ""
+    budget = max(500, max_chars // len(raw_results))
+    parts: list[str] = []
+    for item in raw_results:
+        text = json.dumps(item.get("raw"), default=str)
+        if len(text) > budget:
+            text = text[:budget] + "…(truncated)"
+        parts.append(f"[{item.get('tool', '')}]\n{text}")
+    return "\n\n".join(parts)[:max_chars]
+
+
+async def _render_manifest(
+    settings: Settings, raw_results: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    """Ask the LLM to compose a CanvasKit manifest from the tool results; validate it."""
+    if not raw_results:
+        return None
+    try:
+        raw = await complete_llm(settings, RENDER_INSTRUCTION, _compact_results(raw_results))
+    except Exception:
+        logger.exception("canvas_render_llm_failed")
+        return None
+    obj = _extract_json_object(raw)
+    if obj is None:
+        return None
+    manifest = validate_manifest(obj)
+    logger.info("canvas_render manifest_valid=%s", manifest is not None)
+    return manifest

@@ -213,7 +213,10 @@ start_service web-scrpr "$C_WS" bash -c "cd '$ROOT/agents/web-scraper' && { [ -f
 start_service search-agt "$C_SR" bash -c "cd '$ROOT/agents/search-agent' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec env PORT=3007 uv run python server.py 2>&1"
 start_service notion-res "$C_NR" bash -c "cd '$ROOT/agents/notion-research' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.a2a_server:app --host 0.0.0.0 --port 3006 --log-level info 2>&1"
 start_service lead-gen "$C_LG" bash -c "cd '$ROOT/agents/lead-gen-agent' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run python main.py 2>&1"
-start_service gws-orch "$C_GWS" bash -c "cd '$ROOT/agents/google-workspace-orchestrator' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.server:app --host 0.0.0.0 --port 3011 --log-level info 2>&1"
+# WORKSPACE_MCP_PORT default 8100: the agent spawns workspace-mcp on this port,
+# and its upstream default (8000) collides with the registry. A value in the
+# agent's .env still wins.
+start_service gws-orch "$C_GWS" bash -c "cd '$ROOT/agents/google-workspace-orchestrator' && { [ -f .env ] && set -a && source .env && set +a || true; } ; export WORKSPACE_MCP_PORT=\"\${WORKSPACE_MCP_PORT:-8100}\" ; exec uv run uvicorn src.server:app --host 0.0.0.0 --port 3011 --log-level info 2>&1"
 start_service ecomm-auto "$C_ECM" bash -c "cd '$ROOT/agents/ecommerce-automation' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.a2a_server:app --host 0.0.0.0 --port 3009 --log-level info 2>&1"
 
 wait_for web-scrpr    http://localhost:3004/health 30 || warn "web-scraper not healthy (non-fatal)"
