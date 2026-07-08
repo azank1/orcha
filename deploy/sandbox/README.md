@@ -17,7 +17,7 @@ URL (local): http://localhost
 1. Set `SANDBOX_MAX_DAILY_MESSAGES` in `.env.sandbox` (default 500 ≈ $50/day at $0.10/msg).
 2. Set `OPENROUTER_API_KEY` / `ANTHROPIC_API_KEY` for LLM routing.
 3. Set `JWT_SECRET` to a strong random value.
-4. Set `CORS_ORIGINS` to your public domain (not `*` in production).
+4. Set `CORS_ORIGINS` to your public domain (not `*` in production). For local testing the shipped default already includes `http://localhost` (the nginx :80 origin) and `http://localhost:3000`; add your public origin alongside them.
 5. Terminate TLS in front of nginx (see below).
 
 ## TLS (public URL)
@@ -84,7 +84,7 @@ Add your Vercel URL to `CORS_ORIGINS` in `.env.sandbox`, then rebuild the gatewa
 
 ```bash
 # In .env.sandbox:
-CORS_ORIGINS=http://localhost:3000,https://app.metaorcha.ai,https://orcha.vercel.app
+CORS_ORIGINS=http://localhost,https://orcha.vercel.app
 
 docker compose -f deploy/sandbox/docker-compose.sandbox.yml up -d --build gateway
 ```
