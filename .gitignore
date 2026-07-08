@@ -103,3 +103,7 @@ Thumbs.db
 .ruff_cache
 .logs
 ctx/
+
+# Local-only docs — internal moat/strategy/pricing notes, PDFs, recordings.
+# Populated by scripts/mirror-local-docs.sh; never meant to leave this machine.
+docs-local/
