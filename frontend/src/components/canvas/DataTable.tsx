@@ -26,6 +26,10 @@ function cellColor(value: unknown, type?: DataTableSpec['columns'][0]['type']): 
   return 'text-text-body'
 }
 
+function isNumericColumn(type?: DataTableSpec['columns'][0]['type']): boolean {
+  return type === 'currency' || type === 'percent' || type === 'number'
+}
+
 export function DataTable({ spec }: { spec: DataTableSpec }) {
   // Defensive against schema drift — a malformed manifest must not white-screen.
   const columns = Array.isArray(spec.columns) ? spec.columns : []
@@ -57,7 +61,7 @@ export function DataTable({ spec }: { spec: DataTableSpec }) {
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className="px-4 py-2.5 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
+                  className="px-4 py-2 text-left text-[11px] font-medium uppercase tracking-wide text-text-secondary"
                 >
                   {col.label}
                 </th>
@@ -73,7 +77,7 @@ export function DataTable({ spec }: { spec: DataTableSpec }) {
                 {columns.map((col) => (
                   <td
                     key={col.key}
-                    className={`px-4 py-2.5 ${cellColor(row[col.key], col.type)}`}
+                    className={`px-4 py-1.5 ${isNumericColumn(col.type) ? 'font-mono' : ''} ${cellColor(row[col.key], col.type)}`}
                   >
                     {formatCell(row[col.key], col.type)}
                   </td>

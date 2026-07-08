@@ -16,7 +16,7 @@ export function ProgressBar({ spec }: { spec: ProgressBarSpec }) {
     <div className="rounded-xl bg-surface-elevated border border-surface-border px-5 py-4">
       <div className="flex items-center justify-between mb-2">
         <span className="text-[13px] font-medium text-text-body">{spec.label}</span>
-        <span className="text-[13px] font-semibold text-text-heading">{pct.toFixed(0)}%</span>
+        <span className="text-[13px] font-mono font-semibold text-text-heading">{pct.toFixed(0)}%</span>
       </div>
       <div className="h-2 w-full rounded-full bg-surface-overlay">
         <div

@@ -48,7 +48,7 @@ export function ArtifactCard({ artifactId, filename, mimeType, sizeBytes }: Arti
       <span className="text-xl shrink-0">{fileIcon(mimeType)}</span>
       <div className="flex-1 min-w-0">
         <p className="text-label text-text-body truncate">{filename}</p>
-        <p className="text-caption text-text-disabled">{formatBytes(sizeBytes)}</p>
+        <p className="text-caption font-mono text-text-disabled">{formatBytes(sizeBytes)}</p>
       </div>
       <button
         onClick={handleDownload}

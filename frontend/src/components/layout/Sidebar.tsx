@@ -50,7 +50,7 @@ export function Sidebar() {
               cn(
                 'size-10 flex items-center justify-center rounded-md text-lg transition-colors duration-150',
                 isActive
-                  ? 'bg-brand-primary-dim border border-[rgba(59,110,248,0.3)] text-brand-primary'
+                  ? 'bg-brand-primary-dim border border-[rgba(59,110,248,0.3)] text-brand-primary shadow-blue'
                   : 'text-text-secondary hover:bg-surface-overlay hover:text-text-body',
               )
             }

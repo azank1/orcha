@@ -32,7 +32,7 @@ export function AlertFeed({ spec }: { spec: AlertFeedSpec }) {
                 )}
               </div>
               {alert.timestamp && (
-                <span className="shrink-0 text-[11px] text-text-secondary">{alert.timestamp}</span>
+                <span className="shrink-0 text-[11px] font-mono text-text-secondary">{alert.timestamp}</span>
               )}
             </li>
           )

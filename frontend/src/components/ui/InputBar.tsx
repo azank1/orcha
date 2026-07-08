@@ -145,8 +145,8 @@ export function InputBar({
           className={cn(
             'ml-2 shrink-0 flex items-center justify-center rounded-md bg-brand-primary text-white',
             'transition-colors duration-150 hover:bg-brand-primary-hover',
-            'disabled:opacity-40 disabled:cursor-not-allowed',
-            size === 'home' ? 'size-10 text-lg' : 'size-9 text-base',
+            'disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none',
+            size === 'home' ? 'size-10 text-lg shadow-blue' : 'size-9 text-base',
           )}
         >
           {isRunning ? '■' : '↑'}

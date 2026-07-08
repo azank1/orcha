@@ -31,7 +31,7 @@ export function ArtifactChip({ artifact, onRemove }: ArtifactChipProps) {
       )}
       <span className="max-w-[140px] truncate">{artifact.filename}</span>
       {!artifact.uploading && !artifact.error && (
-        <span className="text-text-disabled">{formatBytes(artifact.size_bytes)}</span>
+        <span className="font-mono text-text-disabled">{formatBytes(artifact.size_bytes)}</span>
       )}
       {artifact.error && <span className="text-[11px]">{artifact.error}</span>}
       <button

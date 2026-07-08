@@ -2,6 +2,9 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
 
 @tailwind base;
 @tailwind components;
@@ -18,15 +21,15 @@
   --color-brand-secondary-dim: #002A30;
   --color-brand-secondary-hover: #009BB8;
 
-  /* Surface */
-  --color-surface-canvas: #07070C;
-  --color-surface-base: #0D0D14;
-  --color-surface-elevated: #13131E;
-  --color-surface-overlay: #1A1A28;
-  --color-surface-border: #252535;
-  --color-surface-border-light: #333348;
-  --color-surface-muted: #4A4A6A;
-  --color-surface-subtle: #6B6B8F;
+  /* Surface — zinc-neutral (cyber-technical theme) */
+  --color-surface-canvas: #09090B;
+  --color-surface-base: #121214;
+  --color-surface-elevated: #18181B;
+  --color-surface-overlay: #1F1F23;
+  --color-surface-border: #27272A;
+  --color-surface-border-light: #3F3F46;
+  --color-surface-muted: #52525B;
+  --color-surface-subtle: #71717A;
 
   /* Semantic */
   --color-success: #22C55E;
@@ -43,9 +46,9 @@
   /* Typography */
   --color-text-heading: #EEEEF2;
   --color-text-body: #C4C4D4;
-  --color-text-secondary: #8888AA;
-  --color-text-disabled: #4A4A6A;
-  --color-text-inverse: #07070C;
+  --color-text-secondary: #9CA3AF;
+  --color-text-disabled: #52525B;
+  --color-text-inverse: #09090B;
   --color-text-brand: #3B6EF8;
   --color-text-accent: #00C8E8;
 
@@ -76,7 +79,7 @@
   }
 
   body {
-    background-color: #07070C;
+    background-color: #09090B;
     color: #C4C4D4;
     font-family: 'Inter', ui-sans-serif, system-ui;
     -webkit-font-smoothing: antialiased;
@@ -96,7 +99,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #252535 transparent;
+    scrollbar-color: #27272A transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -108,7 +111,7 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #252535;
+    background: #27272A;
     border-radius: 9999px;
   }
 

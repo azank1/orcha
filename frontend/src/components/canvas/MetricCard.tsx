@@ -6,7 +6,7 @@ function TrendArrow({ trend, delta }: { trend?: 'up' | 'down' | 'flat'; delta?: 
   const color = isUp ? 'text-semantic-success' : 'text-semantic-error'
   const arrow = isUp ? '↑' : '↓'
   return (
-    <span className={`text-[13px] font-medium ${color}`}>
+    <span className={`text-label font-mono ${color}`}>
       {arrow} {delta != null ? `${Math.abs(delta)}%` : ''}
     </span>
   )
@@ -26,7 +26,7 @@ export function MetricCard({ spec }: { spec: MetricCardSpec }) {
         {spec.label}
       </span>
       <div className="flex items-baseline gap-2">
-        <span className="text-[30px] font-bold leading-none tracking-tight text-text-heading">
+        <span className="text-[30px] font-mono font-bold leading-none tracking-tight text-text-heading">
           {spec.value == null
             ? '—'
             : typeof spec.value === 'number'
@@ -34,7 +34,7 @@ export function MetricCard({ spec }: { spec: MetricCardSpec }) {
               : spec.value}
         </span>
         {spec.unit && (
-          <span className="text-[13px] text-text-secondary">{spec.unit}</span>
+          <span className="text-mono font-mono text-text-secondary">{spec.unit}</span>
         )}
       </div>
       {(spec.trend || spec.sub_label) && (

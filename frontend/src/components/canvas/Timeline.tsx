@@ -36,7 +36,7 @@ export function Timeline({ spec }: { spec: TimelineSpec }) {
                   <p className="mt-0.5 text-[12px] text-text-secondary">{ev.description}</p>
                 )}
                 {ev.timestamp && (
-                  <p className="mt-0.5 text-[11px] text-text-secondary">{ev.timestamp}</p>
+                  <p className="mt-0.5 text-[11px] font-mono text-text-secondary">{ev.timestamp}</p>
                 )}
               </div>
             </li>

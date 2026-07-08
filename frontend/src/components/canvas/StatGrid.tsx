@@ -26,15 +26,15 @@ export function StatGrid({ spec }: { spec: StatGridSpec }) {
               {stat.label}
             </span>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold leading-none text-text-heading">
+              <span className="text-[22px] font-mono font-bold leading-none text-text-heading">
                 {typeof stat.value === 'number' ? stat.value.toLocaleString() : stat.value}
               </span>
               {stat.unit && (
-                <span className="text-[12px] text-text-secondary">{stat.unit}</span>
+                <span className="text-[12px] font-mono text-text-secondary">{stat.unit}</span>
               )}
             </div>
             {delta != null && (
-              <span className={`text-[12px] font-medium ${trendColor}`}>
+              <span className={`text-[12px] font-mono font-medium ${trendColor}`}>
                 {delta > 0 ? '↑' : '↓'} {Math.abs(delta)}%
               </span>
             )}

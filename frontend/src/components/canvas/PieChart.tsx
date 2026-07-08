@@ -7,13 +7,12 @@ import {
   Legend,
 } from 'recharts'
 import type { PieChartSpec } from '../../types/canvas'
-
-const DEFAULT_COLORS = ['#3B6EF8', '#00C8E8', '#A855F7', '#22C55E', '#F59E0B', '#EF4444']
+import { CHART_COLOR_SEQUENCE, CHART_MONO_FONT_STACK, CHART_TOOLTIP_STYLE } from './chartTokens'
 
 export function PieChart({ spec }: { spec: PieChartSpec }) {
   const data = spec.data.map((d, i) => ({
     ...d,
-    color: d.color ?? DEFAULT_COLORS[i % DEFAULT_COLORS.length],
+    color: d.color ?? CHART_COLOR_SEQUENCE[i % CHART_COLOR_SEQUENCE.length],
   }))
 
   return (
@@ -37,12 +36,7 @@ export function PieChart({ spec }: { spec: PieChartSpec }) {
             ))}
           </Pie>
           <Tooltip
-            contentStyle={{
-              background: '#1E2330',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 8,
-              fontSize: 12,
-            }}
+            contentStyle={CHART_TOOLTIP_STYLE}
             formatter={(value: number) => [
               `${value.toLocaleString()} (${((value / data.reduce((s, d) => s + d.value, 0)) * 100).toFixed(1)}%)`,
             ]}
@@ -50,7 +44,7 @@ export function PieChart({ spec }: { spec: PieChartSpec }) {
           <Legend
             iconType="circle"
             iconSize={8}
-            wrapperStyle={{ fontSize: 12, color: '#9CA3AF' }}
+            wrapperStyle={{ fontSize: 12, color: '#9CA3AF', fontFamily: CHART_MONO_FONT_STACK }}
           />
         </RePieChart>
       </ResponsiveContainer>

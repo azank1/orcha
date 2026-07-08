@@ -122,7 +122,7 @@ export function Home() {
           left: '50%',
           top: 100,
           transform: 'translateX(-50%)',
-          background: 'radial-gradient(ellipse at center, rgba(59,110,248,0.07) 0%, rgba(7,7,12,0) 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(59,110,248,0.07) 0%, rgba(9,9,11,0) 70%)',
           borderRadius: '50%',
         }}
         aria-hidden="true"
@@ -137,7 +137,7 @@ export function Home() {
         )}
       >
         {/* Logo badge */}
-        <div className="size-16 flex items-center justify-center rounded-xl bg-brand-primary-dim border border-[rgba(59,110,248,0.35)] mb-6">
+        <div className="size-16 flex items-center justify-center rounded-xl bg-brand-primary-dim border border-[rgba(59,110,248,0.35)] shadow-blue mb-6">
           <Logo size={36} />
         </div>
 

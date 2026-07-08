@@ -8,8 +8,12 @@ import {
   Tooltip,
 } from 'recharts'
 import type { LineChartSpec } from '../../types/canvas'
-
-const DEFAULT_COLORS = ['#3B6EF8', '#00C8E8', '#A855F7', '#22C55E', '#F59E0B']
+import {
+  CHART_COLOR_SEQUENCE,
+  CHART_GRID_STROKE,
+  CHART_TEXT_SECONDARY,
+  CHART_TOOLTIP_STYLE,
+} from './chartTokens'
 
 export function LineChart({ spec }: { spec: LineChartSpec }) {
   const raw = spec as LineChartSpec & {
@@ -22,7 +26,7 @@ export function LineChart({ spec }: { spec: LineChartSpec }) {
   const colors =
     raw.colors ??
     raw.series?.map((s) => s.color).filter((c): c is string => Boolean(c)) ??
-    DEFAULT_COLORS
+    CHART_COLOR_SEQUENCE
   const data = Array.isArray(raw.data) ? raw.data : []
 
   if (yKeys.length === 0) {
@@ -40,32 +44,25 @@ export function LineChart({ spec }: { spec: LineChartSpec }) {
     <div className="rounded-xl bg-surface-overlay border border-surface-border px-5 py-4 shadow-sm">
       {spec.title && (
         <div className="mb-3 flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#3B6EF8] shrink-0" aria-hidden />
+          <span className="h-2 w-2 rounded-full bg-brand-primary shrink-0" aria-hidden />
           <p className="text-[13px] font-semibold text-text-heading">{spec.title}</p>
         </div>
       )}
       <ResponsiveContainer width="100%" height={180}>
         <ReLineChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+          <CartesianGrid strokeDasharray="3 3" stroke={CHART_GRID_STROKE} />
           <XAxis
             dataKey={spec.x_key}
-            tick={{ fill: '#9CA3AF', fontSize: 11 }}
+            tick={{ fill: CHART_TEXT_SECONDARY, fontSize: 11, fontFamily: CHART_TOOLTIP_STYLE.fontFamily }}
             axisLine={false}
             tickLine={false}
           />
           <YAxis
-            tick={{ fill: '#9CA3AF', fontSize: 11 }}
+            tick={{ fill: CHART_TEXT_SECONDARY, fontSize: 11, fontFamily: CHART_TOOLTIP_STYLE.fontFamily }}
             axisLine={false}
             tickLine={false}
           />
-          <Tooltip
-            contentStyle={{
-              background: '#1E2330',
-              border: '1px solid rgba(255,255,255,0.1)',
-              borderRadius: 8,
-              fontSize: 12,
-            }}
-          />
+          <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
           {yKeys.map((key, i) => (
             <Line
               key={key}
