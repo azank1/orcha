@@ -14,6 +14,8 @@ Everyone's building agent loops. The problem is they stop at the single-agent la
 
 Today's "loop engineering" tools handle one agent looping on one task. The harder problem — composing agents that speak different protocols into a single **verified**, goal-driven run with structured output — has no open-source solution.
 
+Tools like **Traycer** proved the plan → orchestrate → verify → ship layer for *coding* agents (bootstrapped to 100k+ users in a quarter — the demand is real). Orcha is that nerve center for **every** agent: any protocol, structured output instead of code diffs, and an open agent registry anyone can plug into.
+
 ### What Orcha does
 
 Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, ACP, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble. A **structural verifier** runs after each agent step and marks it `✓ Verified` or `✗ Unverified` in the UI — the visible answer to "does it check the output?"
@@ -60,7 +62,9 @@ emerge register        # publish to the Orcha runtime
 
 Your agent is now composable in any Orcha goal-driven loop. Docs: `docs/dev_docs/` → `emerge.yaml` reference.
 
-> **Note:** Different project from [stablyai/orca](https://github.com/stablyai/orca) (that's a coding-agent IDE). Orcha routes across MCP/A2A/ACP protocols into verified, structured output.
+> **Not just coding agents.** [Traycer](https://traycer.ai) does plan→verify→ship for coding agents inside your IDE (homogeneous agents, one vertical). Orcha runs the same loop across **heterogeneous** protocols — an MCP finance server + an A2A Gmail agent + a COMPUTER_USE action in one verified run — with structured dashboard output and a registry any third party can publish to. Also a different project from [stablyai/orca](https://github.com/stablyai/orca) (a coding-agent IDE).
+
+> **It also does real work.** Connect a real Google OAuth client and the same verified loop reads and writes live Gmail / Drive / Sheets via the Workspace orchestrator agent — the plan decides *what* to do, not just which fixture to call. Setup: `docs/dev_docs/GWS-LIVE-TEST.md`.
 
 ### What we're NOT claiming
 

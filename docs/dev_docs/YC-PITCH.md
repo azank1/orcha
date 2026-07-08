@@ -58,6 +58,7 @@ Orcha is the missing layer. A natural-language goal enters; a structured dashboa
 1. MCP (Anthropic) and A2A (Google) protocol standards landed in 2025–2026 with real ecosystem adoption. The composition layer is now the unlocked bottleneck.
 2. Enterprise agent automation is mainstream. Every Fortune 500 is building an agent stack. The composition + output layer is the infrastructure tax they all pay.
 3. The "loop engineering" discourse (June 2026 viral moment) named the gap publicly. Practitioners understand the problem; the OSS solution doesn't exist yet.
+4. **Demand is proven, not hypothetical.** Traycer built the plan→orchestrate→verify→ship layer for *coding* agents and reached 100k+ users, 550k+ tasks, bootstrapped to profitability, in ~one quarter (public launch April 2026). That validates the primitive and the appetite. Orcha applies it one layer up — across every protocol, not one vertical.
 
 ---
 
@@ -92,6 +93,20 @@ _(Fill before submission — Nov 2026 target)_
 - CanvasKit is the first open declarative UI protocol for agent output — a new primitive, not a wrapper
 - The planning pipeline (pre-flight verified DAG) is the part nobody else has — composition without a plan is just chaos
 - The `ExecutionObserver` seam means the verifier layer plugs in without changing the loop — the architecture anticipates the problem the discourse named
+
+---
+
+## Competitive landscape
+
+**Closest comparable — Traycer** (`traycer.ai`). The same architecture (plan → orchestrate → verify → ship, bring-your-own-agent), verticalized to coding agents in the IDE. 100k+ users bootstrapped in a quarter — the best evidence our primitive is real and fundable.
+
+**Why Traycer doesn't eat this space:** its DNA and product are IDE/code-native and assume **homogeneous** agents — every "agent" is a CLI coding tool operating on a repo. Orcha routes across **heterogeneous** protocols (MCP + A2A + ACP + COMPUTER_USE), emits structured non-code output (CanvasKit), and opens a registry any third party publishes to. That's a different runtime they'd have to rebuild, and horizontal-from-coding is a hard pivot into a different buyer and surface. We win where the agents are *different from each other* — which is every enterprise stack.
+
+**The rest of the field:**
+- **LangGraph / AutoGen / CrewAI** — single-framework or simulated multi-agent; no real cross-protocol routing, no structured output layer, no open registry.
+- **Vertex Agent Builder / Bedrock AgentCore** — cloud-locked to one vendor's agents; Orcha is cloud-agnostic and self-hostable.
+- **n8n / Zapier** — human-wired DAGs; Orcha is AI-native goal decomposition with a verifier, not drag-and-drop.
+- **The model labs (Anthropic / OpenAI / Google)** — they make the workers; Orcha is the neutral ground *between* their ecosystems, which each is structurally disincentivized to own (a Google runtime routing to Claude is self-defeating).
 
 ---
 
