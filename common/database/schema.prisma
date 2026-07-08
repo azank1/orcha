@@ -77,7 +77,7 @@ model RefreshToken {
 // ============================================================================
 
 model Agent {
-  id            String   @id // DID format: did:emerge:agent:xyz
+  id            String   @id // DID format: did:orcha:agent:xyz
   user_id       String
   name          String
   version       String

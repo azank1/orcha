@@ -99,6 +99,14 @@ else
   bad "agent failed to start — see $TMPDIR_POC/agent.log"; S2=FAIL
 fi
 if [[ "$S2" == PASS ]]; then
+  # Force a FRESH registration every run. A DID left registered across day-gaps
+  # goes UNHEALTHY (registry HealthMonitor, 5-min cycle) and PnD's GIN pre-filter
+  # silently drops it from discovery — cascading stages 3/4/6/7 into failure.
+  # Soft-delete first: registration purges inactive rows (registration.py::
+  # _purge_soft_deleted_agent) and re-creates with a live HEALTHY probe.
+  curl -sf -X DELETE "$REGISTRY/api/v1/agents/$PROBE_DID" >/dev/null 2>&1 \
+    && ok "prior registration soft-deleted (fresh health probe forced)" \
+    || echo "  ℹ  no prior registration to delete (first run)"
   if PYTHONPATH="$ROOT/sdk/src" python3 -m emerge.cli publish \
       "$ROOT/agents/poc-probe-agent/agent.py" \
       --registry "$REGISTRY" --host "$AGENT_HOST" >"$TMPDIR_POC/publish.log" 2>&1; then
@@ -114,6 +122,25 @@ if [[ "$S2" == PASS ]]; then
     ok "registry lists $PROBE_DID"
   else
     bad "registry does not list $PROBE_DID"; S2=FAIL
+  fi
+  # Health assertion — guards the exact staleness cascade described above.
+  curl -sf "$REGISTRY/api/v1/agents?limit=100" > "$TMPDIR_POC/agents-health.json" 2>/dev/null \
+    || echo '{}' > "$TMPDIR_POC/agents-health.json"
+  if python3 - "$TMPDIR_POC/agents-health.json" <<'PY'
+import json, sys
+d = json.load(open(sys.argv[1]))
+items = d if isinstance(d, list) else d.get("data") or d.get("agents") or []
+probe = [a for a in items if "poc-probe" in json.dumps(a)]
+assert probe, "poc-probe not in registry list"
+status = probe[0].get("health_status", "")
+assert status == "HEALTHY", f"health_status={status!r}"
+print("ok")
+PY
+  then
+    ok "health_status=HEALTHY (fresh live probe)"
+  else
+    bad "poc-probe not HEALTHY — a stale DID (idle across days) gets flipped UNHEALTHY by the registry HealthMonitor and PnD discovery silently excludes it. The soft-delete step above should prevent this; if it recurs, check the DELETE endpoint and registry logs."
+    S2=FAIL
   fi
   EMB=$(curl -sf -X POST "$PND/api/v1/manifests/process" \
     -H 'Content-Type: application/json' -d "{\"agent_id\":\"$PROBE_DID\"}" 2>/dev/null || echo '{}')

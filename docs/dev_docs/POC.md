@@ -93,6 +93,32 @@ Routing is LLM-driven and therefore probabilistic; stage 4/6 goals name the
 probe capability explicitly to make routing near-deterministic. If a run
 fails on routing rather than a real defect, re-run the script.
 
+### Known operational failure mode — HealthMonitor staleness
+
+Symptom: stages 3/4/6/7 all fail together on a stack that was healthy last
+session, while stage 2 passes. Cause: the registry's background HealthMonitor
+polls every registered agent's `health_endpoint` on a 5-minute cycle. A DID
+left registered while its process is down (e.g. days between manual runs)
+accumulates failed checks and flips to `UNHEALTHY` — and PnD discovery's
+Step-1 GIN pre-filter hard-requires `health_status = 'HEALTHY'`, so the agent
+is **silently excluded** from the candidate pool even though its embeddings
+are fine. Everything downstream of discovery then fails.
+
+The harness defends against this two ways (Stage 2): it soft-deletes any
+prior `poc-probe` registration before `emerge publish` — re-registration
+purges the inactive row (`registration.py::_purge_soft_deleted_agent`) and
+re-creates it with a fresh live connectivity probe (`HEALTHY` immediately) —
+and it explicitly asserts `health_status == "HEALTHY"` on the registry row
+before proceeding, failing fast with this diagnosis instead of a silent
+cascade.
+
+First-time users are unaffected: a fresh registration live-probes to HEALTHY
+and the harness completes well inside the 5-minute window. The mode only
+bites long-lived idle registrations — which also makes it worth knowing for
+**external devs returning after a gap**: if your agent stopped being
+discovered, check its `health_status` and re-register (or just keep it
+running).
+
 ### The fixture
 
 `agents/poc-probe-agent/agent.py` — a paid A2A agent (`base_fee: 0.05`) built
