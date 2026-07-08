@@ -51,14 +51,14 @@ curl -s http://localhost:3011/health | jq .
 curl -s http://localhost:3011/.well-known/agent.json | jq .schemaVersion
 ```
 
-## OAuth (SuperAgent + gateway)
+## OAuth (SuperAgent + agent callback)
 
-1. SuperAgent preflight reads `emerge.yaml` **oauth2** strategy for the invoked skill.
-2. The chat UI runs the OAuth popup; Google redirects to the **gateway** at **`http://localhost:5500/auth/callback`** (configure the same URL under *Authorized redirect URIs* for the OAuth client in Google Cloud).
-3. The gateway forwards the **authorization `code`** to this agent’s **`GET /auth/callback`**. Pass the same opaque **`state`** key used for vault/session correlation.
-4. Prefer **`Authorization: Bearer …`** from SuperAgent when the platform already holds Google tokens.
+1. SuperAgent preflight reads the `emerge.yaml` **oauth2** strategy for the invoked skill and builds the Google authorize URL with `state = "<session_id>:<agent_id>:<nonce>"` and the `redirect_uri` from `emerge.yaml` (**`http://localhost:3011/auth/callback`** — configure exactly this URL under *Authorized redirect URIs* for the OAuth client in Google Cloud).
+2. The chat UI opens the consent popup; Google redirects the browser **directly to this agent's `GET /auth/callback`**. There is no gateway hop for the code — the gateway never sees it.
+3. The agent exchanges the code itself (it holds `GOOGLE_OAUTH_CLIENT_SECRET`), persists the tokens keyed by `session_id`, then POSTs `{gateway}/auth/sessions/{session_id}/resume-agent-oauth` (server-to-server, status only — no token) so SuperAgent resumes and re-sends the task.
+4. On the re-sent task, the agent resolves the bearer from its token store via `params.metadata.session_id` (an explicit `Authorization: Bearer …` header from SuperAgent takes precedence when present).
 
-Optional `params.metadata.oauth_state` (or `session_id`) selects the in-memory token bucket when no bearer header is sent.
+Tokens are persisted in SQLite (`GWS_TOKEN_DB`, default `data/tokens.db`) and survive agent restarts; refresh uses the stored refresh token and requires the client secret.
 
 ## MCP subprocess
 

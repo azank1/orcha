@@ -69,7 +69,6 @@ async def oauth_callback(
 
         data = resp.json()
 
-    print(f"token exchange result {data}")
     access = data.get("access_token")
     if not access:
         raise HTTPException(status_code=400, detail="No access_token in token response")
@@ -77,7 +76,14 @@ async def oauth_callback(
     expires_in = data.get("expires_in")
     session_id, agent_id = _parse_state(state)
     token_key = session_id or state
-    print(f"access token {access} and token key {token_key}")
+    # Never log token material — key + shape only.
+    logger.info(
+        "token_exchange_ok key=%s has_refresh=%s expires_in=%s scope=%s",
+        token_key,
+        bool(refresh),
+        expires_in,
+        data.get("scope", "")[:120],
+    )
     put_tokens(token_key, access_token=access, refresh_token=refresh, expires_in=expires_in)
     logger.info(
         "oauth_tokens_stored session_id=%s agent_id=%s key=%s has_refresh=%s expires_in=%s",
