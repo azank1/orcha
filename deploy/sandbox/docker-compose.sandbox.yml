@@ -246,6 +246,23 @@ services:
       dockerfile: Dockerfile
     container_name: sandbox-gws-orchestrator
     env_file: ../../.env.sandbox
+    # Browser-facing OAuth: Google redirects the user's browser to
+    # localhost:3011/auth/callback — the container serves on 8080 (Dockerfile
+    # CMD ${PORT:-8080}), so publish 3011 -> 8080.
+    ports:
+      - "3011:8080"
+    environment:
+      # Must byte-match the authorize step's redirect_uri (emerge.yaml) AND the
+      # Authorized redirect URI registered in Google Cloud Console.
+      GOOGLE_OAUTH_REDIRECT_URI: http://localhost:3011/auth/callback
+      # config.py defaults gateway_base_url to localhost:8080 — inside this
+      # container that's the agent itself; point at the docker-internal gateway
+      # so the post-consent resume POST reaches it.
+      GATEWAY_BASE_URL: http://gateway:8080
+      # Durable OAuth token store (survives container restarts via the volume).
+      GWS_TOKEN_DB: /app/data/tokens.db
+    volumes:
+      - gws-tokens:/app/data
     networks: [sandbox-net]
 
   # ── Reverse Proxy ────────────────────────────────────────────────────────────
@@ -268,6 +285,7 @@ volumes:
   sandbox_kafka:
   sandbox_ollama:
   sandbox_localstack:
+  gws-tokens:
 
 networks:
   sandbox-net:
