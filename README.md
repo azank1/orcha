@@ -39,7 +39,7 @@ Type a goal → Orcha discovers agents → composes MCP, A2A, and COMPUTER_USE i
 
 ## Register an agent in 4 lines
 
-> Orcha ships the **`emerge` SDK** for agent registration — `emerge init` scaffolds your agent manifest, `emerge register` publishes it to the runtime.
+> Orcha ships the **`emerge` SDK** for agent registration — `emerge init` scaffolds your agent manifest, `emerge register` publishes it to the runtime. No clone required: `uvx emerge init my-agent`.
 
 ```python
 import emerge
@@ -55,10 +55,17 @@ emerge run     # serve locally and register with the runtime
 
 ## Quickstart
 
+Just building an agent? Zero clone:
+
+```bash
+uvx emerge init my-agent && cd my-agent && uvx emerge run
+```
+
+Running the full runtime (registry, planner, orchestrator, dashboard):
+
 ```bash
 git clone https://github.com/azank1/orcha && cd orcha
 ./scripts/run-all.sh        # infra + all services + seed agents
-emerge init my-agent && cd my-agent && emerge run
 ```
 
 Full setup: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)

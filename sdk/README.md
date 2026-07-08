@@ -22,6 +22,14 @@ emerge run          # serve locally + register against the local registry
 
 ## Install
 
+No clone, no venv setup — just run it:
+
+```bash
+uvx emerge init my-agent
+```
+
+Or install it into a project:
+
 ```bash
 pip install orcha-sdk
 ```

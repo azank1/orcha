@@ -1,0 +1,81 @@
+name: Publish orcha-sdk
+
+# Release the `emerge` SDK to PyPI. Two ways to run:
+#   • Tag push (real publish):   git tag sdk-v0.1.1 && git push origin sdk-v0.1.1
+#   • Manual dry-run (no upload): Actions → this workflow → "Run workflow"
+#
+# Uses PyPI Trusted Publishing (OIDC) — no API token stored in this repo.
+# One-time setup (repo owner, on pypi.org):
+#   1. Create the "orcha-sdk" project on PyPI (or publish v0.1.0 manually once).
+#   2. PyPI project → Settings → Publishing → add a trusted publisher:
+#      owner=azank1, repo=orcha, workflow=publish-sdk.yml, environment=pypi
+on:
+  push:
+    tags:
+      - "sdk-v*"
+  workflow_dispatch: {} # dry-run: build + verify + smoke, never publishes
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build wheel + sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      # On a tag push, the tag version (sdk-vX.Y.Z) must match sdk/pyproject.toml,
+      # otherwise the wheel PyPI receives is named differently from the git tag.
+      - name: Verify tag matches pyproject version
+        if: startsWith(github.ref, 'refs/tags/sdk-v')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#sdk-v}"
+          PY_VERSION="$(grep -m1 '^version' sdk/pyproject.toml | sed -E 's/.*"([^"]+)".*/\1/')"
+          echo "tag=$TAG_VERSION pyproject=$PY_VERSION"
+          if [ "$TAG_VERSION" != "$PY_VERSION" ]; then
+            echo "::error::tag sdk-v$TAG_VERSION != sdk/pyproject.toml version $PY_VERSION"
+            exit 1
+          fi
+
+      - name: Build
+        working-directory: sdk
+        run: uv build -o dist
+
+      - name: Check metadata
+        run: uvx twine check sdk/dist/*
+
+      - name: Smoke test wheel in isolation
+        run: |
+          WHEEL="$(ls sdk/dist/*.whl)"
+          mkdir -p /tmp/sdk-smoke && cd /tmp/sdk-smoke
+          uvx --from "$GITHUB_WORKSPACE/$WHEEL" emerge init smoke-agent
+          test -f smoke-agent/agent.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: orcha-sdk-dist
+          path: sdk/dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    # Only a tag push publishes; workflow_dispatch stops after build (dry-run).
+    if: startsWith(github.ref, 'refs/tags/sdk-v')
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write # required for PyPI trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: orcha-sdk-dist
+          path: dist/
+
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
