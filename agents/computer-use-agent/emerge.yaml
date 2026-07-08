@@ -1,0 +1,55 @@
+identity:
+  id: "did:orcha:agent:computer-use-agent"
+  name: "Computer Use Agent"
+  version: "1.0.0"
+  description: "Reference computer-use bridge — screenshots, clicks, typing, and navigation against external apps, dashboards, or legacy tools that have no API. Ships with a zero-dependency mock backend (MockComputerUseBackend); set COMPUTER_USE_BACKEND on the SuperAgent service to swap in a real screenshot/action provider without changing this manifest."
+  tags: ["computer-use", "bridge", "screenshot", "browser", "reference"]
+
+protocol:
+  type: "computer_use"
+  version: "1.0"
+  transport:
+    # COMPUTER_USE actions are executed locally by SuperAgent's ComputerUseHandler
+    # (see services/superagent/src/superagent/handlers/computer_use_handler.py) —
+    # no process is spawned from this manifest. "command" is a required field for
+    # stdio transport but is never invoked; it's a placeholder so this agent needs
+    # no separate server/container, matching the mock-first OSS default.
+    type: "stdio"
+    command: "true"
+
+# Never actually probed — COMPUTER_USE agents skip HTTP health checks (see
+# services/registry/src/background/health_monitor.py, same as stdio MCP agents).
+health_endpoint: "http://localhost:3099/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies: []
+
+payment:
+  enabled: false  # Mock backend is free; real backends configure pricing via COMPUTER_USE_BACKEND
+
+capabilities:
+  tools:
+    - name: "computer_use_action"
+      description: "Perform a computer-use action (screenshot, click, type, navigate) against an external application, website, or dashboard that has no API integration. Use this when the user asks to screenshot, view, or interact with a UI that no other registered agent can reach. Runs against a mock backend by default in OSS mode — results are simulated stubs, not real screenshots, unless the operator configures COMPUTER_USE_BACKEND."
+      inputSchema:
+        type: object
+        properties:
+          action:
+            type: string
+            description: "The action to perform."
+            enum: ["screenshot", "click", "type", "navigate"]
+            default: "screenshot"
+          target:
+            type: string
+            description: "URL, dashboard/application name, or element description to act on, e.g. 'Alpaca dashboard' or 'https://app.alpaca.markets'."
+        required: ["action"]
+      outputSchema:
+        type: object
+        properties:
+          result:
+            type: string
+            description: "Human-readable outcome of the action."
+  resources: []
+  prompts: []

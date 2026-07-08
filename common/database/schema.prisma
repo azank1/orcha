@@ -128,6 +128,7 @@ model Agent {
 enum ProtocolType {
   MCP
   A2A
+  COMPUTER_USE
 }
 
 enum HealthStatus {

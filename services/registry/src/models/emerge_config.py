@@ -44,7 +44,7 @@ class TransportConfig(BaseModel):
 class ProtocolConfig(BaseModel):
     """Protocol section of emerge.yaml."""
 
-    type: str = Field(..., description="mcp or a2a")
+    type: str = Field(..., description="mcp, a2a, or computer_use")
     version: str
     transport: TransportConfig
 
@@ -126,7 +126,7 @@ class EmergeConfig(BaseModel):
 
     def validate_protocol_type(self) -> bool:
         """Validate protocol type is supported."""
-        return self.protocol.type.lower() in ["mcp", "a2a"]
+        return self.protocol.type.lower() in ["mcp", "a2a", "computer_use"]
 
     def validate_transport_type(self) -> bool:
         """Validate transport type is supported."""

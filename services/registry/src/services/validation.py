@@ -46,7 +46,9 @@ class ValidationService:
 
         # Validate protocol type
         if not config.validate_protocol_type():
-            return False, ValidationError("protocol.type", "Must be 'mcp' or 'a2a'")
+            return False, ValidationError(
+                "protocol.type", "Must be 'mcp', 'a2a', or 'computer_use'"
+            )
 
         # Validate transport type
         if not config.validate_transport_type():

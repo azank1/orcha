@@ -63,17 +63,42 @@ run_once() {
   local OUT
   OUT=$(mktemp)
 
-  local EMAIL="m2gate-${run_num}-$(date +%s)@example.com"
-  local REG TOKEN SID
-  REG=$(curl -sf -X POST "$GATEWAY/auth/register" \
+  local EMAIL="m2gate-${run_num}-$(date +%s)-$$@example.com"
+  local REG TOKEN SID HTTP_CODE
+  REG=$(curl -sS -o /tmp/m2gate_reg.$$ -w '%{http_code}' -X POST "$GATEWAY/auth/register" \
     -H 'Content-Type: application/json' \
     -d "{\"email\":\"$EMAIL\",\"password\":\"m2gate-test-123\",\"display_name\":\"M2 Gate\"}")
-  TOKEN=$(echo "$REG" | python3 -c "import json,sys; print(json.load(sys.stdin)['access_token'])")
+  HTTP_CODE="$REG"
+  if [[ "$HTTP_CODE" != "201" ]]; then
+    echo "{\"elapsed_s\": 0, \"checks\": {\"register_failed_http\": \"$HTTP_CODE\"}, \"pass\": false}"
+    rm -f "$OUT" "/tmp/m2gate_reg.$$"
+    return 1
+  fi
+  TOKEN=$(python3 -c "import json; print(json.load(open('/tmp/m2gate_reg.$$'))['access_token'])" 2>/dev/null)
+  rm -f "/tmp/m2gate_reg.$$"
+  if [[ -z "$TOKEN" ]]; then
+    echo '{"elapsed_s": 0, "checks": {"token_parse_failed": true}, "pass": false}'
+    rm -f "$OUT"
+    return 1
+  fi
 
-  SID=$(curl -sf -X POST "$GATEWAY/api/v1/sessions" \
+  SID=$(curl -sS -o /tmp/m2gate_sess.$$ -w '%{http_code}' -X POST "$GATEWAY/api/v1/sessions" \
     -H "Authorization: Bearer $TOKEN" \
     -H 'Content-Type: application/json' \
-    -d '{}' | python3 -c "import json,sys; print(json.load(sys.stdin)['session_id'])")
+    -d '{}')
+  HTTP_CODE="$SID"
+  if [[ "$HTTP_CODE" != "201" ]]; then
+    echo "{\"elapsed_s\": 0, \"checks\": {\"session_create_failed_http\": \"$HTTP_CODE\"}, \"pass\": false}"
+    rm -f "$OUT" "/tmp/m2gate_sess.$$"
+    return 1
+  fi
+  SID=$(python3 -c "import json; print(json.load(open('/tmp/m2gate_sess.$$'))['session_id'])" 2>/dev/null)
+  rm -f "/tmp/m2gate_sess.$$"
+  if [[ -z "$SID" ]]; then
+    echo '{"elapsed_s": 0, "checks": {"session_id_parse_failed": true}, "pass": false}'
+    rm -f "$OUT"
+    return 1
+  fi
 
   local start end elapsed
   start=$(date +%s)
@@ -85,8 +110,13 @@ run_once() {
   end=$(date +%s)
   elapsed=$((end - start))
 
+  local rc
+  set +e
   analyze_stream "$OUT" "$elapsed"
+  rc=$?
+  set -e
   rm -f "$OUT"
+  return "$rc"
 }
 
 header "M2 gates — 3-protocol goal + CanvasKit"
@@ -112,12 +142,13 @@ for i in $(seq 1 "$RUNS"); do
   else
     _fail "Run $i failed"
     if [[ -n "$RESULT" ]]; then
-      echo "$RESULT" | python3 - <<'PY'
+      echo "$RESULT" | python3 -c '
 import json, sys
 d = json.loads(sys.stdin.read())
 for k, v in d.get("checks", {}).items():
-    print(f"    {k}: {'ok' if v else 'FAIL'}")
-PY
+    label = ("ok" if v else "FAIL") if isinstance(v, bool) else str(v)
+    print("    " + str(k) + ": " + label)
+'
     fi
   fi
   echo

@@ -28,10 +28,37 @@ mcp = FastMCP("docs-search", host="0.0.0.0", port=_PORT)
 SERPER_URL = "https://google.serper.dev/search"
 
 
+def _mock_search_results(query: str) -> dict:
+    """Zero-dependency mock — used when SERPER_API_KEY is unset.
+
+    Keeps the OSS stack runnable end-to-end with no closed-service dependency
+    (see orcha-always.mdc rule 1). Real search resumes automatically once a
+    key is set in .env / .env.sandbox.
+    """
+    return {
+        "organic": [
+            {
+                "title": f"[mock] Search result for: {query}",
+                "link": "https://example.com/mock-search-result",
+                "snippet": (
+                    "This is a mock search result — SERPER_API_KEY is not set. "
+                    "Set SERPER_API_KEY to enable real web search."
+                ),
+                "position": 1,
+            }
+        ]
+    }
+
+
 async def _search_web(query: str) -> dict:
+    api_key = os.getenv("SERPER_API_KEY", "").strip()
+    if not api_key:
+        logger.info("search_web: SERPER_API_KEY unset — returning mock results")
+        return _mock_search_results(query)
+
     payload = json.dumps({"q": query, "num": 8})
     headers = {
-        "X-API-KEY": os.getenv("SERPER_API_KEY", ""),
+        "X-API-KEY": api_key,
         "Content-Type": "application/json",
     }
     async with httpx.AsyncClient() as client:
@@ -43,6 +70,11 @@ async def _search_web(query: str) -> dict:
             return response.json()
         except httpx.TimeoutException:
             return {"organic": []}
+        except httpx.HTTPStatusError:
+            logger.warning(
+                "search_web: Serper API error — falling back to mock", exc_info=True
+            )
+            return _mock_search_results(query)
 
 
 @mcp.custom_route("/health", methods=["GET"])

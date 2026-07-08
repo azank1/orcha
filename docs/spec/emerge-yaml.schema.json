@@ -38,7 +38,7 @@
       "required": ["type", "version", "transport"],
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "enum": ["mcp", "a2a", "acp"] },
+        "type": { "type": "string", "enum": ["mcp", "a2a", "acp", "computer_use"] },
         "version": { "type": "string" },
         "transport": {
           "type": "object",
