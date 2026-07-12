@@ -128,13 +128,18 @@ Gates 6–7 and all built code are on `main` (local). **Not yet on `origin/main`
 
 **Weekly traction gates:**
 
-| Signal | Target for YC W2027 app |
-|--------|------------------------|
-| GitHub stars | 500+ (spike + sustained) |
-| External agent registrations | 5+ unique orgs |
-| Bridge PRs from strangers | 3+ merged |
-| Sandbox sessions | 1,000+ unique |
-| Discord members | 50+ |
+| Signal | Target for YC W2027 app | Baseline (2026-07-12, pre-launch) |
+|--------|------------------------|-----------------------------------|
+| GitHub stars | 500+ (spike + sustained) | 0 |
+| External agent registrations | 5+ unique orgs | 0 |
+| Bridge PRs from strangers | 3+ merged | 0 |
+| Sandbox sessions | 1,000+ unique | 0 (no public URL live yet) |
+| Discord members | 50+ | not checked — see Discord invite link in README |
+
+The M3 window begins once the Show HN post goes live (blocked on: re-recorded
+hero clip, and the hosting decision — both owner actions, see
+`docs/dev_docs/SHOW-HN.md` pre-flight checklist). Until then this table is a
+baseline for comparison, not yet a measurement in progress.
 
 **YC W2027 application narrative (written from real M3 numbers):**
 - Problem: agents can't compose across protocols; output evaporates in chat
