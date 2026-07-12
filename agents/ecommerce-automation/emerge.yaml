@@ -29,6 +29,10 @@ security:
         scopes:
           - "read_products"
           - "write_products"
+        # This is a Shopify Partner app client_id — a public identifier by
+        # OAuth design (unlike client_secret, it is not sensitive and is
+        # visible in browser redirect URLs). If you deploy your own Shopify
+        # Partner app, replace this with your app's client_id.
         client_id: "18f6edd47e356c3d0cb1e28e7e6486a2"
         redirect_uri: "http://localhost:3009/auth/callback"
         provider_hint: "shopify"

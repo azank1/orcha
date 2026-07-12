@@ -31,6 +31,13 @@ class Settings(BaseSettings):
     ig_access_token: Optional[str] = None         # Instagram Business token (usually same as FB)
     ig_user_id: Optional[str] = None              # Instagram Business Account ID
 
+    # Production mode — see src/tools/_production_guard.py.
+    # false (default): unconfigured integrations return clearly-labeled mock
+    #   data — the right default for demos and the public sandbox.
+    # true: unconfigured integrations raise instead of returning mock data —
+    #   use this in a real deployment so misconfiguration fails loudly.
+    require_live_credentials: bool = False
+
     # Server
     port: int = 3009
     host: str = "0.0.0.0"

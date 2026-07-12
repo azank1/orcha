@@ -1,7 +1,9 @@
 """Instagram Graph API tools — profile, media, insights, publishing.
 
 All functions use Instagram Graph API via Meta's graph.facebook.com/v19.0 endpoint.
-Returns mock payloads when IG_ACCESS_TOKEN or IG_USER_ID are absent.
+Returns mock payloads when IG_ACCESS_TOKEN or IG_USER_ID are absent — unless
+REQUIRE_LIVE_CREDENTIALS=true, in which case they raise instead (see
+._production_guard).
 
 Publishing is a 2-step process per Meta spec:
   1. POST /{ig_user_id}/media  → creates a container, returns container_id
@@ -24,7 +26,9 @@ _GRAPH_BASE = "https://graph.facebook.com/v19.0"
 
 
 def _is_configured() -> bool:
-    return bool(os.getenv("IG_ACCESS_TOKEN")) and bool(os.getenv("IG_USER_ID"))
+    from ._production_guard import require_configured
+    configured = bool(os.getenv("IG_ACCESS_TOKEN")) and bool(os.getenv("IG_USER_ID"))
+    return require_configured(configured, "Instagram", "IG_ACCESS_TOKEN / IG_USER_ID")
 
 
 def _token() -> str:

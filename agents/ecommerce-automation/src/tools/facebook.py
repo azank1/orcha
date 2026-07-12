@@ -1,7 +1,9 @@
 """Facebook Graph API tools — Page publishing and engagement.
 
 All functions use Meta Graph API v19.0.
-Returns mock payloads when FB_ACCESS_TOKEN or FB_PAGE_ID are absent.
+Returns mock payloads when FB_ACCESS_TOKEN or FB_PAGE_ID are absent — unless
+REQUIRE_LIVE_CREDENTIALS=true, in which case they raise instead (see
+._production_guard).
 """
 
 from __future__ import annotations
@@ -18,7 +20,9 @@ _GRAPH_BASE = "https://graph.facebook.com/v19.0"
 
 
 def _is_configured() -> bool:
-    return bool(os.getenv("FB_ACCESS_TOKEN")) and bool(os.getenv("FB_PAGE_ID"))
+    from ._production_guard import require_configured
+    configured = bool(os.getenv("FB_ACCESS_TOKEN")) and bool(os.getenv("FB_PAGE_ID"))
+    return require_configured(configured, "Facebook", "FB_ACCESS_TOKEN / FB_PAGE_ID")
 
 
 def _token() -> str:

@@ -1,7 +1,9 @@
 """Shopify Admin REST API tools — product CRUD.
 
 All functions use Shopify Admin API v2024-04.
-Returns mock payloads when SHOPIFY_STORE_URL or SHOPIFY_ACCESS_TOKEN are absent.
+Returns mock payloads when SHOPIFY_STORE_URL or SHOPIFY_ACCESS_TOKEN are
+absent — unless REQUIRE_LIVE_CREDENTIALS=true, in which case they raise
+instead (see ._production_guard).
 """
 
 from __future__ import annotations
@@ -37,10 +39,12 @@ def _shopify_base() -> str:
 
 
 def _is_configured() -> bool:
+    from ._production_guard import require_configured
     from ..a2a_server import shopify_access_token, shopify_store_url
     has_contextvar = bool(shopify_access_token.get()) and bool(shopify_store_url.get())
     has_env = bool(os.getenv("SHOPIFY_STORE_URL")) and bool(os.getenv("SHOPIFY_ACCESS_TOKEN"))
-    return has_contextvar or has_env
+    configured = has_contextvar or has_env
+    return require_configured(configured, "Shopify", "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN")
 
 
 def _mock_product(product_id: str = "mock_001", title: str = "Mock Product") -> dict:
