@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # M2 demo gates — live API verification (no browser required).
-# Extends M0 gates 3–5 with search + computer-use legs for the canonical M2 goal.
+# Extends M0 gates 3–5 with an A2A + computer-use leg for the canonical M2 goal
+# (MCP finance-dashboard + A2A web-scraper + COMPUTER_USE, genuinely 3 protocols).
 #
 # Usage:
 #   GATEWAY_URL=http://localhost/api ./scripts/m2-gates-live.sh
@@ -25,11 +26,38 @@ analyze_stream() {
 import json, sys
 path, elapsed = sys.argv[1], int(sys.argv[2])
 text = open(path, errors="replace").read()
+
+# Parse invocation_result / canvas_manifest events properly instead of loose
+# substring matching — the misconfigured system Firecrawl/Tavily tools also
+# contain "web-scraper"/"search" as substrings, so string checks alone would
+# pass on a failed call to the wrong tool.
+successful_tools = set()
+for line in text.splitlines():
+    if not line.startswith("data:"):
+        continue
+    payload = line[5:].strip()
+    if not payload or payload == "[DONE]":
+        continue
+    try:
+        ev = json.loads(payload)
+    except json.JSONDecodeError:
+        continue
+
+    if ev.get("type") == "invocation_result" and ev.get("status") == "success":
+        successful_tools.add(ev.get("tool_name", ""))
+
 checks = {
-    "finance_dashboard": "finance-dashboard" in text,
+    "finance_dashboard_mcp": any(
+        "finance-dashboard" in t for t in successful_tools
+    ),
+    # A2A leg — must be the real delegate call to our agent, not the
+    # unconfigured system Firecrawl tool (which shares the "web-scraper"
+    # substring but is a different, MCP-protocol tool_name).
+    "a2a_web_scraper": "delegate__did_orcha_agent_web-scraper" in successful_tools,
+    "computer_use": any(
+        "computer-use" in t for t in successful_tools
+    ),
     "canvas_manifest": "canvas_manifest" in text,
-    "search_agent": "search" in text.lower(),
-    "computer_use": "COMPUTER_USE" in text or "computer_use" in text.lower(),
     "no_graph_error": '"type": "error"' not in text,
 }
 required_types = {"metric_card", "line_chart", "data_table", "alert_feed"}

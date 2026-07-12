@@ -10,7 +10,11 @@ talks; the execution pipeline speaks the protocol on your behalf.
 |---|---|---|---|
 | **MCP** (Model Context Protocol) | stdio, SSE | tool calls | stateless capabilities, tools, system primitives |
 | **A2A** (Agent-to-Agent) | HTTP (JSON-RPC 2.0) | `message/send` → task | long-running tasks, clarification rounds, auth handoffs, payments |
-| **ACP** | HTTP | task | agent-to-agent task delegation |
+
+`protocol.type: "acp"` is still accepted in `emerge.yaml` and routes through
+the same A2A handler at runtime — it's a compatibility alias, not a separately
+maintained protocol. IBM's Agent Communication Protocol merged into A2A
+upstream in August 2025, and the runtime already reflects that consolidation.
 
 The `emerge` SDK serves **A2A** out of the box (`emerge run`), so the fastest
 way to publish an agent is the [quickstart](quickstart.md).
@@ -28,7 +32,7 @@ In `emerge.yaml`:
 
 ```yaml
 protocol:
-  type: "a2a"          # mcp | a2a | acp
+  type: "a2a"          # mcp | a2a | acp (acp is an A2A-routed alias)
   version: "1.0"
   transport:
     type: "http"        # sse | stdio | http

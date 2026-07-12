@@ -4,18 +4,25 @@
 
 Hero clip for README and Show HN. **Target:** &lt;5MB, &lt;30s wall clock in the recording.
 
+**Status: the current `demo-hero.gif` is stale (recorded 2026-06-27) and
+must be re-recorded before launch.** It predates the fix that made the demo
+goal genuinely 3-protocol (see `docs/dev_docs/M0-VERIFICATION.md`) — the old
+goal only exercised MCP twice + COMPUTER_USE, not MCP + A2A + COMPUTER_USE.
+Recording requires real screen-capture software against a live browser
+session; it cannot be automated by an agent.
+
 ### What to capture
 
 Use the **3-protocol demo** goal from [`scripts/m2-demo-goal.txt`](../../scripts/m2-demo-goal.txt):
 
-> Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard
+> Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard
 
 The clip should show:
 
 1. Goal typed (Home or Chat)
-2. Tool timeline: finance-dashboard + search + computer-use
+2. Tool timeline: finance-dashboard (MCP) + web-scraper (A2A, `delegate__did_orcha_agent_web-scraper`) + computer-use (COMPUTER_USE)
 3. CanvasKit dashboard rendering (metric cards, chart, table, alerts)
-4. Total runtime under ~30 seconds
+4. Total runtime under ~30 seconds — verified live at 13-15s across 5/5 runs
 
 ### Record
 

@@ -10,21 +10,21 @@ Internal launch copy. Paste into HN when hero GIF and sandbox URL are ready.
 
 ### Problem
 
-Everyone's building agent loops. The problem is they stop at the single-agent layer: one model, one tool, one protocol. Real enterprise workflows span **MCP tools, A2A services, legacy desktop apps, and cloud APIs** — different protocols that today's loop tools don't compose. And when you do stitch them together, the output is text that evaporates in a chat bubble.
+Everyone's building agent loops. The problem is they stop at the single-agent layer: one model, one tool, one protocol. Real enterprise workflows span **MCP tools, A2A services, and legacy apps with no protocol at all** — different interfaces that today's loop tools don't compose. And when you do stitch them together, the output is text that evaporates in a chat bubble.
 
 Today's "loop engineering" tools handle one agent looping on one task. The harder problem — composing agents that speak different protocols into a single **verified**, goal-driven run with structured output — has no open-source solution.
 
-Tools like **Traycer** proved the plan → orchestrate → verify → ship layer for *coding* agents (bootstrapped to 100k+ users in a quarter — the demand is real). Orcha is that nerve center for **every** agent: any protocol, structured output instead of code diffs, and an open agent registry anyone can plug into.
+Tools like **Traycer** proved the plan → orchestrate → verify → ship layer for *coding* agents (bootstrapped to 100k+ users in a quarter — the demand is real). Orcha is the same substrate one layer up: any protocol, structured output instead of code diffs, and an open agent registry anyone can plug into.
 
 ### What Orcha does
 
-Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, ACP, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble. A **structural verifier** runs after each agent step and marks it `✓ Verified` or `✗ Unverified` in the UI — the visible answer to "does it check the output?"
+Orcha is the open-source runtime that fills that gap. You type one goal; a **5-stage planning pipeline** decomposes it into a dependency-ordered agent DAG and pre-flight-verifies every step before execution starts. Then a **ReAct loop** routes each step to its protocol handler — **MCP, A2A, COMPUTER_USE** — and renders the result as a **CanvasKit dashboard** (metric cards, charts, tables), not a chat bubble. A **structural verifier** runs after each agent step and marks it `✓ Verified` or `✗ Unverified` in the UI — the visible answer to "does it check the output?"
 
 **Demo goal we use:**
 
-> Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard
+> Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard
 
-In one run you should see: finance dashboard agent (MCP) → search agent (MCP) → mock computer-use screenshot — with a live portfolio dashboard in the UI.
+In one run you should see: finance dashboard agent (MCP) → web scraper agent (A2A, real HTTP fetch) → mock computer-use screenshot — with a live portfolio dashboard in the UI.
 
 ![Demo](../assets/demo-hero.gif)
 
@@ -33,10 +33,14 @@ In one run you should see: finance dashboard agent (MCP) → search agent (MCP) 
 ```
 Goal → Registry → Planning & Discovery (5-stage DAG) → SuperAgent ReAct loop
          ↓ pre-flight plan verifier                        ↓ protocol handlers
-                                              MCP | A2A | ACP | COMPUTER_USE
+                                                    MCP | A2A | COMPUTER_USE
                                                         ↓
                                          canvas_manifest SSE → CanvasKit dashboard
 ```
+
+(ACP agents route through the same A2A handler — IBM's ACP merged into A2A
+upstream in August 2025, and our runtime already reflects that: it's not a
+fourth independently-bridged protocol.)
 
 - **Mock-first:** runs with `PAYMENT_MODE=mock` — no wallet, no closed service required
 - **Planning:** 5-stage DAG — decompose → resolve agents → wire I/O → refine deps → validate. Pre-flight verifier checks agent health before execution.
@@ -62,7 +66,7 @@ emerge register        # publish to the Orcha runtime
 
 Your agent is now composable in any Orcha goal-driven loop. Docs: `docs/dev_docs/` → `emerge.yaml` reference.
 
-> **Not just coding agents.** [Traycer](https://traycer.ai) does plan→verify→ship for coding agents inside your IDE (homogeneous agents, one vertical). Orcha runs the same loop across **heterogeneous** protocols — an MCP finance server + an A2A Gmail agent + a COMPUTER_USE action in one verified run — with structured dashboard output and a registry any third party can publish to. Also a different project from [stablyai/orca](https://github.com/stablyai/orca) (a coding-agent IDE).
+> **Not just coding agents.** [Traycer](https://traycer.ai) is a standalone desktop workspace that discovers and wraps local CLI coding agents on your machine — Claude Code, Codex, Cursor, OpenCode (homogeneous agents, one vertical, process-level integration). Orcha routes across **heterogeneous** protocols to independently running agent services — an MCP finance server + an A2A Gmail agent + a COMPUTER_USE action in one verified run — with structured dashboard output and a registry any third party can publish to. A service mesh, not a process wrapper. Also a different project from [stablyai/orca](https://github.com/stablyai/orca) (a coding-agent IDE).
 
 > **It also does real work.** Connect a real Google OAuth client and the same verified loop reads and writes live Gmail / Drive / Sheets via the Workspace orchestrator agent — the plan decides *what* to do, not just which fixture to call. Setup: `docs/dev_docs/GWS-LIVE-TEST.md`.
 
@@ -81,10 +85,11 @@ Your agent is now composable in any Orcha goal-driven loop. Docs: `docs/dev_docs
 
 ## Pre-flight checklist
 
-- [ ] Hero GIF embedded in README (`docs/assets/demo-hero.gif`, &lt;5MB)
-- [ ] `GATEWAY_URL=http://localhost/api ./scripts/m0-gates-live.sh` passes
-- [ ] `M2_RUNS=5 M2_PASS=4 GATEWAY_URL=http://localhost/api ./scripts/m2-gates-live.sh` passes
-- [ ] OpenRouter credits topped up
-- [ ] Public sandbox URL stable (Cloudflare or named tunnel)
-- [ ] `✓ Verified` badge visible in hero GIF (at least one step shows it before the dashboard renders)
-- [ ] Discord cross-post ready
+- [ ] Hero GIF re-recorded against the fixed 3-protocol goal and embedded in README (`docs/assets/demo-hero.gif`, &lt;5MB) — **owner action, needs real screen capture; see `docs/assets/README.md`**
+- [x] `GATEWAY_URL=http://localhost:8080 ./scripts/m0-gates-live.sh` passes — verified 2026-07-12, 3/3
+- [x] `M2_RUNS=5 M2_PASS=4 GATEWAY_URL=http://localhost:8080 ./scripts/m2-gates-live.sh` passes — verified 2026-07-12, 5/5, best 13s
+- [ ] OpenRouter credits topped up — **owner action**
+- [ ] Public sandbox URL stable (Cloudflare or named tunnel) — **owner action, hosting model not yet decided**
+- [ ] `✓ Verified` badge visible in hero GIF (at least one step shows it before the dashboard renders) — depends on the re-recorded clip above
+- [ ] Discord cross-post ready — **owner action**
+- [ ] Push the 2 local-only commits on `main` to `origin/main` — see `docs/dev_docs/M0-VERIFICATION.md`

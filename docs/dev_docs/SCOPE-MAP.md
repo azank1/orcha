@@ -14,7 +14,7 @@ Anthropic's Claude Managed Agents commoditized the agent-ops layer. Value moved 
 
 | ID | Name | Gate | Status |
 |----|------|------|--------|
-| M0 | OSS Launch Gate | e2e verified, merged to main | 🔧 Merged locally — live gates + push pending |
+| M0 | OSS Launch Gate | e2e verified, merged to main | ✅ Merged + live-verified locally — push to origin pending |
 | M1 | Hosted Sandbox | public URL live, spend cap set | ✅ Built (deploy pending) |
 | M2 | Demo + Launch | hero clip recorded, Show HN live | 🔧 In progress |
 | M3 | Traction Window | 4-month OSS compounding | ⬜ Watch |
@@ -103,11 +103,11 @@ Gates 6–7 and all built code are on `main` (local). **Not yet on `origin/main`
 
 **Pre-requisite:** Script and validate the demo goal across 5 test runs before recording. ReAct planner is non-deterministic — must hit all 3 protocols in ≥4/5 runs.
 
-**Proposed goal:** `"Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard"` → MCP (finance-dashboard-agent) + MCP (search-agent) + COMPUTER_USE (mock screenshot).
+**Canonical goal:** `"Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard"` → MCP (finance-dashboard-agent) + A2A (web-scraper) + COMPUTER_USE (mock screenshot) — see `scripts/m2-demo-goal.txt`.
 
 **Hero demo must show:**
 - One goal typed → agent discovery + routing visible in progress stream
-- 3-protocol composition in one run
+- 3-protocol composition in one run — genuinely MCP + A2A + COMPUTER_USE, verified via `scripts/m2-gates-live.sh`
 - CanvasKit dashboard rendering (not a text reply)
 - Wall clock < 30 seconds
 

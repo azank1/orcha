@@ -20,16 +20,20 @@ _baseline_openai_tools: list[dict[str, Any]] = []
 
 
 def _missing_platform_env_keys(manifest: dict[str, Any]) -> list[str]:
-    """Return env keys declared as platform_env but absent from os.environ.
+    """Return env keys declared as platform_env but absent or empty in os.environ.
 
-    Inlined from PlatformToolSeeder to avoid coupling this module to RegistryClient.
+    Checks truthiness, not just presence — kept in lockstep with
+    PlatformToolSeeder._missing_platform_env_keys() (inlined here to avoid
+    coupling this module to RegistryClient). A `KEY=` placeholder in `.env`
+    must still count as unconfigured, or the LLM is offered a tool it cannot
+    actually call and will pick it over a correctly-configured alternative.
     """
     missing: list[str] = []
     strategies = manifest.get("security", {}).get("auth_strategies", []) or []
     for strategy in strategies:
         if strategy.get("type") == "platform_env":
             key = (strategy.get("config") or {}).get("env_key", "")
-            if key and key not in os.environ:
+            if key and not os.environ.get(key):
                 missing.append(key)
     return missing
 

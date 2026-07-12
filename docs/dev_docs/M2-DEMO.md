@@ -5,16 +5,22 @@ Canonical spec: [SCOPE-MAP.md](SCOPE-MAP.md) § M2. Branch: `az/feat/launch-asse
 ## Demo goal (canonical)
 
 ```
-Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard
+Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard
 ```
 
-**Expected routing:**
+**Expected routing (genuinely 3 protocol families, verified live):**
 
 | Step | Protocol | Agent |
 |------|----------|-------|
 | Portfolio dashboard | MCP | `finance-dashboard-agent` → CanvasKit |
-| NVDA earnings search | MCP | `search-agent` |
+| Company summary | A2A | `web-scraper` (`delegate__did_orcha_agent_web-scraper`) |
 | Screenshot | COMPUTER_USE | `MockComputerUseBackend` |
+
+The goal names the agent explicitly ("your web scraper agent") because the
+orchestrator's tool list also contains an unconfigured system Firecrawl tool
+that shares the "web-scraper" name — without the explicit phrasing the LLM
+picks that broken tool instead (see `scripts/m2-gates-live.sh`'s
+`a2a_web_scraper` check, which asserts the specific `delegate__` tool name).
 
 ## Validation protocol
 
@@ -34,7 +40,7 @@ GATEWAY_URL=http://localhost/api M2_RUNS=5 M2_PASS=4 ./scripts/m2-gates-live.sh
 ## Hero clip must show
 
 - One goal typed → routing visible in progress stream
-- 3-protocol composition in one run
+- 3-protocol composition in one run (MCP + A2A + COMPUTER_USE — not MCP twice)
 - CanvasKit dashboard (not plain text reply)
 - Under 30 seconds wall clock
 

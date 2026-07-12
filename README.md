@@ -2,9 +2,12 @@
 
 <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=28&pause=1000&color=6366F1&center=true&vCenter=true&width=700&lines=Orchestrate+AI+agents+across+any+protocol;One+goal.+Many+agents.+Any+protocol.;Apps+assembled+from+agents.+Not+chat." alt="Orcha" />
 
-**The open runtime for multi-protocol AI agent orchestration.**
+**One goal. Many agents. Any protocol.**
+
+*The open-source runtime for multi-protocol AI agent orchestration.*
 
 [![Build](https://github.com/azank1/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/azank1/orcha/actions)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/azank1/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/azank1/orcha)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
 [![Discord](https://img.shields.io/badge/community-Discord-5865F2)](https://discord.gg/orcha)
@@ -35,7 +38,7 @@ Type a goal → Orcha discovers agents → composes MCP, A2A, and COMPUTER_USE i
 
 **Try it:** run the [hosted sandbox](deploy/sandbox/README.md) locally (`make -f deploy/sandbox/Makefile up`) or clone and `./scripts/run-all.sh`. Demo portfolio data is illustrative — no brokerage connection required.
 
-**Hero goal (3-protocol demo):** *"Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard"* → finance MCP + search MCP + mock computer-use in one run.
+**Hero goal (3-protocol demo):** *"Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard"* → finance MCP + web-scraper A2A + mock computer-use in one run. Verified live, 5/5 runs, best wall clock 13s — see [docs/dev_docs/M0-VERIFICATION.md](docs/dev_docs/M0-VERIFICATION.md).
 
 ## Register an agent in 4 lines
 
@@ -80,8 +83,12 @@ Goal
                                                │
                          ┌─────────────────────┼─────────────────────┐
                          ▼                     ▼                     ▼
-                   MCP handler           A2A handler           ACP handler
+                   MCP handler           A2A handler          COMPUTER_USE handler
 ```
+
+(`protocol.type: "acp"` is still accepted in `emerge.yaml` and routes through
+the A2A handler — a compatibility alias, not a fourth independently-bridged
+protocol; see [docs/protocols.md](docs/protocols.md).)
 
 <details>
 <summary>Service map</summary>

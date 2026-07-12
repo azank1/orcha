@@ -60,7 +60,7 @@ kill_port() {
 }
 
 step "Clearing ports"
-for port in 8000 8001 8002 8080 3000 3004 3006 3007 3009 3011 4567; do kill_port "$port"; done
+for port in 8000 8001 8002 8080 3000 3004 3006 3007 3009 3010 3011 4567; do kill_port "$port"; done
 success "Ports cleared"
 
 start_service() {
@@ -207,8 +207,11 @@ fi
 step "Phase 3b: Agent Servers"
 
 C_ECM='\033[0;31m'; C_WS='\033[0;36m'; C_SR='\033[0;33m'
-C_NR='\033[0;35m'; C_LG='\033[0;91m'; C_GWS='\033[0;94m'
+C_NR='\033[0;35m'; C_LG='\033[0;91m'; C_GWS='\033[0;94m'; C_FD='\033[0;92m'
 
+# finance-dashboard-agent — the hero-demo MCP agent (CanvasKit dashboard).
+# Not optional: docs/dev_docs/M2-DEMO.md's canonical goal routes here first.
+start_service finance-db "$C_FD" bash -c "cd '$ROOT/agents/finance-dashboard-agent' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec env PORT=3010 uv run python server.py 2>&1"
 start_service web-scrpr "$C_WS" bash -c "cd '$ROOT/agents/web-scraper' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.server:app --host 0.0.0.0 --port 3004 --log-level info 2>&1"
 start_service search-agt "$C_SR" bash -c "cd '$ROOT/agents/search-agent' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec env PORT=3007 uv run python server.py 2>&1"
 start_service notion-res "$C_NR" bash -c "cd '$ROOT/agents/notion-research' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.a2a_server:app --host 0.0.0.0 --port 3006 --log-level info 2>&1"
@@ -219,6 +222,7 @@ start_service lead-gen "$C_LG" bash -c "cd '$ROOT/agents/lead-gen-agent' && { [ 
 start_service gws-orch "$C_GWS" bash -c "cd '$ROOT/agents/google-workspace-orchestrator' && { [ -f .env ] && set -a && source .env && set +a || true; } ; export WORKSPACE_MCP_PORT=\"\${WORKSPACE_MCP_PORT:-8100}\" ; exec uv run uvicorn src.server:app --host 0.0.0.0 --port 3011 --log-level info 2>&1"
 start_service ecomm-auto "$C_ECM" bash -c "cd '$ROOT/agents/ecommerce-automation' && { [ -f .env ] && set -a && source .env && set +a || true; } ; exec uv run uvicorn src.a2a_server:app --host 0.0.0.0 --port 3009 --log-level info 2>&1"
 
+wait_for finance-db   http://localhost:3010/health 30 || warn "finance-dashboard-agent not healthy (non-fatal)"
 wait_for web-scrpr    http://localhost:3004/health 30 || warn "web-scraper not healthy (non-fatal)"
 wait_for search-agt   http://localhost:3007/health 30 || warn "search-agent not healthy (non-fatal)"
 wait_for notion-res   http://localhost:3006/health 30 || warn "notion-research not healthy (non-fatal)"
@@ -260,6 +264,7 @@ echo -e "  ${BOLD}Registry API${RESET}     →  ${CYAN}http://localhost:8000/doc
 echo -e "  ${BOLD}PnD API${RESET}          →  ${CYAN}http://localhost:8001/docs${RESET}"
 echo -e "  ${BOLD}SuperAgent API${RESET}   →  ${CYAN}http://localhost:8002/docs${RESET}"
 echo -e ""
+echo -e "  ${BOLD}Finance Dashboard${RESET} →  ${CYAN}http://localhost:3010${RESET}"
 echo -e "  ${BOLD}Web Scraper${RESET}      →  ${CYAN}http://localhost:3004${RESET}"
 echo -e "  ${BOLD}Search Agent${RESET}     →  ${CYAN}http://localhost:3007${RESET}"
 echo -e "  ${BOLD}Notion Research${RESET}  →  ${CYAN}http://localhost:3006${RESET}"

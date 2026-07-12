@@ -17,8 +17,8 @@ PND="${PND_URL:-http://localhost:8001}"
 PASS=0
 FAIL=0
 
-_pass() { echo "  ✅ $1"; ((PASS++)); }
-_fail() { echo "  ❌ $1"; ((FAIL++)); }
+_pass() { echo "  ✅ $1"; PASS=$((PASS + 1)); }
+_fail() { echo "  ❌ $1"; FAIL=$((FAIL + 1)); }
 _info() { echo "  ℹ  $1"; }
 
 header() { echo; echo "── $1 ──"; }
@@ -37,9 +37,9 @@ check_health() {
 }
 
 check_health "gateway"           "$GATEWAY/health"
-check_health "registry"          "$REGISTRY/health"
+check_health "registry"          "$REGISTRY/"
 check_health "superagent"        "$SUPERAGENT/health"
-check_health "planning-discovery" "$PND/health"
+check_health "planning-discovery" "$PND/"
 
 
 # ── Gate 2: finance-dashboard-agent registered ────────────────────────────────
@@ -61,10 +61,12 @@ CANVAS_HITS=$(git grep -l "__canvas__" 2>/dev/null || true)
 UNEXPECTED=""
 while IFS= read -r f; do
     case "$f" in
-        agents/finance-dashboard-agent/*) ;;          # expected
-        services/superagent/*)            ;;          # expected (OutputNormalizer + execute_agent_calls)
-        docs/*)                           ;;          # expected (arch doc, SRS)
-        scripts/*)                        ;;          # this file itself
+        agents/finance-dashboard-agent/*)          ;;  # expected — MCP hero-demo agent
+        agents/google-workspace-orchestrator/*)    ;;  # expected — A2A agent, real canvas emission (canvas.py)
+        services/superagent/*)                     ;;  # expected (OutputNormalizer + execute_agent_calls)
+        docs/*)                                    ;;  # expected (arch doc, SRS)
+        .cursor/rules/*)                           ;;  # expected (contract documentation)
+        scripts/*)                                 ;;  # this file itself
         "") ;;
         *) UNEXPECTED="$UNEXPECTED\n    $f" ;;
     esac

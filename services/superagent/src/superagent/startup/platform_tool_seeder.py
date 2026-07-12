@@ -77,12 +77,19 @@ class PlatformToolSeeder:
 
     @staticmethod
     def _missing_platform_env_keys(manifest: dict) -> list[str]:
-        """Return env keys declared as platform_env but absent from os.environ."""
+        """Return env keys declared as platform_env but absent or empty in os.environ.
+
+        Checks truthiness, not just presence — `.env` files commonly ship with
+        `KEY=` (present, empty) for optional integrations, which must still count
+        as unconfigured. Offering a tool the runtime can't actually authenticate
+        is worse than not offering it: the LLM has no way to know the key is a
+        placeholder and will pick it over a working alternative.
+        """
         missing: list[str] = []
         strategies = manifest.get("security", {}).get("auth_strategies", []) or []
         for strategy in strategies:
             if strategy.get("type") == "platform_env":
                 key = (strategy.get("config") or {}).get("env_key", "")
-                if key and key not in os.environ:
+                if key and not os.environ.get(key):
                     missing.append(key)
         return missing

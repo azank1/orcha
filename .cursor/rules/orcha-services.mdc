@@ -135,5 +135,5 @@ Consumer groups: `runtime-workers` (Runtime), `gateway-streamers` (Gateway).
 | SuperAgent (Runtime) | 8002 | |
 | Gateway | 8080 | |
 | Frontend | 3000 | |
-| finance-dashboard-agent | 3010 | Start separately for M0 demo (not in `run-all.sh` Phase 3b) |
+| finance-dashboard-agent | 3010 | Hero-demo MCP agent; started by `run-all.sh` Phase 3b |
 | search-agent | 3007 | |

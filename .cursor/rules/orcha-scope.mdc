@@ -37,7 +37,7 @@ DAN/DAPN phases, token launch, CanvasKit marketplace, Studio, OrchFlow all live 
 
 ### M0 — In Scope (merged on `main`)
 - CanvasKit v0.1 (8 components, `canvas_manifest` SSE, UIManifest)
-- Finance dashboard agent (MCP, port 3010 — start separately; not in `run-all.sh` Phase 3b)
+- Finance dashboard agent (MCP, port 3010 — started by `run-all.sh` Phase 3b)
 - Open computer-use bridge (MockComputerUseBackend default)
 - emerge SDK v0.1 (decorator, CLI, A2A server)
 - Architecture doc, SRS, milestone spec

@@ -38,7 +38,11 @@
       "required": ["type", "version", "transport"],
       "additionalProperties": false,
       "properties": {
-        "type": { "type": "string", "enum": ["mcp", "a2a", "acp", "computer_use"] },
+        "type": {
+          "type": "string",
+          "enum": ["mcp", "a2a", "acp", "computer_use"],
+          "description": "acp is accepted for compatibility and routes through the A2A handler at runtime (IBM's ACP merged into A2A upstream in August 2025); it is not an independently maintained protocol."
+        },
         "version": { "type": "string" },
         "transport": {
           "type": "object",
