@@ -1,6 +1,0 @@
-{
-  "name": "Orcha",
-  "description": "The open-source runtime for multi-protocol AI agent orchestration (MCP, A2A, Computer-Use).",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

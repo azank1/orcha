@@ -13,7 +13,7 @@ services:
   # ── Infrastructure ──────────────────────────────────────────────────────────
 
   postgres:
-    image: pgvector/pgvector:pg15
+    image: pgvector/pgvector:pg15@sha256:a20a57d7aa5217a6af0a391ccf69f4a8512406d6c14be08132f801468cc3cc62
     container_name: sandbox-postgres
     env_file: ../../.env.sandbox
     environment:
@@ -30,7 +30,7 @@ services:
     networks: [sandbox-net]
 
   redis:
-    image: redis/redis-stack-server:latest
+    image: redis/redis-stack-server:latest@sha256:798ab84d9f266936b034ab11c4d04a2b8e4b441884c5aa7d17ac951eefdf742a
     container_name: sandbox-redis
     volumes:
       - sandbox_redis:/data
@@ -42,7 +42,7 @@ services:
     networks: [sandbox-net]
 
   kafka:
-    image: bitnamilegacy/kafka:4.0.0-debian-12-r10
+    image: bitnamilegacy/kafka:4.0.0-debian-12-r10@sha256:aa0b2aee8c5610dd1d18d48b4f1df0dbe3267b5d4c338d36c9af9cbf0529c0b0
     container_name: sandbox-kafka
     hostname: kafka
     environment:
@@ -66,7 +66,7 @@ services:
     networks: [sandbox-net]
 
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:latest@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131
     container_name: sandbox-ollama
     volumes:
       - sandbox_ollama:/root/.ollama
@@ -79,7 +79,7 @@ services:
     networks: [sandbox-net]
 
   localstack:
-    image: localstack/localstack:3.8
+    image: localstack/localstack:3.8@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7
     container_name: sandbox-localstack
     environment:
       SERVICES: s3
@@ -288,7 +288,7 @@ services:
   # ── Reverse Proxy ────────────────────────────────────────────────────────────
 
   nginx:
-    image: nginx:alpine
+    image: nginx:alpine@sha256:4a73073bd557c65b759505da037898b61f1be6cbcc3c2c3aeac22d2a470c1752
     container_name: sandbox-nginx
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
