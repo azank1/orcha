@@ -1384,7 +1384,7 @@ requires-dist = [
     { name = "httpx", extras = ["http2"], specifier = ">=0.27" },
     { name = "internal-commons", editable = "common/internal-commons" },
     { name = "privy-client" },
-    { name = "pydantic", extras = ["email"], specifier = ">=2" },
+    { name = "pydantic", extras = ["email"], specifier = ">=2.13.4" },
     { name = "pydantic-settings", specifier = ">=2" },
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.3" },
     { name = "redis", specifier = ">=5" },
