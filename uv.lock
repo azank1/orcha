@@ -1386,7 +1386,7 @@ requires-dist = [
     { name = "privy-client" },
     { name = "pydantic", extras = ["email"], specifier = ">=2" },
     { name = "pydantic-settings", specifier = ">=2" },
-    { name = "python-jose", extras = ["cryptography"], specifier = ">=3.3" },
+    { name = "python-jose", extras = ["cryptography"], specifier = ">=3.5.0" },
     { name = "redis", specifier = ">=5" },
     { name = "svix", specifier = ">=1.0" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
