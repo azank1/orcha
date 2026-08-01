@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { REAL_RUN_REPLAY, ReplayLine, CAPTURED_AT } from '../data/realRunReplay';
 import { HeroShaderCanvas } from './HeroShaderCanvas';
+import { GoalDecomposition } from './GoalDecomposition';
+import { McpLogo, A2aLogo, ComputerUseLogo } from './ProtocolIcons';
 import { Play, Copy, Check, ShieldCheck, Layers, ArrowRight, BookOpen } from 'lucide-react';
 
 const replayLineColor = (cls?: ReplayLine['cls']): string => {
   if (cls === 'ok') return 'text-[var(--ok)]';
   if (cls === 'cm') return 'text-slate-500';
   return 'text-slate-300';
+};
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.12, duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  }),
 };
 
 interface HeroSectionProps {
@@ -62,35 +74,79 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
   };
 
   const pipelineSteps = [
-    { id: 'goal', label: 'User Goal', desc: 'Natural language goal in' },
-    { id: 'gate', label: '3-Tier Gate', desc: 'Auth, DID & scope verification' },
-    { id: 'superagent', label: 'SuperAgent', desc: 'LLM + pgvector DAG planner' },
-    { id: 'dispatch', label: 'Protocol Dispatch', desc: 'MCP | A2A | Computer-use' },
-    { id: 'canvaskit', label: 'CanvasKit Output', desc: 'Live visual dashboard' },
+    { id: 'goal', label: 'User Goal', desc: 'Natural language goal in', num: '01' },
+    { id: 'gate', label: '3-Tier Gate', desc: 'Auth, DID & scope verification', num: '02' },
+    { id: 'superagent', label: 'SuperAgent', desc: 'LLM + pgvector DAG planner', num: '03' },
+    { id: 'dispatch', label: 'Protocol Dispatch', desc: 'MCP | A2A | Computer-use', num: '04' },
+    { id: 'canvaskit', label: 'CanvasKit Output', desc: 'Live visual dashboard', num: '05' },
   ];
 
   return (
     <section id="hero" className="relative overflow-hidden pt-8 pb-16 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
       <HeroShaderCanvas />
+
+      {/* Edge anchors */}
+      <div className="absolute bottom-4 left-4 sm:left-8 font-mono text-[10px] text-[var(--faint)] z-20">
+        apache 2.0
+      </div>
+      <div className="absolute bottom-4 right-4 sm:right-8 font-mono text-[10px] text-[var(--faint)] z-20">
+        PAYMENT_MODE=mock
+      </div>
+
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
 
         {/* Hero Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left Text & CTA */}
           <div className="lg:col-span-6 space-y-5">
-            
-            <h1 className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.12] text-[var(--text)]">
-              One goal in. Verified multi-agent run out.
-            </h1>
 
-            <p className="font-mono text-xs text-[var(--muted)]">
+            <motion.h1
+              custom={0}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.12] text-[var(--text)]"
+            >
+              One goal in.{' '}
+              <span className="inline-flex items-center gap-1.5 align-middle">
+                <McpLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#6366f1]" />
+                <A2aLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#3ecf8e]" />
+                <ComputerUseLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#e5c07b]" />
+              </span>{' '}
+              Verified multi-agent run out.
+            </motion.h1>
+
+            <motion.p
+              custom={1}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              className="font-mono text-xs text-[var(--muted)]"
+            >
               plan → route → verify → render · MCP · A2A · COMPUTER_USE · apache 2.0
-            </p>
+            </motion.p>
+
+            {/* Interactive Goal Decomposition */}
+            <motion.div
+              custom={2}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              className="pt-2"
+            >
+              <GoalDecomposition />
+            </motion.div>
 
             {/* CTAs */}
-            <div className="space-y-3 pt-1">
-              
+            <motion.div
+              custom={3}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              className="space-y-3 pt-1"
+            >
+
               <div className="flex flex-wrap items-center gap-3">
                 {onExploreDocs && (
                   <button
@@ -147,24 +203,36 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
                 </div>
               </div>
 
-            </div>
+            </motion.div>
 
             {/* Quick feature tags */}
-            <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-[var(--muted)]">
+            <motion.div
+              custom={4}
+              initial="hidden"
+              animate="visible"
+              variants={fadeUp}
+              className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-[var(--muted)]"
+            >
               <span className="flex items-center gap-1.5">
                 <ShieldCheck className="w-4 h-4 text-[#6366f1]" /> PAYMENT_MODE=mock
               </span>
               <span className="flex items-center gap-1.5">
                 <Layers className="w-4 h-4 text-[#6366f1]" /> LangGraph SuperAgent
               </span>
-            </div>
+            </motion.div>
 
           </div>
 
           {/* Right Live Terminal Box */}
-          <div className="lg:col-span-6">
+          <motion.div
+            custom={2}
+            initial="hidden"
+            animate="visible"
+            variants={fadeUp}
+            className="lg:col-span-6"
+          >
             <div className="bg-[#080C14] border border-[var(--line)] rounded-xl overflow-hidden font-mono text-xs shadow-xl">
-              
+
               {/* Titlebar */}
               <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-[#0c0f17]">
                 <div className="flex items-center gap-2 text-xs text-slate-300 font-semibold">
@@ -201,12 +269,18 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
             <p className="mt-2 font-mono text-[11px] text-[var(--faint)]">
               captured from a live run · {CAPTURED_AT}
             </p>
-          </div>
+          </motion.div>
 
         </div>
 
         {/* Interactive Visual Pipeline */}
-        <div className="bg-[var(--card-bg)] border border-[var(--line)] rounded-xl p-5 space-y-3 shadow-sm transition-colors">
+        <motion.div
+          custom={5}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          className="bg-[var(--card-bg)] border border-[var(--line)] rounded-xl p-5 space-y-3 shadow-sm transition-colors"
+        >
           <div className="flex items-center justify-between font-mono text-xs">
             <span className="text-[var(--text)] font-semibold uppercase tracking-wider">
               Execution Flow Architecture
@@ -227,7 +301,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
                 }`}
               >
                 <div className="flex items-center justify-between font-mono text-[10px] text-[var(--faint)] mb-1">
-                  <span>0{index + 1}</span>
+                  <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center text-[10px] font-bold">
+                    {step.num}
+                  </span>
                   {index < pipelineSteps.length - 1 && (
                     <ArrowRight className="w-3 h-3 text-[#6366f1] hidden md:block opacity-40 group-hover:opacity-100 transition-opacity" />
                   )}
@@ -243,7 +319,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </section>

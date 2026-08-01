@@ -6,6 +6,7 @@ import { CanvasKitShowcase } from './components/CanvasKitShowcase';
 import { SDKAndManifest } from './components/SDKAndManifest';
 import { VerifiedRunsSection } from './components/VerifiedRunsSection';
 import { ProofCards } from './components/ProofCards';
+import { FleetGrid } from './components/FleetGrid';
 import { InteractiveDAGArchitecture } from './components/InteractiveDAGArchitecture';
 import { RoadmapAndNonGoals } from './components/RoadmapAndNonGoals';
 import { ContributionSection } from './components/ContributionSection';
@@ -106,7 +107,7 @@ export default function App() {
                       href={SANDBOX_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group font-mono text-xs font-semibold px-5 py-3 rounded-lg bg-[#6366f1] text-white hover:bg-[#4f52c8] transition-all flex items-center gap-2 shadow-sm"
+                      className="group font-mono text-xs font-semibold pl-5 pr-2 py-2 rounded-full bg-[#6366f1] text-white hover:bg-[#4f52c8] transition-all flex items-center gap-3 shadow-md"
                     >
                       <span className="block overflow-hidden h-[1em]">
                         <span className="flex flex-col leading-[1em] transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2">
@@ -114,7 +115,9 @@ export default function App() {
                           <span>Open the live sandbox</span>
                         </span>
                       </span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:rotate-[-45deg]">
+                        <ArrowRight className="w-3.5 h-3.5 text-[#6366f1]" />
+                      </span>
                     </a>
                     <button
                       onClick={() => setActiveTab('docs')}
@@ -134,6 +137,12 @@ export default function App() {
 
             <ScrollReveal direction="up">
               <VerifiedRunsSection />
+            </ScrollReveal>
+
+            <ScrollReveal direction="up" delay={0.1}>
+              <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <FleetGrid />
+              </section>
             </ScrollReveal>
 
             <ScrollReveal direction="up" delay={0.1}>
