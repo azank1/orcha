@@ -19,13 +19,20 @@ interface SettingsState {
   loadLocalPrefs: () => void
 }
 
+export const DEFAULT_MODEL = 'openai/gpt-oss-120b'
+export const AVAILABLE_MODELS = [
+  'llama-3.3-70b-versatile',
+  'openai/gpt-oss-120b',
+  'gemini-3-flash-preview',
+]
+
 export const useSettingsStore = create<SettingsState>((set) => ({
   userSettings: null,
   isDevMode: false,
   appearance: 'dark',
   language: 'en',
   timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  defaultModel: 'claude-sonnet',
+  defaultModel: DEFAULT_MODEL,
 
   setUserSettings: (s) => set({ userSettings: s, isDevMode: s.is_dev_mode }),
   setDevMode: (v) => set({ isDevMode: v }),
@@ -51,7 +58,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const appearance = (localStorage.getItem('pref_appearance') as 'dark' | 'light') ?? 'dark'
     const language = localStorage.getItem('pref_language') ?? 'en'
     const timezone = localStorage.getItem('pref_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone
-    const defaultModel = localStorage.getItem('pref_defaultModel') ?? 'claude-sonnet'
+    const storedModel = localStorage.getItem('pref_defaultModel')
+    // Drop stale prefs for models the sandbox no longer serves.
+    const defaultModel =
+      storedModel && AVAILABLE_MODELS.includes(storedModel) ? storedModel : DEFAULT_MODEL
     set({ appearance, language, timezone, defaultModel })
   },
 }))

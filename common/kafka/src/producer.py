@@ -1,4 +1,4 @@
-"""Kafka producer for Metaorcha services."""
+"""Kafka producer for Orcha services."""
 
 from __future__ import annotations
 

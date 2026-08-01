@@ -15,7 +15,7 @@ def main() -> int:
     env = os.environ.copy()
     env.setdefault(
         "DATABASE_URL",
-        "postgresql://postgres:postgres@localhost:5432/metaorcha",
+        "postgresql://postgres:postgres@localhost:5432/orcha",
     )
     env["PYTHONPATH"] = str(ROOT)
     result = subprocess.run(

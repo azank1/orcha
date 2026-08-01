@@ -10,12 +10,13 @@ import { sessions } from '../api/client'
 import { useSessionStore } from '../store/session'
 import { useSessionSidebarStore } from '../store/sessionSidebar'
 import { useAuthStore } from '../store/auth'
+import { useSettingsStore } from '../store/settings'
 import { useSSE } from '../hooks/useSSE'
 import { sessionTitleFromMessage } from '../lib/sessionTitle'
 import { queryClient } from '../lib/queryClient'
 
 const M2_DEMO_GOAL =
-  'Show me my portfolio performance, search for NVDA earnings coverage, and screenshot the Alpaca dashboard'
+  'Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard'
 
 const SAMPLE_PROMPTS: { label: string; message: string }[] = [
   {
@@ -23,16 +24,13 @@ const SAMPLE_PROMPTS: { label: string; message: string }[] = [
     message: 'Show me my portfolio performance and top holdings',
   },
   {
-    label: '3-protocol demo (portfolio + search + screenshot)',
+    label: '3-protocol demo (portfolio + scrape + screenshot)',
     message: M2_DEMO_GOAL,
   },
   {
-    label: 'NVDA earnings search',
-    message: 'Search for NVDA earnings coverage this week',
-  },
-  {
-    label: 'Research AI agent frameworks',
-    message: 'Research AI agent frameworks and summarize trends',
+    label: 'Wikipedia summary (web scraper)',
+    message:
+      'Summarize https://en.wikipedia.org/wiki/Artificial_intelligence with the web scraper agent',
   },
 ]
 
@@ -40,12 +38,14 @@ const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
 
 export function Home() {
   const [input, setInput] = useState('')
+  const [customInstructions, setCustomInstructions] = useState('')
   const [loading, setLoading] = useState(false)
   const [guestBootstrapping, setGuestBootstrapping] = useState(SANDBOX_MODE)
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const guestLogin = useAuthStore((s) => s.guestLogin)
   const sessionSidebarOpen = useSessionSidebarStore((s) => s.isOpen)
+  const defaultModel = useSettingsStore((s) => s.defaultModel)
   const { setSessionId, addMessage, reset } = useSessionStore()
   const { streamResponse } = useSSE()
 
@@ -96,7 +96,10 @@ export function Home() {
         timestamp: Date.now(),
       })
       navigate(`/chat/${session_id}`)
-      const res = await sessions.sendMessage(session_id, message)
+      const res = await sessions.sendMessage(session_id, message, [], {
+        model: defaultModel,
+        customInstructions: customInstructions.trim() || undefined,
+      })
       if (res.ok) await streamResponse(res)
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
       void queryClient.invalidateQueries({ queryKey: ['transcript', session_id] })
@@ -142,9 +145,12 @@ export function Home() {
         </div>
 
         {/* Headline */}
-        <h1 className="text-[38px] font-bold text-text-heading text-center leading-tight max-w-[760px] mb-4">
-          What can I help you orchestrate?
+        <h1 className="font-display text-[38px] font-bold text-text-heading text-center leading-tight max-w-[760px] mb-3">
+          The open harness for agent orchestration.
         </h1>
+        <p className="font-mono text-[13px] text-text-secondary text-center max-w-[640px] mb-6">
+          one goal in → verified multi-protocol run out → live dashboard, not a chat reply
+        </p>
         <p className="text-body-lg text-text-secondary text-center max-w-[600px] mb-8">
           Type a goal. Orcha discovers the right agents, composes them across MCP, A2A, and COMPUTER_USE,
           and renders the result as a live dashboard — not a chat reply.
@@ -156,9 +162,29 @@ export function Home() {
             value={input}
             onChange={setInput}
             onSubmit={handleSubmit}
-            placeholder="Describe a task for your agent hive…"
+            placeholder="describe a goal…"
             disabled={loading || guestBootstrapping}
             size="home"
+          />
+        </div>
+
+        {/* Custom instructions */}
+        <div className="w-full max-w-[680px] mb-6">
+          <label
+            htmlFor="custom-instructions"
+            className="block text-[12px] font-medium text-text-secondary mb-1"
+          >
+            Custom instructions (optional)
+          </label>
+          <textarea
+            id="custom-instructions"
+            value={customInstructions}
+            onChange={(e) => setCustomInstructions(e.target.value)}
+            placeholder="Tell the harness how to behave for your work…"
+            rows={2}
+            maxLength={2000}
+            disabled={loading || guestBootstrapping}
+            className="w-full px-3 py-2 rounded-md bg-surface-elevated border border-surface-border text-label text-text-body placeholder:text-text-disabled focus:outline-none focus:border-brand-primary resize-y disabled:opacity-50"
           />
         </div>
 
@@ -175,6 +201,14 @@ export function Home() {
             </button>
           ))}
         </div>
+
+        {/* Goal-type hint + known limits */}
+        <p className="mt-4 font-mono text-[11px] text-text-disabled text-center">
+          works today: portfolio · web summaries · screenshots · email me the receipt
+        </p>
+        <p className="mt-1 font-mono text-[11px] text-text-disabled text-center">
+          2 goals per guest · demo fleet · free-tier models
+        </p>
 
         {SANDBOX_MODE && (
           <p className="mt-4 text-[12px] text-text-disabled text-center max-w-[560px]">

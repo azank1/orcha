@@ -21,6 +21,13 @@ export function CredentialsModal() {
   const [saving, setSaving] = useState<Record<string, boolean>>({})
   const [loading, setLoading] = useState(false)
 
+  const setByokActive = useSessionStore((s) => s.setByokActive)
+  const [byokBaseUrl, setByokBaseUrl] = useState('')
+  const [byokApiKey, setByokApiKey] = useState('')
+  const [byokModel, setByokModel] = useState('')
+  const [byokSaving, setByokSaving] = useState(false)
+  const [byokConnected, setByokConnected] = useState(false)
+
   const secretKey = (s: AgentSecretItem) => `${s.agent_id}:${s.var_name}`
 
   useEffect(() => {
@@ -78,6 +85,33 @@ export function CredentialsModal() {
     } catch { /* ignore */ }
   }
 
+  const handleByokSave = async () => {
+    if (!sessionId || !byokBaseUrl.trim() || !byokApiKey.trim() || !byokModel.trim()) return
+    setByokSaving(true)
+    try {
+      for (const [var_name, value] of [
+        ['base_url', byokBaseUrl],
+        ['api_key', byokApiKey],
+        ['model', byokModel],
+      ] as const) {
+        await credentials.set({
+          agent_id: '__llm__',
+          var_name,
+          value: value.trim(),
+          scope: 'session',
+          session_id: sessionId,
+        })
+      }
+      setByokConnected(true)
+      setByokActive(sessionId)
+      setByokApiKey('')
+    } catch {
+      // surface error in real impl
+    } finally {
+      setByokSaving(false)
+    }
+  }
+
   const subtitle = sessionName ?? (sessionId ? `Session ${sessionId.slice(0, 8)}` : 'Active Session')
 
   return (
@@ -115,6 +149,66 @@ export function CredentialsModal() {
         </div>
 
         <div className="overflow-y-auto scrollbar-thin flex-1 p-4 flex flex-col gap-3">
+          {/* Model provider (BYOK) */}
+          <div className="rounded-md bg-surface-overlay border border-surface-border p-4">
+            <div className="flex items-center gap-2">
+              <span className="text-label font-semibold text-text-heading flex-1 truncate">
+                Model provider (BYOK)
+              </span>
+              {byokConnected && (
+                <span className="flex items-center justify-center h-7 px-2 rounded-sm border text-[11px] font-semibold bg-semantic-successDim border-[#0A4A26] text-semantic-success">
+                  ✓ Connected
+                </span>
+              )}
+            </div>
+            <p className="mt-1.5 text-[11px] text-text-secondary">
+              your model, your key — we just run the harness on it.
+            </p>
+            {!byokConnected && (
+              <div className="mt-3 flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={byokBaseUrl}
+                  onChange={(e) => setByokBaseUrl(e.target.value)}
+                  placeholder="Base URL — https://api.groq.com/openai/v1"
+                  aria-label="Model base URL"
+                  className="w-full h-10 px-3 rounded-md bg-surface-base border border-surface-borderLight text-label text-text-body placeholder:text-text-disabled focus:outline-none focus:border-brand-primary"
+                />
+                <input
+                  type="password"
+                  value={byokApiKey}
+                  onChange={(e) => setByokApiKey(e.target.value)}
+                  placeholder="API key…"
+                  aria-label="Model API key"
+                  className="w-full h-10 px-3 rounded-md bg-surface-base border border-surface-borderLight text-label text-text-body placeholder:text-text-disabled focus:outline-none focus:border-brand-primary"
+                />
+                <input
+                  type="text"
+                  value={byokModel}
+                  onChange={(e) => setByokModel(e.target.value)}
+                  placeholder="Model id — llama-3.3-70b-versatile"
+                  aria-label="Model id"
+                  className="w-full h-10 px-3 rounded-md bg-surface-base border border-surface-borderLight text-label text-text-body placeholder:text-text-disabled focus:outline-none focus:border-brand-primary"
+                />
+                <div className="flex items-center justify-end">
+                  <Button
+                    size="sm"
+                    onClick={handleByokSave}
+                    loading={byokSaving}
+                    disabled={
+                      !sessionId ||
+                      !byokBaseUrl.trim() ||
+                      !byokApiKey.trim() ||
+                      !byokModel.trim()
+                    }
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center h-20 text-text-secondary text-label">
               Loading…

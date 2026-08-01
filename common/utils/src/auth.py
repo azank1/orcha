@@ -37,7 +37,7 @@ def validate_pat_token_format(token: str) -> bool:
     """
     Validate PAT token format.
 
-    Format: metaorcha_pat_<40 chars total>
+    Format: orcha_pat_<40 chars total>
 
     Args:
         token: The token to validate
@@ -48,7 +48,7 @@ def validate_pat_token_format(token: str) -> bool:
     if not token:
         return False
 
-    if not token.startswith("metaorcha_pat_"):
+    if not token.startswith("orcha_pat_"):
         return False
 
     return len(token) == 40

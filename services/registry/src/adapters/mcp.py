@@ -300,7 +300,7 @@ class MCPAdapter(BaseAdapter):
                 "params": {
                     "protocolVersion": "2025-11-25",
                     "capabilities": {},
-                    "clientInfo": {"name": "Metaorcha Registry", "version": "1.0.0"},
+                    "clientInfo": {"name": "Orcha Registry", "version": "1.0.0"},
                 },
             }
             async with httpx.AsyncClient() as client:

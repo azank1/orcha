@@ -57,7 +57,7 @@ app.include_router(auth_router)
 # --- Agent Card ---
 
 AGENT_CARD = {
-    # Required by MetaOrcha registry A2AAdapter — missing → 0 capabilities harvested
+    # Required by Orcha registry A2AAdapter — missing → 0 capabilities harvested
     "schemaVersion": "1.0",
     "name": "Web Scraper",
     "description": (
@@ -270,7 +270,7 @@ async def _fetch_and_extract(
     """
     logger.info("fetching_url", url=url, authenticated=extra_headers is not None)
 
-    headers = {"User-Agent": "MetaOrcha-WebScraper/0.2"}
+    headers = {"User-Agent": "Orcha-WebScraper/0.2"}
     if extra_headers:
         headers.update(extra_headers)
 

@@ -103,6 +103,10 @@ model Agent {
   p95_latency_ms  Int   @default(5000)
   execution_count Int   @default(0)
 
+  // Declared authorised-scope limits from emerge.yaml (emerge/1.1, RFC 0001).
+  // Null means "unspecified" — never treated as "unrestricted" by verifiers.
+  authorized_scope Json?
+
   // Metadata
   indexed_at DateTime @default(now())
   updated_at DateTime @updatedAt

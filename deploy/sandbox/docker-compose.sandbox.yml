@@ -19,7 +19,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: metaorcha
+      POSTGRES_DB: orcha
     volumes:
       - sandbox_postgres:/var/lib/postgresql/data
     healthcheck:
@@ -99,7 +99,7 @@ services:
     ports:
       - "127.0.0.1:8000:8000"
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       DISABLE_AUTH: "true"
       PAYMENT_MODE: mock
@@ -115,7 +115,7 @@ services:
     container_name: sandbox-pnd
     env_file: ../../.env.sandbox
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       LLM_PROVIDER: openrouter
       OLLAMA_BASE_URL: http://ollama:11434
@@ -134,7 +134,7 @@ services:
     container_name: sandbox-superagent
     env_file: ../../.env.sandbox
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       REDIS_URL: redis://redis:6379/0
       PND_SERVICE_URL: http://planning-discovery:8001
       REGISTRY_SERVICE_URL: http://registry:8000
@@ -147,6 +147,11 @@ services:
       AWS_REGION: us-east-1
       ARTIFACT_S3_BUCKET: emerge-artifacts-local
       PAYMENT_MODE: mock
+      # Real computer-use backend (headless Chromium) — sandbox-safe: navigation
+      # is restricted to this domain allowlist; localhost/private hosts blocked.
+      COMPUTER_USE_BACKEND: playwright
+      COMPUTER_USE_MODEL: qwen/qwen3.6-27b
+      COMPUTER_USE_ALLOWED_DOMAINS: en.wikipedia.org,example.com
     depends_on:
       redis: {condition: service_healthy}
       registry: {condition: service_started}
@@ -159,7 +164,7 @@ services:
     container_name: sandbox-gateway
     env_file: ../../.env.sandbox
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/metaorcha
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       REDIS_URL: redis://redis:6379/1
       SUPERAGENT_URL: http://superagent:8002
       REGISTRY_URL: http://registry:8000
@@ -186,7 +191,8 @@ services:
       context: ../..
       dockerfile: frontend/Dockerfile
       args:
-        VITE_GATEWAY_URL: /api
+        # Empty = origin-relative client (/auth/* and /api/v1/* route via nginx)
+        VITE_GATEWAY_URL: ""
         VITE_SANDBOX_MODE: "true"
     container_name: sandbox-frontend
     networks: [sandbox-net]

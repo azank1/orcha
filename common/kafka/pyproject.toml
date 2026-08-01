@@ -1,7 +1,7 @@
 [project]
 name = "common-kafka"
 version = "0.1.0"
-description = "Shared Kafka consumer/producer for Metaorcha services"
+description = "Shared Kafka consumer/producer for Orcha services"
 requires-python = ">=3.12"
 
 dependencies = [

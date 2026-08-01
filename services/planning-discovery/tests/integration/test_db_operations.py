@@ -52,7 +52,7 @@ class TestDatabaseOperations:
         async with test_db_pool.acquire() as conn:
             await conn.execute(
                 _AGENT_INSERT,
-                "did:emerge:agent:test-001",
+                "did:orcha:agent:test-001",
                 _TEST_USER_ID,
                 "TestAgent",
                 "1.0.0",
@@ -65,7 +65,7 @@ class TestDatabaseOperations:
                 "http://localhost:9999/health",
             )
             result = await conn.fetchrow(
-                "SELECT * FROM agents WHERE id = $1", "did:emerge:agent:test-001"
+                "SELECT * FROM agents WHERE id = $1", "did:orcha:agent:test-001"
             )
 
         assert result is not None
@@ -88,7 +88,7 @@ class TestDatabaseOperations:
         async with test_db_pool.acquire() as conn:
             await conn.execute(
                 _AGENT_INSERT,
-                "did:emerge:agent:fts-001",
+                "did:orcha:agent:fts-001",
                 _TEST_USER_ID,
                 "CryptoOracle",
                 "1.0.0",
@@ -102,7 +102,7 @@ class TestDatabaseOperations:
             )
             result = await conn.fetchval(
                 "SELECT search_vector FROM agents WHERE id = $1",
-                "did:emerge:agent:fts-001",
+                "did:orcha:agent:fts-001",
             )
 
         assert result is not None

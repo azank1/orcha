@@ -1,4 +1,4 @@
-# MetaOrcha Gateway Service — Technical Specification v1.0
+# Orcha Gateway Service — Technical Specification v1.0
 
 ## Document Status: Implementation-Ready
 **Supersedes:** FE Gateway API Contract (design handoff brief)
@@ -1100,7 +1100,7 @@ POST /dev/agents:         10 req/min
 [project]
 name = "gateway"
 version = "0.1.0"
-description = "MetaOrcha Gateway Service"
+description = "Orcha Gateway Service"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",

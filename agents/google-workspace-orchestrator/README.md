@@ -1,6 +1,6 @@
 # Google Workspace Orchestrator (A2A)
 
-Multi-step Google Workspace agent for MetaOrcha: **A2A JSON-RPC** on `POST /`, **workspace-mcp** over HTTP (`/mcp`), **Google ADK `LlmAgent` + `LiteLlm`** targeting **OpenRouter**, and **DAG** planning across **all** [workspace-mcp](https://github.com/taylorwilsdon/google_workspace_mcp) tool groups.
+Multi-step Google Workspace agent for Orcha: **A2A JSON-RPC** on `POST /`, **workspace-mcp** over HTTP (`/mcp`), **Google ADK `LlmAgent` + `LiteLlm`** targeting **OpenRouter**, and **DAG** planning across **all** [workspace-mcp](https://github.com/taylorwilsdon/google_workspace_mcp) tool groups.
 
 ## Covered MCP services (12)
 
@@ -72,7 +72,7 @@ Set `MCP_SPAWN_ENABLED=0` and `WORKSPACE_MCP_URL` to use an external server.
 
 ## emerge.yaml
 
-Register with the MetaOrcha registry using [`emerge.yaml`](./emerge.yaml). Skill IDs must match `/.well-known/agent.json` and **`security.auth_strategies[0].capability_ids`**.
+Register with the Orcha registry using [`emerge.yaml`](./emerge.yaml). Skill IDs must match `/.well-known/agent.json` and **`security.auth_strategies[0].capability_ids`**.
 
 ## Destructive actions (HITL)
 

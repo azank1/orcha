@@ -107,7 +107,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI application
 app = FastAPI(
-    title="Metaorcha Registry Service",
+    title="Orcha Registry Service",
     description="Agent registration and manifest management service",
     version=settings.service_version,
     lifespan=lifespan,

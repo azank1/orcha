@@ -11,7 +11,7 @@ Skills:
 - create_research_note: Create a structured Notion page from research data.
 - market_data:          Fetch real-time market data for a symbol.
 
-Converted from MCP/SSE to A2A/HTTP for the MetaOrcha MVP — the SuperAgent
+Converted from MCP/SSE to A2A/HTTP for the Orcha MVP — the SuperAgent
 orchestrator calls this agent via the A2AHandler using standard A2A task
 lifecycle (send → completed/failed).
 """

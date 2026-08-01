@@ -41,6 +41,8 @@ interface SessionState {
   elapsedSeconds: number
   streamingMessageId: string | null
   credentialsModalOpen: boolean
+  /** Session id for which BYOK model credentials were saved (null = env default). */
+  byokSessionId: string | null
   saveWorkflowModalOpen: boolean
   crmModalOpen: boolean
   integrationsModalOpen: boolean
@@ -70,6 +72,7 @@ interface SessionState {
   setElapsed: (seconds: number) => void
   openCredentialsModal: () => void
   closeCredentialsModal: () => void
+  setByokActive: (sessionId: string) => void
   openSaveWorkflowModal: () => void
   closeSaveWorkflowModal: () => void
   openCrmModal: () => void
@@ -126,6 +129,7 @@ const initialState = {
   elapsedSeconds: 0,
   streamingMessageId: null,
   credentialsModalOpen: false,
+  byokSessionId: null as string | null,
   saveWorkflowModalOpen: false,
   crmModalOpen: false,
   integrationsModalOpen: false,
@@ -273,6 +277,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
 
   openCredentialsModal: () => set({ credentialsModalOpen: true }),
   closeCredentialsModal: () => set({ credentialsModalOpen: false }),
+  setByokActive: (sessionId) => set({ byokSessionId: sessionId }),
   openSaveWorkflowModal: () => set({ saveWorkflowModalOpen: true }),
   closeSaveWorkflowModal: () => set({ saveWorkflowModalOpen: false }),
   openCrmModal: () => set({ crmModalOpen: true }),

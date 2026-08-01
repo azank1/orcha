@@ -15,6 +15,7 @@ import { IntegrationsModal } from '../components/modals/IntegrationsModal'
 import { useSessionStore } from '../store/session'
 import { useSessionSidebarStore } from '../store/sessionSidebar'
 import { useAuthStore } from '../store/auth'
+import { useSettingsStore } from '../store/settings'
 import { sessions, files } from '../api/client'
 import { useSSE } from '../hooks/useSSE'
 import { useSessionStatusSync } from '../hooks/useSessionStatusSync'
@@ -44,13 +45,23 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   failed: { label: '● failed', color: 'text-semantic-error' },
 }
 
+const SUGGESTED_GOALS = [
+  'Show me my portfolio performance',
+  'Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard',
+  'Summarize https://en.wikipedia.org/wiki/Artificial_intelligence with the web scraper agent',
+]
+
 export function Chat() {
   const { sessionId: urlSessionId } = useParams<{ sessionId: string }>()
   const [input, setInput] = useState('')
   const [pendingArtifacts, setPendingArtifacts] = useState<PendingArtifact[]>([])
+  const [receiptOpen, setReceiptOpen] = useState(false)
+  const [receiptEmail, setReceiptEmail] = useState('')
+  const [receiptError, setReceiptError] = useState<string | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const sessionSidebarOpen = useSessionSidebarStore((s) => s.isOpen)
+  const defaultModel = useSettingsStore((s) => s.defaultModel)
 
   const store = useSessionStore()
   const { streamResponse, abort } = useSSE()
@@ -164,7 +175,9 @@ export function Chat() {
     setInput('')
     setPendingArtifacts([])
     try {
-      const res = await sessions.sendMessage(store.sessionId, message, artifactIds)
+      const res = await sessions.sendMessage(store.sessionId, message, artifactIds, {
+        model: defaultModel,
+      })
       if (res.ok) {
         await streamResponse(res)
         await onAfterInterrupt()
@@ -206,6 +219,41 @@ export function Chat() {
     }
   }
 
+  const handleDownloadAudit = async () => {
+    if (!store.sessionId) return
+    try {
+      const audit = await sessions.getAudit(store.sessionId)
+      const blob = new Blob([JSON.stringify(audit, null, 2)], {
+        type: 'application/json',
+      })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `orcha-run-audit-${store.sessionId}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      store.addMessage({
+        id: crypto.randomUUID(),
+        role: 'error',
+        content: 'Could not download the run audit',
+        timestamp: Date.now(),
+      })
+    }
+  }
+
+  const handleReceiptSubmit = () => {
+    const email = receiptEmail.trim()
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setReceiptError('Enter a valid email address')
+      return
+    }
+    setReceiptOpen(false)
+    setReceiptEmail('')
+    setReceiptError(null)
+    void handleSend(`email the run receipt for this session to ${email}`, [])
+  }
+
   const statusInfo = STATUS_LABELS[store.status] ?? STATUS_LABELS.idle
   const sessionTitle = store.messages[0]?.content?.slice(0, 48) ?? 'New Session'
 
@@ -238,9 +286,39 @@ export function Chat() {
               {statusInfo.label}
             </span>
           </div>
+          {store.byokSessionId && store.byokSessionId === store.sessionId && (
+            <div className="ml-2 flex items-center h-6 px-2.5 rounded-sm bg-surface-overlay border border-surface-border shrink-0">
+              <span className="font-mono text-[10px] text-text-secondary">
+                running on your model
+              </span>
+            </div>
+          )}
           <div className="flex-1" />
           <div className="flex items-center gap-2">
+            <span className="font-mono text-[10px] text-text-disabled select-none">beta</span>
             <IntegrationsButton />
+            <button
+              onClick={handleDownloadAudit}
+              disabled={store.messages.length === 0}
+              aria-label="Download run audit"
+              title="Download per-run audit (Verified Runs evidence)"
+              className="flex items-center gap-1.5 h-8 px-3 rounded-md bg-surface-overlay border border-surface-borderLight text-[12px] font-medium text-text-body hover:border-surface-muted disabled:opacity-50 transition-colors"
+            >
+              ⬇ Audit
+            </button>
+            {store.status === 'complete' && (
+              <button
+                onClick={() => {
+                  setReceiptOpen((open) => !open)
+                  setReceiptError(null)
+                }}
+                aria-label="Email run receipt"
+                title="Email the run receipt for this session"
+                className="flex items-center gap-1.5 h-8 px-3 rounded-md border border-transparent text-[12px] font-medium text-text-secondary hover:text-text-body hover:border-surface-borderLight transition-colors"
+              >
+                ✉ receipt
+              </button>
+            )}
             <button
               onClick={store.openCredentialsModal}
               aria-label="Manage credentials"
@@ -250,6 +328,44 @@ export function Chat() {
             </button>
           </div>
         </header>
+
+        {/* Receipt email inline prompt */}
+        {receiptOpen && store.status === 'complete' && (
+          <div className="flex items-center gap-2 px-5 py-2 border-b border-surface-border bg-surface-base shrink-0">
+            <span className="font-mono text-[11px] text-text-secondary shrink-0">receipt →</span>
+            <input
+              value={receiptEmail}
+              onChange={(e) => {
+                setReceiptEmail(e.target.value)
+                setReceiptError(null)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleReceiptSubmit()
+                if (e.key === 'Escape') setReceiptOpen(false)
+              }}
+              placeholder="you@example.com"
+              aria-label="Receipt email address"
+              autoFocus
+              className="w-56 h-7 px-2 rounded-md bg-surface-base border border-surface-borderLight font-mono text-[11px] text-text-body placeholder:text-text-disabled focus:outline-none focus:border-brand-primary"
+            />
+            <button
+              onClick={handleReceiptSubmit}
+              className="h-7 px-2.5 rounded-md bg-surface-overlay border border-surface-borderLight text-[11px] font-medium text-text-body hover:border-surface-muted transition-colors"
+            >
+              send
+            </button>
+            <button
+              onClick={() => setReceiptOpen(false)}
+              aria-label="Close receipt prompt"
+              className="text-[11px] text-text-disabled hover:text-text-secondary transition-colors"
+            >
+              ✕
+            </button>
+            {receiptError && (
+              <span className="text-[11px] text-semantic-error">{receiptError}</span>
+            )}
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-5">
@@ -300,12 +416,36 @@ export function Chat() {
               />
             ))}
 
+            {/* Run telemetry strip — after a run completes */}
+            {store.status === 'complete' && store.sessionId && (
+              <RunTelemetryStrip sessionId={store.sessionId} />
+            )}
+
             <div ref={bottomRef} />
           </div>
         </div>
 
         {/* Input bar */}
         <div className="px-5 py-4 border-t border-surface-border shrink-0">
+          {store.messages.length === 0 && store.status !== 'running' && (
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <span className="text-[12px] text-text-secondary">Try:</span>
+              {SUGGESTED_GOALS.map((goal) => (
+                <button
+                  key={goal}
+                  onClick={() => void handleSend(goal, [])}
+                  className="h-8 max-w-full truncate px-3 rounded-full bg-surface-overlay border border-surface-borderLight text-[12px] font-medium text-text-body hover:border-brand-primary transition-colors"
+                >
+                  {goal}
+                </button>
+              ))}
+            </div>
+          )}
+          {store.messages.length === 0 && store.status !== 'running' && (
+            <p className="mb-3 font-mono text-[11px] text-text-disabled">
+              works today: portfolio · web summaries · screenshots · email me the receipt
+            </p>
+          )}
           {store.status === 'failed' && (
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[12px] text-semantic-error">Something went wrong.</span>
@@ -343,6 +483,41 @@ export function Chat() {
       <IntegrationsModal />
     </div>
   )
+}
+
+// ── Run telemetry strip ────────────────────────────────────────────────────────
+
+interface RunAuditSummary {
+  total_steps?: number
+  protocols?: string[]
+  total_cost_usd?: string
+  duration_ms?: number | null
+}
+
+function formatRunTelemetry(audit: Record<string, unknown> | undefined): string | null {
+  const summary = (audit?.summary ?? {}) as RunAuditSummary
+  const parts: string[] = []
+  if (typeof summary.total_steps === 'number') parts.push(`steps: ${summary.total_steps}`)
+  if (Array.isArray(summary.protocols) && summary.protocols.length > 0) {
+    parts.push(`protocols: ${summary.protocols.join('+')}`)
+  }
+  if (summary.total_cost_usd) parts.push(`cost: $${summary.total_cost_usd}`)
+  if (typeof summary.duration_ms === 'number') {
+    parts.push(`${(summary.duration_ms / 1000).toFixed(1)}s`)
+  }
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
+function RunTelemetryStrip({ sessionId }: { sessionId: string }) {
+  // Silent on failure — no strip if the audit can't be fetched.
+  const { data } = useQuery({
+    queryKey: ['run-audit', sessionId],
+    queryFn: () => sessions.getAudit(sessionId),
+    retry: false,
+  })
+  const line = formatRunTelemetry(data)
+  if (!line) return null
+  return <p className="font-mono text-[11px] text-text-disabled">{line}</p>
 }
 
 // ── Interrupt dispatcher ───────────────────────────────────────────────────────

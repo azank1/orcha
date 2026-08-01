@@ -3,6 +3,8 @@ import { Button } from '../ui/Button'
 import { Logo } from '../ui/Logo'
 import { useAuthStore } from '../../store/auth'
 
+const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
+
 export function NavBar() {
   const navigate = useNavigate()
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
@@ -30,15 +32,27 @@ export function NavBar() {
           ⚡ My Workflows
         </Button>
 
-        {isAuthenticated ? (
-          <Button variant="secondary" size="sm" onClick={() => logout()}>
-            Sign Out
-          </Button>
-        ) : (
-          <Button variant="primary" size="sm" onClick={() => navigate('/login')}>
-            Sign In
-          </Button>
+        {/* Sandbox is a no-signup demo surface: guest bootstrap handles auth.
+            A quiet sign-in link stays for BYOK/vault users and owners —
+            registered accounts skip the guest message cap. */}
+        {SANDBOX_MODE && !isAuthenticated && (
+          <button
+            onClick={() => navigate('/login')}
+            className="font-mono text-xs text-text-disabled hover:text-text-body transition-colors"
+          >
+            sign in
+          </button>
         )}
+        {!SANDBOX_MODE &&
+          (isAuthenticated ? (
+            <Button variant="secondary" size="sm" onClick={() => logout()}>
+              Sign Out
+            </Button>
+          ) : (
+            <Button variant="primary" size="sm" onClick={() => navigate('/login')}>
+              Sign In
+            </Button>
+          ))}
       </div>
     </header>
   )

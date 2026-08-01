@@ -1,9 +1,9 @@
 # Contributing to Orcha
 
 Thanks for your interest in Orcha — open **agent orchestration and observability**
-infrastructure, growing toward the **Decentralized Agent Network (DAN)**.
+infrastructure.
 
-Read [`INCEPTION.md`](INCEPTION.md) for the north star. This is not a model benchmark
+This is not a model benchmark
 repo — it's about **routing, executing, observing, and distributing** agents
 across MCP, A2A, and ACP.
 
@@ -17,9 +17,8 @@ Contributions we **eagerly welcome** without prior discussion:
 - **Agents** — a new example agent that registers against the local registry.
   Start from [`templates/your-first-agent/`](templates/your-first-agent/) and
   [`docs/quickstart.md`](docs/quickstart.md).
-- **DAN spikes** — gossip (`node/`), validators (`services/validator/`), settlement
-  splits, reputation APIs. See [`ROADMAP.md`](ROADMAP.md) and
-  [`docs/dev_docs/dan/`](docs/dev_docs/dan/).
+- **Observer / attestation experiments** — the `ExecutionObserver` seam and the
+  validator reference code (`services/validator/`). See [`ROADMAP.md`](ROADMAP.md).
 
 > **Core engine changes** (the SuperAgent execution pipeline, the registry
 > contract, the planner) need an issue **first**. Open one describing the
@@ -69,14 +68,14 @@ Keep them **short and scannable** — one logical change per commit.
 | `test` | Tests only |
 | `chore` | CI, deps, Makefile |
 
-**Scopes (examples):** `sdk`, `superagent`, `registry`, `gateway`, `dan`, `node`, `validator`
+**Scopes (examples):** `sdk`, `superagent`, `registry`, `gateway`, `node`, `validator`
 
 **Examples:**
 
 ```
-feat(node): signed manifest gossip spike
-docs: simplify readme for DAN vision
-fix(settlement): dan fee split when validator bps set
+feat(node): signed manifest envelope helpers
+docs: simplify readme quickstart
+fix(settlement): three-way fee split when validator bps set
 test(validator): FulfillmentRecorder attestation
 ```
 

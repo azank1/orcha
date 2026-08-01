@@ -45,12 +45,17 @@ RUN uv sync --frozen --no-dev --package planning-discovery-service
 # ============================================================================
 FROM dependencies AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+# Official Node.js tarball (npm 10) — Debian's npm 9 times out fetching large
+# package metadata on some docker bridge networks.
+RUN apt-get update && apt-get install -y --no-install-recommends curl xz-utils ca-certificates \
+    && curl -fsSL https://nodejs.org/dist/v20.20.2/node-v20.20.2-linux-x64.tar.xz \
+       | tar -xJ -C /usr/local --strip-components=1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/common/database
 ENV HOME=/app \
     PATH="/app/.venv/bin:$PATH"
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 RUN mkdir -p /app/.cache/prisma-python && \
     prisma generate && prisma py fetch
 

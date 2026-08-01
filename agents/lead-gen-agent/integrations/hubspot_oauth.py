@@ -1,6 +1,6 @@
 """
 hubspot_oauth.py
-Handles HubSpot OAuth for metaorcha users.
+Handles HubSpot OAuth for orcha users.
 User clicks Connect → authorizes → you store their token → agent uses it automatically.
 """
 import os
@@ -63,11 +63,11 @@ async def refresh_token(refresh_token: str) -> dict:
         return resp.json()
 
 
-# ── FastAPI routes to add to your metaorcha app ───────────────────────────────
+# ── FastAPI routes to add to your orcha app ───────────────────────────────
 
 def register_oauth_routes(app: FastAPI, token_store):
     """
-    Call this in your metaorcha main app to add the OAuth endpoints.
+    Call this in your orcha main app to add the OAuth endpoints.
     token_store is whatever storage you use (Redis, Postgres, etc.)
     """
 

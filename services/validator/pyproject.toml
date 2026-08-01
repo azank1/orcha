@@ -1,7 +1,7 @@
 [project]
 name = "validator-service"
 version = "0.1.0"
-description = "DAN Phase D1 — validator attestation reference implementation"
+description = "Validator attestation reference implementation"
 requires-python = ">=3.12"
 dependencies = []
 

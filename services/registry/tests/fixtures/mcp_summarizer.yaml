@@ -24,7 +24,7 @@ security:
       config:
         header_name: "Authorization"
         scheme: "Bearer"
-        issuer: "https://auth.metaorcha.bot"
+        issuer: "https://auth.orcha.bot"
 
 payment:
   type: "x402"

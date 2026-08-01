@@ -152,7 +152,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(
-    title="MetaOrcha Gateway",
+    title="Orcha Gateway",
     version="0.1.0",
     description="Public ingress — JWT auth, SSE relay, session management",
     lifespan=lifespan,
@@ -198,4 +198,4 @@ app.include_router(health_router)
 
 @app.get("/")
 async def root() -> dict[str, str]:
-    return {"service": "metaorcha-gateway", "version": "0.1.0"}
+    return {"service": "orcha-gateway", "version": "0.1.0"}

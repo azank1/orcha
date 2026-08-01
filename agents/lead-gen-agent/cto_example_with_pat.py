@@ -33,9 +33,9 @@ LEAD_GEN_APIKEY = os.getenv("AGENT_API_KEY", "")
 key_manager = KeyManager()  # uses InMemoryStore — swap for Redis/Postgres in prod
 
 
-# ── Simulated metaorcha orchestrator ─────────────────────────────────────────
+# ── Simulated orcha orchestrator ─────────────────────────────────────────
 
-async def metaorcha_handle_message(user_message: str, user_id: str, user_name: str):
+async def orcha_handle_message(user_message: str, user_id: str, user_name: str):
     print(f"\n{'━'*60}")
     print(f"  {user_name}: {user_message}")
     print(f"{'━'*60}")
@@ -131,7 +131,7 @@ def print_mock_result():
 
 async def main():
     print("\n" + "═"*60)
-    print("  metaorcha — PAT credential flow demo")
+    print("  orcha — PAT credential flow demo")
     print("  " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print("═"*60)
 
@@ -139,7 +139,7 @@ async def main():
     user_name = "Sulleman"
 
     # ── Step 1: User signs up — no keys asked ─────────────────────────────────
-    print(f"\n  Step 1: {user_name} signs up to metaorcha")
+    print(f"\n  Step 1: {user_name} signs up to orcha")
     print(f"  No API keys asked at signup.")
 
     # ── Step 2: Settings page — paste HubSpot PAT once ───────────────────────
@@ -155,9 +155,9 @@ async def main():
     print(f"  ✓ Setup complete — user is ready")
 
     # ── Step 3: User just types naturally ────────────────────────────────────
-    print(f"\n  Step 3: User sends a message in metaorcha chat")
+    print(f"\n  Step 3: User sends a message in orcha chat")
 
-    await metaorcha_handle_message(
+    await orcha_handle_message(
         "Find me 10 fintech CTOs to contact this week",
         user_id,
         user_name,
@@ -169,7 +169,7 @@ async def main():
     print(f"{'═'*60}")
 
     new_user_id = "user_new_001"
-    await metaorcha_handle_message(
+    await orcha_handle_message(
         "Find me 10 fintech CTOs to contact this week",
         new_user_id,
         "NewUser",

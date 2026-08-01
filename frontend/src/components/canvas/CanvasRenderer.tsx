@@ -7,6 +7,7 @@ import { PieChart } from './PieChart'
 import { StatGrid } from './StatGrid'
 import { ProgressBar } from './ProgressBar'
 import { Timeline } from './Timeline'
+import { MarkdownCard } from './MarkdownCard'
 
 function CanvasComponentRenderer({ spec }: { spec: CanvasComponent }) {
   switch (spec.type) {
@@ -18,6 +19,7 @@ function CanvasComponentRenderer({ spec }: { spec: CanvasComponent }) {
     case 'stat_grid':    return <StatGrid spec={spec} />
     case 'progress_bar': return <ProgressBar spec={spec} />
     case 'timeline':     return <Timeline spec={spec} />
+    case 'markdown_card': return <MarkdownCard spec={spec} />
     default:             return null
   }
 }

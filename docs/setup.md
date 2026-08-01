@@ -25,17 +25,17 @@ Postgres defaults (`docker-compose.local.yml`):
 | Setting | Value |
 |---|---|
 | User / password | `postgres` / `postgres` |
-| Database | `metaorcha` |
-| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/metaorcha` |
+| Database | `orcha` |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/orcha` |
 
 <details>
 <summary>Standalone Postgres container</summary>
 
 ```bash
-docker run --name metaorcha \
+docker run --name orcha \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=metaorcha \
+  -e POSTGRES_DB=orcha \
   -p 5432:5432 \
   -d pgvector/pgvector:pg15
 ```
@@ -48,7 +48,7 @@ docker run --name metaorcha \
 
 ```bash
 make install
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha" make migrate
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orcha" make migrate
 make prisma-generate
 make grpc-generate
 ```

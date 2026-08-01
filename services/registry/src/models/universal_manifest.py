@@ -123,7 +123,7 @@ class UniversalManifest(BaseModel):
     """
     Universal Agent Manifest.
 
-    This is the normalized format used internally by Metaorcha.
+    This is the normalized format used internally by Orcha.
     It combines data from emerge.yaml and harvested capabilities.
     """
 
@@ -133,3 +133,10 @@ class UniversalManifest(BaseModel):
     security: SecurityInfo
     payment: PaymentInfo | None = None
     capabilities: list[Capability] = Field(default_factory=list)
+    authorized_scope: dict[str, Any] | None = Field(
+        default=None,
+        description=(
+            "Declared authorised-scope limits (emerge/1.1, RFC 0001). "
+            "None means 'unspecified', not 'unrestricted'."
+        ),
+    )

@@ -1,4 +1,4 @@
-"""Fan-out StepResult events to Kafka for DAN validators (D1 spike)."""
+"""Fan-out StepResult events to Kafka for validator observers."""
 
 from __future__ import annotations
 

@@ -51,7 +51,7 @@ skills:
     tags: ["shopify", "products", "ecommerce", "crud", "inventory", "store", "bulk"]
     examples:
       - "Create a Shopify product called Air Max 2026 priced at $129.99, SKU AM-2026, vendor Nike, description 'Limited edition runner'"
-      - "Update Metanova Earbuds: set price to $199.99, SKU META-001, vendor MetaOrcha"
+      - "Update Metanova Earbuds: set price to $199.99, SKU META-001, vendor Orcha"
       - "List all active products"
       - "List all draft products"
       - "Publish product ID 12345 on my Shopify store"

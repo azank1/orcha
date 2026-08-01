@@ -90,7 +90,7 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
 
   # --- Core infra (postgres, redis, kafka) — must succeed ---
   info "Starting postgres, redis, kafka..."
-  docker compose -f docker-compose.local.yml up -d postgres redis metaorcha-kafka >/dev/null 2>&1
+  docker compose -f docker-compose.local.yml up -d postgres redis orcha-kafka >/dev/null 2>&1
   success "Core Docker containers started"
 
   # --- Ollama — best-effort; native install on host takes precedence ---
@@ -110,31 +110,31 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
 
   echo -ne "  ${DIM}waiting for postgres...${RESET}"
   for i in $(seq 1 30); do
-    docker exec metaorcha-postgres pg_isready -U postgres >/dev/null 2>&1 && {
+    docker exec orcha-postgres pg_isready -U postgres >/dev/null 2>&1 && {
       echo -e "\r  ${GREEN}✓${RESET} Postgres ready          "; break; }
     [[ $i -eq 30 ]] && fail "Postgres did not start in 30s"
     sleep 1
   done
 
-  docker exec metaorcha-postgres psql -U postgres -d metaorcha \
+  docker exec orcha-postgres psql -U postgres -d orcha \
     -c "CREATE EXTENSION IF NOT EXISTS vector;" >/dev/null 2>&1
   success "pgvector extension enabled"
 
   step "Phase 1b: Database Setup"
   info "Running Prisma migrations..."
-  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha?schema=public" \
+  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orcha?schema=public" \
     uv run prisma migrate deploy --schema common/database/schema.prisma \
     >"$LOGS/migrate.log" 2>&1
   success "Prisma migrations applied"
 
   info "Creating vector indices..."
-  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha" \
+  DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orcha" \
     uv run python services/planning-discovery/scripts/db/initialize_database.py \
     >"$LOGS/pnd-db-init.log" 2>&1
   success "Vector indices ready"
 
   info "Creating Kafka topics..."
-  docker exec metaorcha-kafka bash -c '
+  docker exec orcha-kafka bash -c '
     for topic in registry.agent.registered gateway.user.query \
                  planning.manifest.created planning.validation.failed \
                  execution.step_complete; do
@@ -152,12 +152,12 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
   elif [[ "$OLLAMA_SOURCE" == "docker" ]]; then
     echo -ne "  ${DIM}waiting for ollama container...${RESET}"
     for i in $(seq 1 30); do
-      docker exec metaorcha-ollama curl -sf http://localhost:11434/api/tags >/dev/null 2>&1 && {
+      docker exec orcha-ollama curl -sf http://localhost:11434/api/tags >/dev/null 2>&1 && {
         echo -e "\r  ${GREEN}✓${RESET} Ollama container ready          "; break; }
       [[ $i -eq 30 ]] && { warn "Ollama container not ready after 30s — embeddings will fail"; break; }
       sleep 1
     done
-    docker exec metaorcha-ollama ollama pull nomic-embed-text >"$LOGS/ollama-pull.log" 2>&1 \
+    docker exec orcha-ollama ollama pull nomic-embed-text >"$LOGS/ollama-pull.log" 2>&1 \
       && success "nomic-embed-text model ready (docker)" \
       || warn "Failed to pull nomic-embed-text (non-fatal)"
   else
@@ -236,16 +236,16 @@ if [[ "$SKIP_SEED" == "false" ]]; then
 
   # Hard-delete any existing agents so re-registration works cleanly
   info "Clearing previous agent data..."
-  docker exec metaorcha-postgres psql -U postgres -d metaorcha -c \
+  docker exec orcha-postgres psql -U postgres -d orcha -c \
     "DELETE FROM agent_embeddings; DELETE FROM capabilities; DELETE FROM agent_versions; DELETE FROM agents;" \
     >/dev/null 2>&1 || true
   success "Agent tables cleared"
 
   ./scripts/seed-live-agents.sh --embeddings || warn "Some agents failed to register (non-fatal)"
 
-  counts=$(docker exec metaorcha-postgres psql -U postgres -d metaorcha -tAc \
+  counts=$(docker exec orcha-postgres psql -U postgres -d orcha -tAc \
     "SELECT count(*) FROM agents;" 2>/dev/null || echo "?")
-  embs=$(docker exec metaorcha-postgres psql -U postgres -d metaorcha -tAc \
+  embs=$(docker exec orcha-postgres psql -U postgres -d orcha -tAc \
     "SELECT count(*) FROM agent_embeddings WHERE embedding IS NOT NULL;" 2>/dev/null || echo "?")
   success "DB: ${counts} agents, ${embs} with embeddings"
 else

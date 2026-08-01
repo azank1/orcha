@@ -11,7 +11,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-export DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/metaorcha?schema=public}"
+export DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/orcha?schema=public}"
 export PYTHONPATH="${PYTHONPATH:-.}"
 export DISABLE_AUTH=true
 export KAFKA_ENABLED=false
@@ -22,13 +22,13 @@ export PORT=8000
 export RELOAD=false
 export GRPC_HOST="[::]"
 export GRPC_PORT=50051
-export PAT_TOKEN_PREFIX=metaorcha_pat_
+export PAT_TOKEN_PREFIX=orcha_pat_
 export PAT_TOKEN_LENGTH=40
 export ADAPTER_TIMEOUT=10
 export ADAPTER_MAX_RETRIES=3
 export HEALTH_CHECK_INTERVAL=300
 export MAX_HEALTH_FAILURES=3
-export PAYMENT_FACILITATOR_URL=https://api.metaorcha.bot/verify
+export PAYMENT_FACILITATOR_URL=https://api.orcha.bot/verify
 export MCP_PROTOCOL_VERSION=2025-11-25
 export LOG_LEVEL=INFO
 REGISTRY_URL="${REGISTRY_URL:-http://localhost:8000}"

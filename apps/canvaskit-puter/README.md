@@ -5,8 +5,8 @@ persistent app on [Puter](https://puter.com) — an open-source "internet OS".
 
 > **The thesis:** your agent's output isn't a chat reply that evaporates — it's a
 > persistent dashboard app that's just *there* in an OS, updating when the agent
-> re-runs. This is Orcha's DAPN Plane 3 (persistent runtime) + Plane 4 (consumer
-> surface) validated on a real host, with zero infra to build.
+> re-runs. This is Orcha's persistent-runtime and consumer-surface planes
+> validated on a real host, with zero infra to build.
 
 ## What this is
 

@@ -149,7 +149,7 @@ When state is `input-required` with `interrupt_type: oauth_required`, open `meta
 
 ## Superagent integration
 
-This agent is designed to run as a **sub-agent** inside the MetaOrcha superagent. The superagent delegates lead generation tasks here via A2A JSON-RPC and handles the HITL interrupts transparently in the UI.
+This agent is designed to run as a **sub-agent** inside the Orcha superagent. The superagent delegates lead generation tasks here via A2A JSON-RPC and handles the HITL interrupts transparently in the UI.
 
 ### How it fits
 

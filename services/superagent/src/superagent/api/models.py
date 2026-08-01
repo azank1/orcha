@@ -41,6 +41,36 @@ class TranscriptListResponse(BaseModel):
     entries: list[TranscriptEntryDTO]
 
 
+class RunAuditStep(BaseModel):
+    seq: int
+    agent_id: str
+    capability_id: str = ""
+    protocol: str = ""
+    internal_tool_name: str = ""
+    verified: bool = True
+    verdict_reason: str = "ok"
+    base_fee: str | None = None
+    total_cost_usd: str | None = None
+
+
+class RunAuditSummary(BaseModel):
+    total_steps: int
+    steps_verified: int
+    steps_failed: int
+    protocols: list[str]
+    total_cost_usd: str
+    duration_ms: int | None = None
+
+
+class RunAuditResponse(BaseModel):
+    session_id: str
+    generated_at: str
+    goal: str
+    summary: RunAuditSummary
+    steps: list[RunAuditStep]
+    note: str
+
+
 class ConversationSessionSummaryDTO(BaseModel):
     session_id: str
     title: str
@@ -79,6 +109,17 @@ class MessageRequest(BaseModel):
         default_factory=dict,
         description="Opaque session memory for ongoing outreach (e.g. campaign name, tone, "
         "last delegated task summary). Surfaced to the orchestrator system prompt.",
+    )
+    model: str | None = Field(
+        default=None,
+        description="Per-session orchestrator model override. When set, the orchestrator "
+        "LLM node uses this model instead of ORCHESTRATOR_MODEL for the turn.",
+    )
+    custom_instructions: str | None = Field(
+        default=None,
+        max_length=2000,
+        description="Per-session operator instructions appended as a delimited section "
+        "to the orchestrator system prompt.",
     )
 
 

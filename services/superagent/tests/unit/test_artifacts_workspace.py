@@ -12,10 +12,15 @@ def test_resolved_is_under_session_workspace(tmp_path, monkeypatch):
     f = fake_root / "doc.txt"
     f.write_text("hello", encoding="utf-8")
 
-    monkeypatch.setattr(art, "_session_tmp_root", lambda s: fake_root if s == sid else Path("/tmp") / s)  # noqa: S108
+    monkeypatch.setattr(
+        art, "_session_tmp_root", lambda s: fake_root if s == sid else Path("/tmp") / s
+    )  # noqa: S108
 
     assert art._resolved_is_under_session_workspace(f, sid) is True
-    assert art._resolved_is_under_session_workspace(fake_root / "missing.txt", sid) is False
+    assert (
+        art._resolved_is_under_session_workspace(fake_root / "missing.txt", sid)
+        is False
+    )
 
 
 def test_resolved_rejects_other_session_tree(tmp_path, monkeypatch):

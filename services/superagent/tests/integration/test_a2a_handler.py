@@ -89,5 +89,8 @@ async def test_failed_task_returns_error():
 
 
 def test_resume_value_to_text_supports_response_payload():
-    assert _resume_value_to_text({"status": "complete", "response": "approve this"}) == "approve this"
+    assert (
+        _resume_value_to_text({"status": "complete", "response": "approve this"})
+        == "approve this"
+    )
     assert _resume_value_to_text({"response": "free-form answer"}) == "free-form answer"

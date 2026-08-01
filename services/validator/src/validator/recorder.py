@@ -1,4 +1,4 @@
-"""FulfillmentRecorder — reference ExecutionObserver for DAN validators."""
+"""FulfillmentRecorder — reference ExecutionObserver for validator attestations."""
 
 from __future__ import annotations
 

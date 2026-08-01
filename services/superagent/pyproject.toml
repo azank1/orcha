@@ -1,7 +1,7 @@
 [project]
 name = "superagent"
 version = "0.1.0"
-description = "MetaOrcha SuperAgent — LangGraph ReAct orchestration runtime"
+description = "Orcha SuperAgent — LangGraph ReAct orchestration runtime"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
@@ -14,6 +14,8 @@ dependencies = [
   "langgraph-checkpoint-redis>=0.1",
   "redis>=5",
   "openai>=2.29.0",
+  "playwright>=1.49",
+  "boto3>=1.35",
   "httpx[http2]>=0.27",
   "httpx-sse>=0.4",
   "mcp>=1",

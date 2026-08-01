@@ -80,7 +80,7 @@ def _lead_to_properties(lead: dict) -> dict:
         props["LinkedIn"] = {"url": linkedin}
 
     props["Lead Status"] = {"select": {"name": "NEW"}}
-    props["Source"]      = {"select": {"name": lead.get("source", "MetaOrcha Lead Gen")[:100]}}
+    props["Source"]      = {"select": {"name": lead.get("source", "Orcha Lead Gen")[:100]}}
     props["Created At"]  = {"date": {"start": datetime.now(timezone.utc).isoformat()}}
 
     return props

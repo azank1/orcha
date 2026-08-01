@@ -21,7 +21,7 @@ DC_LOCAL := docker compose -f docker-compose.local.yml
 DC_DEV   := docker compose -f docker-compose.dev.yml
 
 help: ## Show this help message
-	@printf '$(BLUE)Metaorcha Development Commands$(RESET)\n\n'
+	@printf '$(BLUE)Orcha Development Commands$(RESET)\n\n'
 	@printf '$(YELLOW)Usage:$(RESET)\n'
 	@printf '  make <target> [s=<service>] [p=<port>]\n\n'
 	@printf '$(YELLOW)Available services:$(RESET) registry, planning-discovery\n'
@@ -220,17 +220,17 @@ dev-watch: prisma-generate grpc-generate ## Run dev server with auto-reload (s=r
 
 kafka-up: ## Start Kafka broker (KRaft mode, no Zookeeper)
 	@printf '$(BLUE)Starting Kafka...$(RESET)\n'
-	$(DC_LOCAL) up -d metaorcha-kafka
+	$(DC_LOCAL) up -d orcha-kafka
 	@printf '$(GREEN)✓ Kafka started on localhost:9092$(RESET)\n'
 
 kafka-down: ## Stop Kafka broker
 	@printf '$(BLUE)Stopping Kafka...$(RESET)\n'
-	$(DC_LOCAL) stop metaorcha-kafka
+	$(DC_LOCAL) stop orcha-kafka
 	@printf '$(GREEN)✓ Kafka stopped$(RESET)\n'
 
 kafka-topics: ## Create all required Kafka topics
 	@printf '$(BLUE)Creating Kafka topics...$(RESET)\n'
-	@docker exec metaorcha-kafka bash -c '\
+	@docker exec orcha-kafka bash -c '\
 		for topic in registry.agent.registered gateway.user.query planning.manifest.created planning.validation.failed execution.step_complete; do \
 			kafka-topics.sh --bootstrap-server localhost:9092 --create --if-not-exists \
 				--topic $$topic --partitions 1 --replication-factor 1; \
@@ -377,15 +377,15 @@ gw-test: ## Run Gateway tests
 # ── Full-Stack Orchestrator ───────────────────────────────────────────────────
 
 run-all: ## Start entire stack (infra + codegen + services + seed) in one command
-	@printf '$(BLUE)Starting full MetaOrcha stack...$(RESET)\n'
+	@printf '$(BLUE)Starting full Orcha stack...$(RESET)\n'
 	@bash scripts/run-all.sh
 
 run-all-quick: ## Start stack skipping Docker infra and seeding (services only)
-	@printf '$(BLUE)Starting MetaOrcha services (skip infra & seed)...$(RESET)\n'
+	@printf '$(BLUE)Starting Orcha services (skip infra & seed)...$(RESET)\n'
 	@bash scripts/run-all.sh --skip-infra --skip-seed
 
 stop-all: ## Stop all running services and infra
-	@printf '$(BLUE)Stopping all MetaOrcha services...$(RESET)\n'
+	@printf '$(BLUE)Stopping all Orcha services...$(RESET)\n'
 	@pkill -f "uvicorn.*registry" 2>/dev/null || true
 	@pkill -f "uvicorn.*planning_discovery" 2>/dev/null || true
 	@pkill -f "uvicorn.*superagent" 2>/dev/null || true
@@ -400,4 +400,4 @@ run-infra-local:
 	  -e AWS_DEFAULT_REGION=us-east-1 \
 	  -e AWS_ACCESS_KEY_ID=$(shell aws configure get aws_access_key_id) \
 	  -e AWS_SECRET_ACCESS_KEY=$(shell aws configure get aws_secret_access_key) \
-	  metaorcha-core:local
+	  orcha-core:local

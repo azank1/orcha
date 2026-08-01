@@ -1,4 +1,4 @@
-# MetaOrcha System Architecture Specification
+# Orcha System Architecture Specification
 **Version**: 2.0  
 **Date**: January 2026  
 **Status**: Final Design
@@ -23,7 +23,7 @@
 
 ## 1. Executive Summary
 
-MetaOrcha is a **dynamic multi-agent workflow orchestration platform** that enables users to execute complex AI workflows by automatically discovering, composing, and orchestrating heterogeneous AI agents (MCP, A2A, ACP protocols) with built-in payment infrastructure (x402).
+Orcha is a **dynamic multi-agent workflow orchestration platform** that enables users to execute complex AI workflows by automatically discovering, composing, and orchestrating heterogeneous AI agents (MCP, A2A, ACP protocols) with built-in payment infrastructure (x402).
 
 ### Key Capabilities
 - **Dynamic Agent Discovery**: Vector search + semantic ranking across 1000s of registered agents
@@ -59,7 +59,7 @@ MetaOrcha is a **dynamic multi-agent workflow orchestration platform** that enab
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   METAORCHA PLATFORM                            │
+│                   ORCHA PLATFORM                            │
 │                                                                 │
 │  ┌──────────────┐    ┌──────────────────────────────────┐     │
 │  │   Gateway    │    │   Orchestration Runtime          │     │
@@ -801,7 +801,7 @@ Body: {
 
 Response: 201 Created
 {
-  "agent_id": "did:emerge:agent:abc123",
+  "agent_id": "did:orcha:agent:abc123",
   "status": "registered",
   "indexed_at": "2026-01-20T10:00:00Z"
 }
@@ -1046,7 +1046,7 @@ Planning & Discovery Service:
 -- Agents table
 CREATE TABLE agents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  did TEXT UNIQUE NOT NULL,  -- did:emerge:agent:abc123
+  did TEXT UNIQUE NOT NULL,  -- did:orcha:agent:abc123
   name TEXT NOT NULL,
   version TEXT NOT NULL,
   provider TEXT,
@@ -1318,7 +1318,7 @@ sequenceDiagram
     PD->>R: Cache manifest
     PD-->>REG: {agent_id, indexed_at}
     
-    REG-->>CLI: 201 Created<br/>{agent_id: "did:emerge:agent:abc123"}
+    REG-->>CLI: 201 Created<br/>{agent_id: "did:orcha:agent:abc123"}
     CLI-->>D: ✓ Agent registered successfully
     
     Note over D: Agent is now discoverable
@@ -1571,7 +1571,7 @@ User Impact: Payment settlement delayed, workflow paused
 
 ```yaml
 # Namespaces
-metaorcha-prod
+orcha-prod
   ├── gateway-deployment (2-20 pods, HPA)
   ├── runtime-deployment (3-50 pods, HPA)
   ├── planning-discovery-deployment (1-10 pods, HPA)
@@ -1587,7 +1587,7 @@ metaorcha-prod
 
 # Ingress
 nginx-ingress
-  ├── metaorcha.ai → Gateway Service
+  ├── orcha.ai → Gateway Service
   └── TLS termination (Let's Encrypt)
 ```
 
@@ -1688,23 +1688,23 @@ Entire region           30min       15min
 
 ```
 # Service-level metrics
-metaorcha_gateway_active_connections{service="gateway"}
-metaorcha_runtime_workflows_active{service="runtime"}
-metaorcha_planning_discovery_requests_total{service="planning-discovery"}
+orcha_gateway_active_connections{service="gateway"}
+orcha_runtime_workflows_active{service="runtime"}
+orcha_planning_discovery_requests_total{service="planning-discovery"}
 
 # Latency metrics (histograms)
-metaorcha_gateway_request_duration_seconds{endpoint="/workflows"}
-metaorcha_runtime_workflow_duration_seconds{status="completed"}
-metaorcha_planning_llm_latency_seconds{model="gpt-4"}
+orcha_gateway_request_duration_seconds{endpoint="/workflows"}
+orcha_runtime_workflow_duration_seconds{status="completed"}
+orcha_planning_llm_latency_seconds{model="gpt-4"}
 
 # Error rates
-metaorcha_runtime_errors_total{type="agent_unreachable"}
-metaorcha_payment_settlement_failures_total{reason="insufficient_gas"}
+orcha_runtime_errors_total{type="agent_unreachable"}
+orcha_payment_settlement_failures_total{reason="insufficient_gas"}
 
 # Infrastructure metrics
 kafka_consumer_lag{topic="workflow_requests", group="runtime-workers"}
 redis_connected_clients{instance="redis-cluster"}
-postgres_active_connections{database="metaorcha"}
+postgres_active_connections{database="orcha"}
 ```
 
 ---
@@ -1742,10 +1742,10 @@ async def execute_workflow(workflow_id, plan):
 
 ```yaml
 groups:
-- name: metaorcha_alerts
+- name: orcha_alerts
   rules:
   - alert: HighWorkflowFailureRate
-    expr: rate(metaorcha_runtime_errors_total[5m]) > 0.1
+    expr: rate(orcha_runtime_errors_total[5m]) > 0.1
     for: 5m
     annotations:
       summary: "High workflow failure rate (>10%)"
@@ -1757,7 +1757,7 @@ groups:
       summary: "Kafka consumer lag exceeds 1000 messages"
   
   - alert: PaymentSettlementFailing
-    expr: rate(metaorcha_payment_settlement_failures_total[10m]) > 0.5
+    expr: rate(orcha_payment_settlement_failures_total[10m]) > 0.5
     for: 5m
     annotations:
       summary: "Payment settlements failing (>50% error rate)"
@@ -1864,7 +1864,7 @@ TOTAL                  $17,100/month
 
 ## 16. Conclusion
 
-MetaOrcha's architecture is designed for **horizontal scalability**, **fault tolerance**, and **developer experience**. Key highlights:
+Orcha's architecture is designed for **horizontal scalability**, **fault tolerance**, and **developer experience**. Key highlights:
 
 ✅ **Merged Planning & Discovery Service** reduces latency by 20ms and simplifies operations  
 ✅ **Kafka-based event architecture** enables 10,000+ concurrent workflows  
@@ -1884,5 +1884,5 @@ MetaOrcha's architecture is designed for **horizontal scalability**, **fault tol
 
 **Document Version**: 2.0  
 **Last Updated**: January 20, 2026  
-**Authors**: MetaOrcha Engineering Team  
+**Authors**: Orcha Engineering Team  
 **Status**: Final Design - Ready for Implementation

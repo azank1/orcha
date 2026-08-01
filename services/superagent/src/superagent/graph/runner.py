@@ -409,6 +409,8 @@ class SessionRunner:
         initial_artifacts: dict[str, Any] | None = None,
         lead_gen_options: dict[str, Any] | None = None,
         email_campaign_context: dict[str, Any] | None = None,
+        model: str | None = None,
+        custom_instructions: str | None = None,
     ) -> AsyncIterator[dict[str, Any]]:  # noqa: UP006
         """
         Execute one turn of the ReAct loop, yielding streaming events.
@@ -484,6 +486,12 @@ class SessionRunner:
                 prev_ec.update(email_campaign_context)
                 state_update["email_campaign_context"] = prev_ec
 
+        # Per-session overrides — set once, persisted in the checkpoint.
+        if model:
+            state_update["orchestrator_model_override"] = model
+        if custom_instructions:
+            state_update["custom_instructions"] = custom_instructions
+
         # Keep session credentials visible in both configurable and state paths.
         state_update["_session_credentials"] = session_credentials or {}
 
@@ -510,12 +518,20 @@ class SessionRunner:
         finally:
             await self._clear_active_stream_task(session_id, current_task)
             await unregister_run(session_id)
+            # Persist even on error/cancel: a failed run is exactly what the
+            # run audit (Verified Runs) is for. Never let a persist failure
+            # break stream teardown.
+            stream_msgs = values_messages_sink.get("messages")
+            stream_list = stream_msgs if isinstance(stream_msgs, list) else None
+            try:
+                await self._persist_transcript(
+                    session_id, session_credentials, stream_messages=stream_list
+                )
+            except Exception:
+                logger.exception(
+                    "run_turn: transcript persist failed for session %s", session_id
+                )
 
-        stream_msgs = values_messages_sink.get("messages")
-        stream_list = stream_msgs if isinstance(stream_msgs, list) else None
-        await self._persist_transcript(
-            session_id, session_credentials, stream_messages=stream_list
-        )
         _cleanup_session_tmp(session_id)
         yield {"type": "done", "session_id": session_id}
 
@@ -572,12 +588,20 @@ class SessionRunner:
         finally:
             await self._clear_active_stream_task(session_id, current_task)
             await unregister_run(session_id)
+            # Persist even on error/cancel: a failed run is exactly what the
+            # run audit (Verified Runs) is for. Never let a persist failure
+            # break stream teardown.
+            stream_msgs = values_messages_sink.get("messages")
+            stream_list = stream_msgs if isinstance(stream_msgs, list) else None
+            try:
+                await self._persist_transcript(
+                    session_id, session_credentials, stream_messages=stream_list
+                )
+            except Exception:
+                logger.exception(
+                    "run_turn: transcript persist failed for session %s", session_id
+                )
 
-        stream_msgs = values_messages_sink.get("messages")
-        stream_list = stream_msgs if isinstance(stream_msgs, list) else None
-        await self._persist_transcript(
-            session_id, session_credentials, stream_messages=stream_list
-        )
         _cleanup_session_tmp(session_id)
         yield {"type": "done", "session_id": session_id}
 

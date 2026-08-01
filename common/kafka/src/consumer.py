@@ -1,4 +1,4 @@
-"""Abstract base Kafka consumer for Metaorcha services."""
+"""Abstract base Kafka consumer for Orcha services."""
 
 from __future__ import annotations
 

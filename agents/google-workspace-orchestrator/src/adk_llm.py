@@ -16,7 +16,7 @@ from .config import Settings
 
 logger = logging.getLogger(__name__)
 
-_APP = "metaorcha_workspace_orch"
+_APP = "orcha_workspace_orch"
 
 
 async def complete_llm(settings: Settings, instruction: str, user_text: str) -> str:
@@ -51,7 +51,7 @@ async def complete_llm(settings: Settings, instruction: str, user_text: str) -> 
     msg = types.Content(role="user", parts=[types.Part(text=user_text)])
     final_text = ""
     async for event in runner.run_async(
-        user_id="metaorcha",
+        user_id="orcha",
         session_id=session_id,
         new_message=msg,
     ):

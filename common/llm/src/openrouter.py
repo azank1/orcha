@@ -34,8 +34,8 @@ class OpenRouterProvider(LLMProvider):
             headers={
                 "Authorization": f"Bearer {config.api_key}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://metaorcha.bot",
-                "X-Title": "Metaorcha",
+                "HTTP-Referer": "https://orcha.bot",
+                "X-Title": "Orcha",
             },
             timeout=config.timeout,
         )

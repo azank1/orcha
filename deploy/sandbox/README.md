@@ -1,6 +1,6 @@
 # Hosted sandbox (M1)
 
-Public demo stack for Orcha. Canonical spec: [SCOPE-MAP.md](../../docs/dev_docs/SCOPE-MAP.md) § M1.
+Public demo stack for Orcha.
 
 ## Quick start
 
@@ -52,7 +52,7 @@ Quick tunnel for testing:
 cloudflared tunnel --url http://localhost:80
 ```
 
-For a stable HN link, use Cloudflare orange-cloud proxy or a named tunnel — pin the URL in [SHOW-HN.md](../../docs/dev_docs/SHOW-HN.md) before posting.
+For a stable public link, use Cloudflare orange-cloud proxy or a named tunnel.
 
 ## Vercel frontend + local backend (recommended for Show HN)
 
@@ -110,7 +110,7 @@ GATEWAY_URL=http://localhost/api ./scripts/m0-gates-live.sh
 GATEWAY_URL=http://localhost/api M2_RUNS=5 M2_PASS=4 ./scripts/m2-gates-live.sh
 ```
 
-See [M2-DEMO.md](../../docs/dev_docs/M2-DEMO.md) and [docs/assets/README.md](../../docs/assets/README.md) for hero clip recording.
+See [docs/assets/README.md](../../docs/assets/README.md) for hero clip recording.
 
 ## Services
 

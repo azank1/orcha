@@ -79,8 +79,6 @@ identity:
   id: "did:orcha:agent:my-agent-name"
 
 # WRONG — do not use these
-# id: "did:emerge:agent:my-agent"
-# id: "did:metaorcha:agent:my-agent"
 # id: "my-agent-name"
 ```
 

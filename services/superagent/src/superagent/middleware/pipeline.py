@@ -10,6 +10,7 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 
+from ..config import settings
 from .input_guard import InputGuard, InputGuardError
 from .observers import StepResult, emit_step_complete
 from .output_normalizer import OutputNormalizer
@@ -129,7 +130,7 @@ class ExecutionMiddleware:
         # ${VAR} placeholders from the vault; pass a copy so we don't mutate the cache.
         if result.get("resolved_env") is not None:
             transport = {**transport, "resolved_env": result["resolved_env"]}
-        raw_output = await self._dispatch(
+        raw_output = await self._dispatch_with_timeout(
             protocol=protocol,
             agent_id=agent_id,
             capability_id=capability_id,
@@ -141,11 +142,15 @@ class ExecutionMiddleware:
         )
 
         # Step 5: OutputNormalizer (async — may upload to S3 for file outputs)
+        agent_name = str(manifest.get("name") or "").strip()
+        if not agent_name:
+            agent_name = agent_id.rsplit(":", 1)[-1].replace("_", " ")
         normalised = await OutputNormalizer.normalize(
             raw_output,
             protocol,
             session_id=self._state.get("session_id", ""),
             user_id=self._state.get("user_id", ""),
+            agent_name=agent_name,
         )
         content = normalised.get("content", "")
         content_str = content if isinstance(content, str) else str(content)
@@ -256,6 +261,22 @@ class ExecutionMiddleware:
                 return cap.get("input_schema")
         return None
 
+    async def _dispatch_with_timeout(
+        self, protocol: str, *args: Any, **kwargs: Any
+    ) -> Any:
+        """Hard per-call ceiling: a hung agent becomes an Error string (retryable),
+        never a silent stall. Config: agent_call_timeout_seconds."""
+        timeout_s = getattr(settings, "agent_call_timeout_seconds", 60) or 60
+        try:
+            return await asyncio.wait_for(
+                self._dispatch(protocol, *args, **kwargs), timeout=timeout_s
+            )
+        except TimeoutError:
+            logger.error(
+                "dispatch timeout after %ds | protocol=%s", timeout_s, protocol
+            )
+            return f"Error: agent call timed out after {timeout_s}s ({protocol})"
+
     async def _dispatch(
         self,
         protocol: str,
@@ -298,6 +319,7 @@ class ExecutionMiddleware:
                 transport=transport,
                 config=config,
                 call_id=call_id,
+                state=self._state,
             )
         return f"Unsupported protocol: {protocol}"
 

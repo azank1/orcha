@@ -13,7 +13,7 @@ class LLMProvider(ABC):
     """
     Abstract base class for LLM provider backends (strategy pattern).
 
-    All Metaorcha services that need LLM access should depend on this interface
+    All Orcha services that need LLM access should depend on this interface
     rather than a concrete implementation, making it easy to swap providers.
     """
 

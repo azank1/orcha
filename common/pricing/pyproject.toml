@@ -1,7 +1,7 @@
 [project]
 name = "common-pricing"
 version = "0.1.0"
-description = "Pure pricing formulae for MetaOrcha — zero operational dependencies"
+description = "Pure pricing formulae for Orcha — zero operational dependencies"
 requires-python = ">=3.12"
 dependencies = []   # intentionally empty — no DB, Redis, HTTP, or FastAPI
 

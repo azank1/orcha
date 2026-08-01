@@ -1,7 +1,7 @@
 """Planning endpoint — POST /api/v1/plan.
 
 Accepts a natural-language user query and returns a validated workflow
-manifest ready for execution by the MetaOrcha gateway.
+manifest ready for execution by the Orcha gateway.
 """
 
 from __future__ import annotations

@@ -234,7 +234,7 @@ def _lead_to_row(lead: dict) -> list:
         str(lead.get("icp_score") or ""),
         lead.get("linkedin_url", ""),
         lead.get("lead_status", "NEW"),
-        lead.get("source", "MetaOrcha Lead Gen"),
+        lead.get("source", "Orcha Lead Gen"),
         lead.get("created_at") or datetime.now(timezone.utc).isoformat(),
     ]
 

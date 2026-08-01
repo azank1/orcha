@@ -5,6 +5,7 @@ POST /sessions/{id}/message     → SSE stream
 POST /sessions/{id}/resume      → SSE stream
 PATCH /sessions/{id}/context      → merge lead_gen_options / email_campaign_context
 GET  /sessions/{id}/status      → { status, pending_interrupt }
+GET  /sessions/{id}/audit       → Verified Runs evidence package
 GET  /health                    → { status: "ok" }
 """
 
@@ -30,6 +31,7 @@ from .models import (
     MessageRequest,
     PaginatedSessionsResponse,
     ResumeRequest,
+    RunAuditResponse,
     SessionContextPatchRequest,
     SessionContextPatchResponse,
     SessionDetailResponse,
@@ -143,6 +145,27 @@ async def get_transcript(
     return TranscriptListResponse(entries=entries)
 
 
+@router.get(
+    "/sessions/{session_id}/audit",
+    response_model=RunAuditResponse,
+    response_model_exclude_none=True,
+)
+async def get_run_audit(
+    session_id: str,
+    user_id: str = Query(..., description="Caller user id for ownership check"),
+) -> RunAuditResponse:
+    from ..persistence.transcript_store import (
+        load_transcript_rows,
+        verify_session_owner,
+    )
+    from .audit import build_run_audit
+
+    if not await verify_session_owner(session_id, user_id):
+        raise HTTPException(status_code=404, detail="Session not found")
+    rows = await load_transcript_rows(session_id)
+    return build_run_audit(session_id, rows)
+
+
 async def _load_artifact_refs(artifact_ids: list[str]) -> dict[str, Any]:
     """Fetch Artifact DB rows and build ArtifactRef dict keyed by artifact_id."""
     if not artifact_ids:
@@ -193,6 +216,8 @@ async def send_message(
                 initial_artifacts=initial_artifacts,
                 lead_gen_options=body.lead_gen_options or None,
                 email_campaign_context=body.email_campaign_context or None,
+                model=body.model,
+                custom_instructions=body.custom_instructions,
             ):
                 yield f"data: {json.dumps(event)}\n\n"
         except Exception:

@@ -142,14 +142,29 @@ export const sessions = {
       `/api/v1/sessions/${sessionId}/transcript`,
     ),
 
+  getAudit: (sessionId: string) =>
+    apiFetch<Record<string, unknown>>(`/api/v1/sessions/${sessionId}/audit`),
+
   getStatus: (sessionId: string) =>
     apiFetch<SessionStatusResponse>(`/api/v1/sessions/${sessionId}/status`),
 
   /** Returns raw Response — caller streams the body */
-  sendMessage: (sessionId: string, message: string, artifactIds: string[] = []): Promise<Response> =>
+  sendMessage: (
+    sessionId: string,
+    message: string,
+    artifactIds: string[] = [],
+    options: { model?: string; customInstructions?: string } = {},
+  ): Promise<Response> =>
     streamFetch(`/api/v1/sessions/${sessionId}/message`, {
       method: 'POST',
-      body: JSON.stringify({ message, artifact_ids: artifactIds }),
+      body: JSON.stringify({
+        message,
+        artifact_ids: artifactIds,
+        ...(options.model ? { model: options.model } : {}),
+        ...(options.customInstructions
+          ? { custom_instructions: options.customInstructions }
+          : {}),
+      }),
     }),
 
   /**

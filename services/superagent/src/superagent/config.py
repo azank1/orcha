@@ -61,6 +61,27 @@ class Settings(BaseSettings):
     # transient error before the result is committed. 0 disables retries.
     verify_max_retries: int = 2
 
+    # Bound a single agent step's text output before it re-enters the
+    # orchestrator context. Protects rate-limited tiers (per-minute token
+    # ceilings) from unbounded scrape/crawl outputs. 0 disables truncation.
+    tool_output_max_chars: int = 4000
+
+    # Hard per-agent-call ceiling (seconds). A hung agent becomes an Error
+    # string (retryable, classified) instead of a silent stall.
+    agent_call_timeout_seconds: int = 60
+
+    # Fleet filter: comma-separated agent DIDs excluded from discovery
+    # (e.g. sandbox deployments hiding credential-requiring demo agents).
+    agent_exclude_ids: str = ""
+
+    # Sandbox demo mailer — registers the send_run_receipt system tool
+    # (emails a run's audit via Resend). Off by default.
+    sandbox_mailer: bool = False
+
+    @property
+    def agent_exclude_id_list(self) -> list[str]:
+        return [a.strip() for a in self.agent_exclude_ids.split(",") if a.strip()]
+
     model_config = SettingsConfigDict(env_file=str(_ENV_FILE), extra="ignore")
 
 

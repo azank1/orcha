@@ -21,16 +21,16 @@ logger = logging.getLogger(__name__)
 def compute_revenue_split(base_fee: Decimal) -> tuple[Decimal, Decimal, Decimal]:
     """Return (developer_payout, platform_cut, validator_cut) for settlement.
 
-    Uses DAN three-way split when COORDINATOR_SHARE_BPS or VALIDATOR_SHARE_BPS
+    Uses the three-way split when COORDINATOR_SHARE_BPS or VALIDATOR_SHARE_BPS
     are set; otherwise falls back to the legacy two-way platform split.
     """
     coordinator_bps = int(os.getenv("COORDINATOR_SHARE_BPS", "0"))
     validator_bps = int(os.getenv("VALIDATOR_SHARE_BPS", "0"))
 
     if coordinator_bps > 0 or validator_bps > 0:
-        from common_pricing.formulae import split_revenue_dan
+        from common_pricing.formulae import split_revenue_three_way
 
-        developer_payout, validator_cut, coordinator_cut = split_revenue_dan(
+        developer_payout, validator_cut, coordinator_cut = split_revenue_three_way(
             base_fee,
             coordinator_share_bps=coordinator_bps,
             validator_share_bps=validator_bps,

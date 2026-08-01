@@ -7,6 +7,10 @@ interpreted here — the model must call save_artifact after MCP tools that writ
 Canvas envelopes: if an agent returns {"__canvas__": True, "manifest": {...}, "summary": "..."}
 (or a JSON string of that shape), normalize() sets "ui_manifest" in the result dict and
 the execute_agent_calls node emits a canvas_manifest SSE event.
+
+Text outputs without an envelope are synthesised into one (layout "single" with a
+markdown_card component) so every successful agent run renders as a dashboard card
+instead of a chat bubble. Error-prefixed and artifact results are never wrapped.
 """
 
 from __future__ import annotations
@@ -46,11 +50,40 @@ class OutputNormalizer:
         return None
 
     @staticmethod
+    def _synthesise_canvas_envelope(
+        result: dict[str, Any], agent_name: str
+    ) -> dict[str, Any]:
+        """Wrap a plain-text result in a canvas envelope (single markdown_card).
+
+        Only successful, non-artifact text results are wrapped — error-prefixed
+        content, empty content, and existing envelopes pass through unchanged.
+        """
+        content = result.get("content")
+        if (
+            result.get("ui_manifest") is not None
+            or result.get("artifact") is not None
+            or not isinstance(content, str)
+            or not content.strip()
+            or content.startswith(("Error:", "Input error:", "Unsupported protocol:"))
+        ):
+            return result
+        title = agent_name or "Agent output"
+        result["content"] = content[:280]
+        result["ui_manifest"] = {
+            "version": "1.0",
+            "title": title,
+            "layout": "single",
+            "components": [{"type": "markdown_card", "title": title, "body": content}],
+        }
+        return result
+
+    @staticmethod
     async def normalize(
         raw_output: Any,
         protocol: str,
         session_id: str = "",
         user_id: str = "",
+        agent_name: str = "",
     ) -> dict[str, Any]:
         """
         Normalise raw handler output.
@@ -76,16 +109,13 @@ class OutputNormalizer:
             return {"content": summary, "artifact": None, "ui_manifest": ui_manifest}
 
         if isinstance(raw_output, str):
-            return {"content": raw_output, "artifact": None, "ui_manifest": None}
-
-        if isinstance(raw_output, dict):
+            result = {"content": raw_output, "artifact": None, "ui_manifest": None}
+        elif isinstance(raw_output, dict):
             result = await OutputNormalizer._normalise_dict(
                 raw_output, session_id, user_id
             )
             result.setdefault("ui_manifest", None)
-            return result
-
-        if isinstance(raw_output, bytes):
+        elif isinstance(raw_output, bytes):
             result = await persist_agent_output_bytes(
                 raw_output,
                 "application/octet-stream",
@@ -94,9 +124,10 @@ class OutputNormalizer:
                 user_id,
             )
             result.setdefault("ui_manifest", None)
-            return result
+        else:
+            result = {"content": str(raw_output), "artifact": None, "ui_manifest": None}
 
-        return {"content": str(raw_output), "artifact": None, "ui_manifest": None}
+        return OutputNormalizer._synthesise_canvas_envelope(result, agent_name)
 
     @staticmethod
     async def _normalise_dict(

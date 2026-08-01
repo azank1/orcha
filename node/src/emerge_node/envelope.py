@@ -1,4 +1,4 @@
-"""Signed manifest envelopes for DAN gossip (Ed25519)."""
+"""Signed manifest envelopes for agent-network gossip (Ed25519)."""
 
 from __future__ import annotations
 

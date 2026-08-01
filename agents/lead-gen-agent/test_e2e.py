@@ -1,17 +1,17 @@
 """
-USE CASE: MetaOrcha outreach campaign — find US B2B decision-makers and pitch
+USE CASE: Orcha outreach campaign — find US B2B decision-makers and pitch
 the Lead Gen + workflow automation platform.
 
 SCENARIO
 --------
-MetaOrcha wants to reach sales leaders, RevOps, and growth executives at US
+Orcha wants to reach sales leaders, RevOps, and growth executives at US
 SaaS/tech companies (50-500 employees) who are likely to care about:
   • Automated B2B lead generation (the Lead Gen agent)
-  • AI-driven workflow automation (MetaOrcha platform)
+  • AI-driven workflow automation (Orcha platform)
 
 The pipeline:
   1. Search Apollo for VP Sales / Head of Growth / RevOps leads in the US
-  2. Score against MetaOrcha's ICP
+  2. Score against Orcha's ICP
   3. Enrich missing emails via Hunter
   4. Write qualified leads to HubSpot CRM
      → If HUBSPOT_API_KEY not set: auth interrupt fires (user pastes token)
@@ -91,7 +91,7 @@ def _print_drafts(drafts: list[dict]) -> None:
             print("  …")
 
 
-# ── Email templates for MetaOrcha outreach ────────────────────────────────
+# ── Email templates for Orcha outreach ────────────────────────────────
 
 OUTREACH_SUBJECT = "Quick question about your lead gen process, {first_name}"
 
@@ -101,7 +101,7 @@ Hi {first_name},
 I'm reaching out because {company} looks like a company that takes growth seriously — \
 and I wanted to share something that might save your team real time.
 
-We built MetaOrcha, a platform that lets you run fully automated B2B lead gen pipelines \
+We built Orcha, a platform that lets you run fully automated B2B lead gen pipelines \
 with AI agents: find prospects, score against your ICP, enrich emails, sync to HubSpot, \
 and send personalised outreach — all in one workflow. Human-in-the-loop controls mean \
 nothing goes out without your sign-off.
@@ -109,8 +109,8 @@ nothing goes out without your sign-off.
 Would a 20-minute call make sense to see if this fits how {company} approaches pipeline building?
 
 Best,
-The MetaOrcha Team
-https://metaorcha.com
+The Orcha Team
+https://orcha.com
 """
 
 
@@ -120,7 +120,7 @@ async def simulate_email_review(drafts: list[dict]) -> list[dict]:
     """
     Simulate the human-in-the-loop email review interrupt.
 
-    A real user would see this in the MetaOrcha UI, edit any draft they want,
+    A real user would see this in the Orcha UI, edit any draft they want,
     then click "Approve & Send". Here we simulate:
       • Viewing all drafts
       • Editing the subject of draft 1 to be more specific
@@ -149,7 +149,7 @@ async def simulate_email_review(drafts: list[dict]) -> list[dict]:
 async def simulate_hubspot_auth() -> str:
     """
     Simulate the HubSpot auth interrupt when no token is pre-configured.
-    In production this shows a form in the MetaOrcha UI.
+    In production this shows a form in the Orcha UI.
     """
     _sep("INTERRUPT: HubSpot Token Required")
     print("⏸  Agent paused. HubSpot Private App Token needed for CRM writes.\n")
@@ -158,14 +158,14 @@ async def simulate_hubspot_auth() -> str:
     print("  2. Create app → Scopes: crm.objects.contacts.write + read")
     print("  3. Generate + copy the token\n")
     print("[Simulated user action] Pasting mock token…")
-    mock_token = "pat-eu1-mock-metaorcha-test-000000000000"
+    mock_token = "pat-eu1-mock-orcha-test-000000000000"
     print(f"  ✓ Token accepted: {mock_token[:16]}…")
     return mock_token
 
 
-# ── MetaOrcha ICP ─────────────────────────────────────────────────────────
+# ── Orcha ICP ─────────────────────────────────────────────────────────
 
-def metaorcha_icp():
+def orcha_icp():
     from tools.score_tool import ICPConfig
     return ICPConfig(
         target_roles=[
@@ -185,16 +185,16 @@ def metaorcha_icp():
 
 # ── Full pipeline ─────────────────────────────────────────────────────────
 
-async def run_metaorcha_outreach_campaign() -> dict:
+async def run_orcha_outreach_campaign() -> dict:
     """
-    MetaOrcha's own B2B outreach: find US sales/growth leaders and pitch the platform.
+    Orcha's own B2B outreach: find US sales/growth leaders and pitch the platform.
     """
     from core.agent import LeadGenAgent
 
-    _sep("MetaOrcha Outreach Campaign — Full Pipeline")
+    _sep("Orcha Outreach Campaign — Full Pipeline")
     print("Target    : US SaaS/Tech companies, 30-500 employees")
     print("Roles     : VP Sales, Head of Growth, CRO, Founder")
-    print("Goal      : Demo MetaOrcha lead gen + workflow automation")
+    print("Goal      : Demo Orcha lead gen + workflow automation")
     print("Interrupts: HubSpot auth + email draft review (HITL)\n")
 
     agent = LeadGenAgent()
@@ -272,13 +272,13 @@ class TestEmailPreview(unittest.TestCase):
         self.assertEqual(len(drafts), 1)
         self.assertEqual(drafts[0]["subject"], "Hey {unknown_field}")   # raw fallback
 
-    def test_metaorcha_template_renders(self):
+    def test_orcha_template_renders(self):
         from tools.email_preview_tool import build_email_previews
         leads = [{"full_name": "Sarah Lee", "email": "sarah@saas.io", "title": "VP Sales", "company": "SaasCo"}]
         drafts = build_email_previews(leads, OUTREACH_SUBJECT, OUTREACH_BODY)
         self.assertIn("Sarah", drafts[0]["subject"])
         self.assertIn("SaasCo", drafts[0]["body"])
-        self.assertIn("MetaOrcha", drafts[0]["body"])
+        self.assertIn("Orcha", drafts[0]["body"])
 
 
 class TestResumeValueParsing(unittest.TestCase):
@@ -311,9 +311,9 @@ class TestResumeValueParsing(unittest.TestCase):
 
 
 class TestICPScoring(unittest.TestCase):
-    def test_vp_sales_scores_high_for_metaorcha(self):
+    def test_vp_sales_scores_high_for_orcha(self):
         from tools.score_tool import score_lead, ICPConfig
-        icp = metaorcha_icp()
+        icp = orcha_icp()
         lead = {
             "title": "VP Sales",
             "industry": "SaaS",
@@ -327,7 +327,7 @@ class TestICPScoring(unittest.TestCase):
 
     def test_irrelevant_role_disqualified(self):
         from tools.score_tool import score_lead, ICPConfig
-        icp = metaorcha_icp()
+        icp = orcha_icp()
         lead = {"title": "Junior Designer", "industry": "SaaS", "company_size": 100}
         scored = score_lead(lead, icp)
         self.assertFalse(scored["qualified"])
@@ -360,7 +360,7 @@ def _parse_resume(parts: list[dict]) -> dict:
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="MetaOrcha outreach campaign E2E test")
+    parser = argparse.ArgumentParser(description="Orcha outreach campaign E2E test")
     parser.add_argument("--unit-only", action="store_true",
                         help="Run unit tests only (no LLM key required)")
     args = parser.parse_args()
@@ -388,12 +388,12 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Full campaign pipeline
-    result = asyncio.run(run_metaorcha_outreach_campaign())
+    result = asyncio.run(run_orcha_outreach_campaign())
 
     _sep("Done ✓")
     print("\nPipeline summary:")
     print("  ✓ Lead search (Apollo — mock if no key)")
-    print("  ✓ ICP scoring against MetaOrcha's target persona")
+    print("  ✓ ICP scoring against Orcha's target persona")
     print("  ✓ Email enrichment (Hunter — mock if no key)")
 
     if os.getenv("HUBSPOT_API_KEY"):
@@ -401,7 +401,7 @@ if __name__ == "__main__":
     else:
         print("  ✓ HubSpot auth interrupt simulated (no real token configured)")
 
-    print("  ✓ Email drafts generated with MetaOrcha pitch template")
+    print("  ✓ Email drafts generated with Orcha pitch template")
     print("  ✓ HITL review interrupt: user reviewed and edited drafts")
 
     emails_sent = result.get("emails_sent", 0)

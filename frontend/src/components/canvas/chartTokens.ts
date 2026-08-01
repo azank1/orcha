@@ -6,8 +6,8 @@
  */
 
 export const CHART_COLORS = {
-  brandPrimary: '#3B6EF8',
-  brandSecondary: '#00C8E8',
+  brandPrimary: '#6366F1',
+  brandSecondary: '#8B8B96',
   purple: '#A78BFA',
   success: '#22C55E',
   warning: '#F59E0B',

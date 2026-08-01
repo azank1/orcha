@@ -11,6 +11,7 @@ Flow per turn:
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import re
@@ -40,6 +41,93 @@ _chat_llm: ChatOpenAI | None = None
 _INVALID_FUNC_CHAR_RE = _re.compile(r"[^a-zA-Z0-9_-]")
 
 
+def _make_chat_llm(
+    *,
+    stream_usage: bool = False,
+    model_override: str | None = None,
+    byok: dict[str, Any] | None = None,
+) -> Any:
+    """Chat client for the configured OpenAI-compatible endpoint.
+
+    BYOK note: a complete ``__llm__`` session-credential dict (``api_key`` +
+    ``base_url`` + ``model``) takes precedence over env config and
+    ``model_override`` — the harness runs on the visitor's own endpoint.
+    Gemini models pointed at the native Google endpoint keep the native
+    google-genai client (see below); everything else uses ChatOpenAI.
+    Incomplete BYOK dicts fall back to existing behavior.
+
+    Gemini note: Gemini 3 reasoning models require thought_signatures on
+    function-call history, which langchain-openai strips — tool round-trips
+    400 against the OpenAI-compatible endpoint. The native google-genai
+    client preserves signatures, so Gemini models route there instead.
+
+    Client choice: for the env-default model the existing base-URL check is
+    kept; for a per-session ``model_override`` the model name decides —
+    ``gemini-*`` → native google-genai, everything else → ChatOpenAI.
+    """
+    byok = byok or {}
+    byok_model = str(byok.get("model") or "").strip()
+    byok_base_url = str(byok.get("base_url") or "").strip()
+    byok_api_key = str(byok.get("api_key") or "").strip()
+    if byok_model and byok_base_url and byok_api_key:
+        logger.info(
+            "orchestrator: BYOK active model=%s base=%s", byok_model, byok_base_url
+        )
+        if (
+            byok_model.startswith("gemini-")
+            and "generativelanguage.googleapis.com" in byok_base_url
+        ):
+            from langchain_google_genai import ChatGoogleGenerativeAI
+
+            return ChatGoogleGenerativeAI(
+                model=byok_model,
+                google_api_key=byok_api_key,
+                temperature=0,
+                max_tokens=1024,
+            )
+        byok_kwargs: dict[str, Any] = {}
+        if stream_usage:
+            byok_kwargs["stream_usage"] = True
+        return ChatOpenAI(
+            model=byok_model,
+            api_key=byok_api_key,
+            base_url=byok_base_url,
+            streaming=True,
+            temperature=0,
+            max_tokens=1024,
+            **byok_kwargs,
+        )
+
+    model = model_override or settings.orchestrator_model
+    if model_override:
+        use_native_gemini = model.startswith("gemini-")
+    else:
+        use_native_gemini = "generativelanguage.googleapis.com" in (
+            settings.openrouter_base_url or ""
+        )
+    if use_native_gemini:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        return ChatGoogleGenerativeAI(
+            model=model,
+            google_api_key=settings.openrouter_api_key,
+            temperature=0,
+            max_tokens=1024,
+        )
+    kwargs: dict[str, Any] = {}
+    if stream_usage:
+        kwargs["stream_usage"] = True
+    return ChatOpenAI(
+        model=model,
+        api_key=settings.openrouter_api_key,
+        base_url=settings.openrouter_base_url,
+        streaming=True,
+        temperature=0,
+        max_tokens=1024,
+        **kwargs,
+    )
+
+
 def _get_small_llm() -> AsyncOpenAI:
     global _small_llm
     if _small_llm is None:
@@ -50,17 +138,10 @@ def _get_small_llm() -> AsyncOpenAI:
     return _small_llm
 
 
-def _get_chat_llm() -> ChatOpenAI:
+def _get_chat_llm() -> Any:
     global _chat_llm
     if _chat_llm is None:
-        _chat_llm = ChatOpenAI(
-            model=settings.orchestrator_model,
-            api_key=settings.openrouter_api_key,
-            base_url=settings.openrouter_base_url,
-            streaming=True,
-            temperature=0,
-            max_tokens=1024,
-        )
+        _chat_llm = _make_chat_llm()
     return _chat_llm
 
 
@@ -203,7 +284,11 @@ def _format_artifacts(artifacts: dict[str, Any]) -> str:
 
 def _build_lc_messages(state: dict[str, Any]) -> list[Any]:
     """Build LangChain messages for the orchestrator (system + history)."""
-    msgs: list[Any] = [SystemMessage(content=_SYSTEM_PROMPT)]
+    system_prompt = _SYSTEM_PROMPT
+    custom = state.get("custom_instructions")
+    if isinstance(custom, str) and custom.strip():
+        system_prompt += f"\n\n## Operator custom instructions\n{custom.strip()[:2000]}"
+    msgs: list[Any] = [SystemMessage(content=system_prompt)]
 
     artifacts = state.get("artifacts") or {}
     if artifacts:
@@ -304,13 +389,13 @@ async def _accumulate_chat_stream(
 ) -> Any:
     """Stream orchestrator tokens while listening for kill-switch cancel event."""
     stream = bound.astream(lc_messages, config=config)
-    aiter = stream.__aiter__()
+    stream_iter = stream.__aiter__()
     accumulated: Any = None
     cancel_ev = get_cancel_event(session_id) if session_id else None
     while True:
         if session_id and is_cancelled(session_id):
             raise asyncio.CancelledError()
-        anext_task = asyncio.create_task(aiter.__anext__())
+        anext_task = asyncio.create_task(stream_iter.__anext__())
         wait_set: set[asyncio.Task[Any]] = {anext_task}
         cancel_wait: asyncio.Task[bool] | None = None
         if cancel_ev is not None:
@@ -323,10 +408,8 @@ async def _accumulate_chat_stream(
             t.cancel()
         if cancel_wait is not None and cancel_wait in done:
             anext_task.cancel()
-            try:
+            with contextlib.suppress(asyncio.CancelledError, StopAsyncIteration):
                 await anext_task
-            except (asyncio.CancelledError, StopAsyncIteration):
-                pass
             raise asyncio.CancelledError()
         try:
             chunk = anext_task.result()
@@ -342,6 +425,38 @@ def _estimate_tokens_lc(messages: list[Any]) -> int:
         len(str(_lc_content_to_str(getattr(m, "content", "")))) for m in messages
     )
     return total // 4
+
+
+def _resolve_status_code(exc: Exception) -> int | None:
+    """Best-effort HTTP status code from an exception."""
+    status_code: int | None = None
+    if hasattr(exc, "status_code"):
+        status_code = getattr(exc, "status_code", None)
+    if status_code is None:
+        response = getattr(exc, "response", None)
+        if response is not None and hasattr(response, "status_code"):
+            status_code = getattr(response, "status_code", None)
+    try:
+        status_code = int(status_code)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        status_code = None
+    return status_code
+
+
+def _is_tool_validation_error(exc: Exception) -> bool:
+    """Detect provider tool-call validation errors that are worth one retry.
+
+    Matches either the known exact message or an HTTP 400 together with
+    tool-related keywords. Different providers word the message differently,
+    so we combine signals instead of relying on a single substring.
+    """
+    text = str(exc).lower()
+    if "tool call validation failed" in text:
+        return True
+
+    status_code = _resolve_status_code(exc)
+    tool_keywords = ("tool", "validation", "invalid")
+    return status_code == 400 and any(k in text for k in tool_keywords)
 
 
 async def orchestrator_llm_node(
@@ -408,6 +523,7 @@ async def orchestrator_llm_node(
                     conversation_context=context,
                     user_id=state.get("user_id", ""),
                     top_k=8,
+                    exclude_agent_ids=settings.agent_exclude_id_list,
                 )
                 # JSON-serialisable dicts only — avoids msgpack ToolCandidate warnings in Redis checkpoints
                 pnd_candidates = [c.model_dump(mode="json") for c in resp.candidates]
@@ -439,26 +555,37 @@ async def orchestrator_llm_node(
         ", ".join(t["function"]["name"] for t in all_tools),
     )
 
-    chat = ChatOpenAI(
-        model=settings.orchestrator_model,
-        api_key=settings.openrouter_api_key,
-        base_url=settings.openrouter_base_url,
-        streaming=True,
-        stream_usage=True,  # include usage chunk in stream so completion_tokens is real
-        temperature=0,
-        max_tokens=1024,
+    chat = _make_chat_llm(
+        stream_usage=True,
+        model_override=state.get("orchestrator_model_override"),
+        byok=(state.get("_session_credentials") or {}).get("__llm__"),
     )
     _assert_openai_compatible_tool_names(all_tools)
     bound = chat.bind_tools(all_tools) if all_tools else chat
 
-    try:
-        accumulated = await _accumulate_chat_stream(bound, lc_messages, config, sid)
-    except asyncio.CancelledError:
-        logger.info("orchestrator_llm: stream cancelled session_id=%s", sid)
-        raise
-    except Exception:
-        logger.exception("Orchestrator LLM stream failed")
-        raise
+    # Some providers/models occasionally emit an invalid tool name variant
+    # (e.g. "functions/foo") and the API 400s the call. One bounded retry —
+    # the re-issue is usually clean; persistent failure still raises.
+    _attempts = 2
+    for _attempt in range(_attempts):
+        try:
+            accumulated = await _accumulate_chat_stream(bound, lc_messages, config, sid)
+            break
+        except asyncio.CancelledError:
+            logger.info("orchestrator_llm: stream cancelled session_id=%s", sid)
+            raise
+        except Exception as exc:
+            if _is_tool_validation_error(exc) and _attempt < _attempts - 1:
+                logger.warning(
+                    "orchestrator_llm: tool-call validation error — retrying once "
+                    "session_id=%s exc_class=%s status=%r",
+                    sid,
+                    exc.__class__.__name__,
+                    _resolve_status_code(exc),
+                )
+                continue
+            logger.exception("Orchestrator LLM stream failed")
+            raise
 
     if accumulated is None:
         ai_message = AIMessage(content="")

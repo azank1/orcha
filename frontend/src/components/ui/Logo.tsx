@@ -19,11 +19,11 @@ export function Logo({ size = 32, className }: LogoProps) {
     >
       {/* Six triangular facets — blue-cyan prismatic spectrum */}
       <polygon points="32,32 32,10 51.1,21"   fill="#4A7FFA" />
-      <polygon points="32,32 51.1,21 51.1,43" fill="#3B6EF8" />
+      <polygon points="32,32 51.1,21 51.1,43" fill="#6366F1" />
       <polygon points="32,32 51.1,43 32,54"   fill="#2352D4" />
       <polygon points="32,32 32,54 12.9,43"   fill="#0A7A9C" />
       <polygon points="32,32 12.9,43 12.9,21" fill="#009BB8" />
-      <polygon points="32,32 12.9,21 32,10"   fill="#00C8E8" />
+      <polygon points="32,32 12.9,21 32,10"   fill="#A5A8FF" />
 
       {/* Seam lines */}
       <g stroke="rgba(7,7,12,0.4)" strokeWidth="0.5" strokeLinecap="round">

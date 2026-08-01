@@ -83,10 +83,10 @@ jobs:
       GRPC_PORT: 50051
 
       # Database
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
 
       # Security
-      PAT_TOKEN_PREFIX: metaorcha_pat_
+      PAT_TOKEN_PREFIX: orcha_pat_
       PAT_TOKEN_LENGTH: 40
 
       # Adapter Settings
@@ -98,7 +98,7 @@ jobs:
       MAX_HEALTH_FAILURES: 3
 
       # Payment
-      PAYMENT_FACILITATOR_URL: https://api.metaorcha.bot/verify
+      PAYMENT_FACILITATOR_URL: https://api.orcha.bot/verify
 
       # MCP Protocol
       MCP_PROTOCOL_VERSION: 2025-11-25
@@ -117,7 +117,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: metaorcha_test
+          POSTGRES_DB: orcha_test
         ports:
           - 5432:5432
         options: >-
@@ -212,7 +212,7 @@ jobs:
     timeout-minutes: 10
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
 
     services:
       postgres:
@@ -220,7 +220,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: metaorcha_test
+          POSTGRES_DB: orcha_test
         ports:
           - 5432:5432
         options: >-
@@ -307,7 +307,7 @@ jobs:
       PORT: 8001
 
       # Database (no ?schema= suffix — asyncpg does not accept Prisma-specific params)
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test
 
       # Kafka (not started in CI — all consumers are mocked in tests)
       KAFKA_BOOTSTRAP_SERVERS: localhost:9092
@@ -341,7 +341,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: metaorcha_test
+          POSTGRES_DB: orcha_test
         ports:
           - 5432:5432
         options: >-
@@ -505,16 +505,16 @@ jobs:
         run: |
           uv run pytest tests/unit/test_observers.py \
             tests/unit/test_step_events.py \
-            tests/unit/test_settlement_dan.py --verbose
+            tests/unit/test_settlement_three_way.py --verbose
 
   # ============================================================================
-  # DAN Phase 0 — emerge-node gossip spike
+  # emerge-node — signed envelope helpers
   # ============================================================================
-  dan-node:
+  emerge-node:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.node == 'true' || needs.detect-changes.outputs.common == 'true' }}
     runs-on: ubuntu-latest
-    name: DAN emerge-node (Phase 0 spike)
+    name: emerge-node (envelope tests)
     timeout-minutes: 10
 
     steps:
@@ -540,13 +540,13 @@ jobs:
         run: uv run pytest tests/ -v
 
   # ============================================================================
-  # DAN Phase 1 — validator reference observer
+  # Validator — attestation reference observer
   # ============================================================================
-  dan-validator:
+  validator:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.validator == 'true' || needs.detect-changes.outputs.common == 'true' }}
     runs-on: ubuntu-latest
-    name: DAN validator (Phase 1 spike)
+    name: Validator (attestation reference)
     timeout-minutes: 10
 
     env:
@@ -574,7 +574,7 @@ jobs:
         working-directory: services/validator
         run: uv run pytest tests/ -v
 
-      - name: Run DAN pricing split tests
+      - name: Run three-way pricing split tests
         run: uv run pytest common/pricing/tests/ -v
 
   # ============================================================================
@@ -586,7 +586,7 @@ jobs:
     timeout-minutes: 10
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
       PYTHONPATH: .
 
     steps:
@@ -627,7 +627,7 @@ jobs:
 
     env:
       PYTHONPATH: .
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha_test?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
       JWT_SECRET_KEY: ci-test-secret-key-for-gateway-tests-only
       REDIS_URL: redis://localhost:6379/1
       SUPERAGENT_URL: http://127.0.0.1:8002
@@ -672,7 +672,7 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/metaorcha?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha?schema=public
       PYTHONPATH: .
 
     services:
@@ -681,7 +681,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: metaorcha
+          POSTGRES_DB: orcha
         ports:
           - 5432:5432
         options: >-
@@ -734,13 +734,13 @@ jobs:
   #         context: .
   #         file: ./services/registry/Dockerfile
   #         push: false
-  #         tags: metaorcha/registry:test
+  #         tags: orcha/registry:test
   #         cache-from: type=gha
   #         cache-to: type=gha,mode=max
 
   #     - name: Test Docker image
   #       run: |
-  #         docker run --rm metaorcha/registry:test python -c "import services.registry.src.main"
+  #         docker run --rm orcha/registry:test python -c "import services.registry.src.main"
 
   # # ============================================================================
   # # Security Scan

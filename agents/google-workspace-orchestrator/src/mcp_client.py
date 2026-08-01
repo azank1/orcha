@@ -157,7 +157,7 @@ class WorkspaceMCPClient:
             "params": {
                 "protocolVersion": _INIT_PROTOCOL,
                 "capabilities": {},
-                "clientInfo": {"name": "metaorcha-workspace-agent", "version": "0.1.0"},
+                "clientInfo": {"name": "orcha-workspace-agent", "version": "0.1.0"},
             },
         }
         body, hdrs = await self._post(init_payload, bearer, include_session=False)

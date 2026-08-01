@@ -14,15 +14,15 @@ from superagent.middleware.observers import (
 
 
 def _record(**overrides) -> StepResult:
-    base = dict(
-        call_id="call-1",
-        agent_id="did:orcha:agent:web-scraper",
-        capability_id="scrape",
-        protocol="A2A",
-        tool_name="web-scraper.scrape",
-        success=True,
-        content="ok",
-    )
+    base = {
+        "call_id": "call-1",
+        "agent_id": "did:orcha:agent:web-scraper",
+        "capability_id": "scrape",
+        "protocol": "A2A",
+        "tool_name": "web-scraper.scrape",
+        "success": True,
+        "content": "ok",
+    }
     base.update(overrides)
     return StepResult(**base)
 
@@ -78,5 +78,5 @@ async def test_broken_observer_never_raises_to_caller():
 
 def test_step_result_is_immutable():
     rec = _record()
-    with pytest.raises(Exception):
+    with pytest.raises(AttributeError):
         rec.success = False  # type: ignore[misc]

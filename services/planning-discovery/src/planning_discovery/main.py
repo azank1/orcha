@@ -70,6 +70,7 @@ async def lifespan(app: FastAPI):
         LLMConfig(
             provider=LLMProviderType(settings.llm_completion_provider),
             api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
             ollama_base_url=settings.ollama_base_url,
             embedding_dimension=settings.llm_embedding_dimension,
         )
@@ -78,6 +79,7 @@ async def lifespan(app: FastAPI):
         LLMConfig(
             provider=LLMProviderType(settings.llm_embedding_provider),
             api_key=settings.openrouter_api_key,
+            base_url=settings.openrouter_base_url,
             ollama_base_url=settings.ollama_base_url,
             embedding_dimension=settings.llm_embedding_dimension,
         )
@@ -224,7 +226,7 @@ async def _catchup_index_missing_embeddings(
 # ── FastAPI app ────────────────────────────────────────────────────────────────
 
 app = FastAPI(
-    title="MetaOrcha Planning & Discovery Service",
+    title="Orcha Planning & Discovery Service",
     description=(
         "Converts natural-language queries into validated multi-agent workflow DAGs "
         "and maintains semantic embeddings for registered agents."

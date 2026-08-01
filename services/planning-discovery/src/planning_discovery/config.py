@@ -63,6 +63,9 @@ class Settings(BaseSettings):
     llm_embedding_provider: str = "ollama"
 
     openrouter_api_key: str | None = None
+    # Override to point at any OpenAI-compatible endpoint (e.g. Gemini's
+    # https://generativelanguage.googleapis.com/v1beta/openai).
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
     ollama_base_url: str = "http://localhost:11434"
 
     llm_decomposition_model: str = "meta-llama/llama-3.1-8b-instruct"

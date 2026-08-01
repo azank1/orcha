@@ -124,7 +124,7 @@ export function InputBar({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={placeholder ?? 'Describe a task for your agent hive…'}
+          placeholder={placeholder ?? 'describe a goal…'}
           disabled={disabled}
           rows={1}
           aria-label="Message input"

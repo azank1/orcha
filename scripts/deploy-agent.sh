@@ -10,8 +10,8 @@
 #
 # Environment:
 #   AWS_REGION                 — default us-east-1
-#   METAORCHA_AGENT_SECRET_ID  — Secrets Manager secret id
-#                                 (default: /metaorcha/dev/agent/<agent-name>).
+#   ORCHA_AGENT_SECRET_ID  — Secrets Manager secret id
+#                                 (default: /orcha/dev/agent/<agent-name>).
 #                                 SecretString must be a flat JSON object of env vars.
 set -euo pipefail
 
@@ -30,7 +30,7 @@ AGENT_DIR="$REPO_ROOT/agents/$AGENT"
 
 # ── AWS config ───────────────────────────────────────────────────────────────
 AWS_REGION="${AWS_REGION:-us-east-1}"
-SERVICE_NAME="metaorcha-agent-${AGENT}"
+SERVICE_NAME="orcha-agent-${AGENT}"
 LOCAL_IMAGE="${AGENT}:deploy"
 
 echo ""
@@ -106,7 +106,7 @@ LIGHTSAIL_IMAGE=$(aws lightsail get-container-images \
 echo "     Lightsail image: ${LIGHTSAIL_IMAGE}"
 
 # ── Step 4: Resolve env vars from Secrets Manager ────────────────────────────
-SECRET_ID="${METAORCHA_AGENT_SECRET_ID:-/metaorcha/dev/agent/${AGENT}}"
+SECRET_ID="${ORCHA_AGENT_SECRET_ID:-/orcha/dev/agent/${AGENT}}"
 echo "==> [4/5] Resolving agent secrets (secret: ${SECRET_ID})"
 
 ENV_JSON="{}"

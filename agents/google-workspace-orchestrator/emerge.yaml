@@ -151,7 +151,7 @@ skills:
     description: "Custom Search Engine queries (workspace-mcp search_custom, get_search_engine_info)."
     tags: ["google", "search", "cse"]
     examples:
-      - "Search the web for MetaOrcha A2A documentation"
+      - "Search the web for Orcha A2A documentation"
 
   - id: "workspace_apps_script"
     name: "Apps Script"

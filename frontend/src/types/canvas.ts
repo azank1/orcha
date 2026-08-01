@@ -82,6 +82,13 @@ export interface TimelineSpec {
   }[]
 }
 
+export interface MarkdownCardSpec {
+  type: 'markdown_card'
+  id: string
+  title?: string
+  body: string
+}
+
 export type CanvasComponent =
   | MetricCardSpec
   | LineChartSpec
@@ -91,6 +98,7 @@ export type CanvasComponent =
   | StatGridSpec
   | ProgressBarSpec
   | TimelineSpec
+  | MarkdownCardSpec
 
 export interface UIManifest {
   version: '1.0'

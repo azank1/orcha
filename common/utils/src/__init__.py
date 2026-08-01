@@ -1,4 +1,4 @@
-"""Common utilities for Metaorcha monorepo."""
+"""Common utilities for Orcha monorepo."""
 
 __version__ = "0.1.0"
 

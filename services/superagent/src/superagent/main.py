@@ -160,7 +160,7 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
 
 
 app = FastAPI(
-    title="MetaOrcha SuperAgent",
+    title="Orcha SuperAgent",
     description=(
         "LangGraph ReAct orchestration runtime — dynamically selects and invokes "
         "MCP/A2A agents at conversation time."

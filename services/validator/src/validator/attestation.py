@@ -1,4 +1,4 @@
-"""Validator attestation schema (D1 spike)."""
+"""Validator attestation schema."""
 
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ def build_attestation(
     latency_ms: int,
     content: str,
 ) -> Attestation:
-    """Heuristic judge for D1 spike — replaced by semantic judge in D2."""
+    """Heuristic judge — replaced by the semantic judge when it ships."""
     score = 0.85 if success and content and not content.startswith("Error:") else 0.2
     return Attestation(
         schema_version="1.0",

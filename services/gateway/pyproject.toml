@@ -1,7 +1,7 @@
 [project]
 name = "gateway"
 version = "0.1.0"
-description = "MetaOrcha Gateway — public ingress, JWT auth, SSE relay, session management"
+description = "Orcha Gateway — public ingress, JWT auth, SSE relay, session management"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",

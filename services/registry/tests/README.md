@@ -139,6 +139,7 @@ See `conftest.py` for fixture definitions.
 import pytest
 from services.registry.src.my_module import MyClass
 
+
 class TestMyFeature:
     def test_something(self):
         # Test implementation
@@ -160,9 +161,11 @@ def test_with_database(db, test_user_id):
 def test_unit_logic():
     pass
 
+
 @pytest.mark.integration
 async def test_integration():
     pass
+
 
 @pytest.mark.slow
 def test_slow_operation():
@@ -183,7 +186,7 @@ For integration tests, use the test database:
 
 ```bash
 # Set in environment
-export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha_test"
+export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orcha_test"
 
 # Run migrations
 cd common/database

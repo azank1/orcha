@@ -115,13 +115,13 @@
     },
     "network": {
       "type": "object",
-      "description": "DAN network configuration. Requires network.experimental: true until Day-30 adoption gate.",
+      "description": "Experimental network configuration. Requires network.experimental: true.",
       "additionalProperties": false,
       "properties": {
         "experimental": {
           "type": "boolean",
           "default": false,
-          "description": "Opt in to pre-release DAN features (gossip, validate live, cognitive loop)."
+          "description": "Opt in to pre-release network features (validate live, gossip transport)."
         },
         "gossip": {
           "type": "object",

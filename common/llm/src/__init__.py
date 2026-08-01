@@ -1,4 +1,4 @@
-"""Shared LLM provider abstraction for Metaorcha services."""
+"""Shared LLM provider abstraction for Orcha services."""
 
 from .config import LLMConfig, LLMProviderType
 from .ollama import OllamaProvider

@@ -32,7 +32,7 @@ if not os.getenv("DATABASE_URL"):
 
 # Stable test user used by all DB fixtures
 _TEST_USER_ID = "test-user-fixture-001"
-_TEST_USER_EMAIL = "fixture@metaorcha.test"
+_TEST_USER_EMAIL = "fixture@orcha.test"
 
 
 async def _ensure_test_user(conn: asyncpg.Connection) -> None:
@@ -130,7 +130,7 @@ def minimal_agent_manifest() -> dict:
     """Minimal valid agent manifest."""
     return {
         "identity": {
-            "id": "did:emerge:agent:test-minimal",
+            "id": "did:orcha:agent:test-minimal",
             "name": "MinimalAgent",
             "version": "1.0.0",
             "description": "A minimal test agent",
@@ -146,7 +146,7 @@ def crypto_oracle_manifest() -> dict:
     """Realistic crypto oracle agent manifest."""
     return {
         "identity": {
-            "id": "did:emerge:agent:crypto-oracle",
+            "id": "did:orcha:agent:crypto-oracle",
             "name": "CryptoOracle",
             "version": "1.0.0",
             "description": "Real-time cryptocurrency price oracle",
@@ -192,7 +192,7 @@ def payment_agent_manifest() -> dict:
     """Payment processor agent manifest."""
     return {
         "identity": {
-            "id": "did:emerge:agent:payment-processor",
+            "id": "did:orcha:agent:payment-processor",
             "name": "PaymentProcessor",
             "version": "1.0.0",
             "description": "Processes payments across blockchains",

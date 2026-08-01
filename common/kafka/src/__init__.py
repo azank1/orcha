@@ -1,4 +1,4 @@
-"""Common Kafka consumer and producer for Metaorcha services."""
+"""Common Kafka consumer and producer for Orcha services."""
 
 from .consumer import BaseKafkaConsumer, KafkaConsumerConfig
 from .producer import KafkaProducer, KafkaProducerConfig

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# MetaOrcha — MVP Local Dev Startup
+# Orcha — MVP Local Dev Startup
 # Starts all services in the correct order.
 # Usage: ./scripts/start-dev.sh
 # ============================================================================
@@ -12,7 +12,7 @@ LOGS="$REPO_ROOT/.logs"
 PYTHON="$VENV/bin/python"
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; BLUE='\033[0;34m'; RESET='\033[0m'
-info()    { echo -e "${BLUE}[metaorcha]${RESET} $*"; }
+info()    { echo -e "${BLUE}[orcha]${RESET} $*"; }
 success() { echo -e "${GREEN}✓${RESET} $*"; }
 warn()    { echo -e "${YELLOW}⚠${RESET} $*"; }
 error()   { echo -e "${RED}✗${RESET} $*" >&2; exit 1; }
@@ -83,7 +83,7 @@ info "Starting Docker infrastructure (postgres + redis)..."
 docker-compose -f "$REPO_ROOT/docker-compose.yml" up -d postgres redis
 sleep 3
 # Enable pgvector + pg_trgm extensions
-docker exec metaorcha-postgres psql -U postgres -d metaorcha -c \
+docker exec orcha-postgres psql -U postgres -d orcha -c \
   "CREATE EXTENSION IF NOT EXISTS vector; CREATE EXTENSION IF NOT EXISTS pg_trgm;" \
   >/dev/null 2>&1 || true
 success "Postgres + Redis running"
@@ -92,7 +92,7 @@ success "Postgres + Redis running"
 info "Applying Prisma schema..."
 (
   source "$VENV/bin/activate"
-  export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/metaorcha"
+  export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/orcha"
   export PYTHONPATH="$REPO_ROOT"
   cd "$REPO_ROOT"
   prisma db push --schema=common/database/schema.prisma --accept-data-loss >/dev/null 2>&1
@@ -165,7 +165,7 @@ check_http frontend      http://localhost:8080/
 
 echo ""
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
-echo -e "${GREEN}  MetaOrcha MVP is running${RESET}"
+echo -e "${GREEN}  Orcha MVP is running${RESET}"
 echo -e "${GREEN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo ""
 echo -e "  Frontend      →  ${BLUE}http://localhost:8080${RESET}"

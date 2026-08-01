@@ -1,7 +1,7 @@
 """
 onboarding/key_manager.py
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Secure credential manager for metaorcha.
+Secure credential manager for orcha.
 
 Key split:
   Platform keys  (Apollo, Hunter, LLM)  →  .env — clients never see them

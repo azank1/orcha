@@ -1,7 +1,7 @@
 [project]
 name = "common-llm"
 version = "0.1.0"
-description = "Shared LLM provider abstraction for Metaorcha services"
+description = "Shared LLM provider abstraction for Orcha services"
 requires-python = ">=3.12"
 
 dependencies = [

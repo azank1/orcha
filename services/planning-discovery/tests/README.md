@@ -159,7 +159,7 @@ uv run pytest -m "not slow"        # Exclude slow tests (>1s)
 
 1. **Create test database**
    ```bash
-   createdb metaorcha_dev  # Use dev database for tests
+   createdb orcha_dev  # Use dev database for tests
    ```
 
 2. **Run migrations**
@@ -247,7 +247,7 @@ Failed to connect to Ollama at http://localhost:11434
 
 ### Database Already in Use
 ```
-ERROR: database "metaorcha_test" is being accessed by other users
+ERROR: database "orcha_test" is being accessed by other users
 ```
 **Solution**: Close other connections or use different test database
 

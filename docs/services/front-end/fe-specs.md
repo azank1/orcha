@@ -1,5 +1,5 @@
 ````markdown
-# MetaOrcha — Complete Design Handoff
+# Orcha — Complete Design Handoff
 # Source: Figma file UMMV4rfXHzESys9JcgeXB0 (partially built, migrating to Penpot)
 # Generated: 2026-04-01
 # Status: Full spec — covers all tokens, all completed Figma frames,
@@ -195,7 +195,7 @@ System event: full chat-width minus 48px margins, radius 6px, 12px/500
 **Canvas fill:** #07070C
 
 #### Section 1 — Color Swatches
-Title: "MetaOrcha · Design Tokens" — 28px/700 #EEEEF2, x:40, y:20
+Title: "Orcha · Design Tokens" — 28px/700 #EEEEF2, x:40, y:20
 
 Six groups rendered left-to-right with 108px column stride:
 - Each swatch: 96×56px rect, radius 8px, filled with token color
@@ -241,7 +241,7 @@ See component spec 2.2.
   [Frame]  Nav Bar           1440×56  x:0 y:0
       fill:#0D0D14 opacity:0.92
       border-bottom: 1px #252535
-    [Text]   "MetaOrcha"     x:24 y:16   18px/700 #EEEEF2
+    [Text]   "Orcha"     x:24 y:16   18px/700 #EEEEF2
     [Ellipse] Accent dot     6×6   x:152 y:25   fill:#00C8E8
     [Frame]  My Workflows Btn 148×34  x:1252 y:11  r:7
         fill:#1A1A28  border:1px #252535
@@ -623,7 +623,7 @@ fill:#0D0D14  border-left:1px #252535
       [Frame] dev mode card  100%  h:80  r:8  fill:#13131E  border:1px #252535  layout:H  align-center  px:20
         [Left]
           [Text] "Developer Mode"  14px/600 #EEEEF2
-          [Text] "Register and host agents on MetaOrcha"  12px/400 #8888AA  mt:4
+          [Text] "Register and host agents on Orcha"  12px/400 #8888AA  mt:4
         [Right, ml:auto]
           [Toggle] 44×24  r:12
             Off: fill:#252535  knob:#8888AA

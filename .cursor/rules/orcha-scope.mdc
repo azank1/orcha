@@ -11,10 +11,10 @@ alwaysApply: false
 ### README.md (above the fold)
 - **Show:** Working multi-protocol orchestration runtime. One goal → agent composition → CanvasKit dashboard.
 - **Show:** `emerge init` / `emerge run` quickstart.
-- **Do NOT show above the fold:** DAN, DAPN, gossip network, token, autonomy, reputation — these go in the ROADMAP section only.
+- **Do NOT show above the fold:** gossip network, token, autonomy, reputation, network-layer phases — these go in the ROADMAP section only.
 
 ### ROADMAP.md
-DAN/DAPN phases, token launch, CanvasKit marketplace, Studio, OrchFlow all live here — not in README hero or product docs.
+Network-layer phases, token launch, CanvasKit marketplace, Studio, OrchFlow all live here — not in README hero or product docs.
 
 ### docs/ (public-facing)
 - `docs/quickstart.md` — 5-minute install + first agent
@@ -52,7 +52,7 @@ Fill `.env.sandbox`, set `SANDBOX_MAX_DAILY_MESSAGES`, add TLS, public URL. See 
 Hero clip, Show HN, Discord. Demo goal validated ≥4/5 runs before recording. See `docs/dev_docs/M2-DEMO.md`.
 
 ### M3+ — ROADMAP
-DAN phases, traction metrics, token, any new product.
+Network phases, traction metrics, token, any new product.
 
 ## Schema Change Protocol
 
@@ -63,8 +63,8 @@ The `emerge.yaml` schema (`docs/spec/emerge-yaml.schema.json`) is the public con
 
 ## Writing Style Rules
 
-- Product name: **Orcha** (not MetaOrcha, metaorcha, or any other variant)
+- Product name: **Orcha** (no variants, no internal codenames)
 - Agent identity: `did:orcha:agent:*`
 - The SDK package: `orcha-sdk`, import as `emerge`
 - CanvasKit component output: always contrast with "not a text reply"
-- DAPN / DAN: ROADMAP section only; never in above-the-fold copy or product docs
+- Network layer: ROADMAP section only; never in above-the-fold copy or product docs

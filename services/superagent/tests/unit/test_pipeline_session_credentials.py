@@ -19,12 +19,21 @@ async def test_pipeline_uses_config_session_credentials_when_state_missing():
             return {"manifest": {"transport": {}}, "headers": {}, "resolved_env": None}
 
     state = {"user_id": "u1", "session_id": "s1"}
-    config = {"configurable": {"session_credentials": {"did:agent:test": {"API_KEY": "secret"}}}}
+    config = {
+        "configurable": {
+            "session_credentials": {"did:agent:test": {"API_KEY": "secret"}}
+        }
+    }
 
     with (
         patch("superagent.middleware.pipeline.PreFlightManager", FakePreFlightManager),
-        patch("superagent.middleware.pipeline.InputGuard.validate", side_effect=lambda args, _schema: args),
-        patch.object(ExecutionMiddleware, "_get_capability_schema", AsyncMock(return_value=None)),
+        patch(
+            "superagent.middleware.pipeline.InputGuard.validate",
+            side_effect=lambda args, _schema: args,
+        ),
+        patch.object(
+            ExecutionMiddleware, "_get_capability_schema", AsyncMock(return_value=None)
+        ),
         patch.object(ExecutionMiddleware, "_dispatch", AsyncMock(return_value="ok")),
         patch(
             "superagent.middleware.pipeline.OutputNormalizer.normalize",

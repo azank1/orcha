@@ -9,6 +9,7 @@ import logging
 import mimetypes
 import uuid
 from pathlib import Path
+from typing import Any
 
 from .graph.state import ArtifactRef
 

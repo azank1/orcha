@@ -1,4 +1,4 @@
-"""Kafka topic name constants shared across all Metaorcha services."""
+"""Kafka topic name constants shared across all Orcha services."""
 
 
 class KafkaTopics:
@@ -13,5 +13,5 @@ class KafkaTopics:
     PLANNING_VALIDATION_FAILED = "planning.validation.failed"
     PLANNING_METRICS = "planning.metrics"
 
-    # SuperAgent → validator nodes (DAN Phase D1)
+    # SuperAgent → validator observer nodes
     EXECUTION_STEP_COMPLETE = "execution.step_complete"

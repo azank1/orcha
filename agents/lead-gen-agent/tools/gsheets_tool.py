@@ -32,7 +32,7 @@ def _auth(access_token: str) -> dict:
 
 # ── Sheet creation ────────────────────────────────────────────────────────────
 
-async def create_spreadsheet(access_token: str, title: str = "MetaOrcha Leads") -> str:
+async def create_spreadsheet(access_token: str, title: str = "Orcha Leads") -> str:
     """Create a new Google Sheet and return its spreadsheet_id."""
     async with httpx.AsyncClient(timeout=15.0, verify=certifi.where()) as client:
         resp = await client.post(
@@ -218,7 +218,7 @@ def _lead_to_row(lead: dict) -> list:
         str(lead.get("icp_score") or lead.get("ICP Score") or ""),
         lead.get("linkedin_url") or lead.get("LinkedIn", ""),
         lead.get("lead_status") or lead.get("Lead Status") or "NEW",
-        lead.get("source", "MetaOrcha Lead Gen"),
+        lead.get("source", "Orcha Lead Gen"),
         lead.get("created_at") or datetime.now(timezone.utc).isoformat(),
     ]
 

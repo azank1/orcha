@@ -1,9 +1,9 @@
-"""Logging configuration for Metaorcha services."""
+"""Logging configuration for Orcha services."""
 
 import logging
 import sys
 
-_APP_ROOT = "metaorcha"
+_APP_ROOT = "orcha"
 
 
 def setup_logging(
@@ -16,7 +16,7 @@ def setup_logging(
     Set up logging for a service.
 
     Root logger is set to WARNING so third-party dependencies stay quiet.
-    The "metaorcha" namespace and the service-specific namespace are both
+    The "orcha" namespace and the service-specific namespace are both
     set to the requested level.
 
     Args:
@@ -26,7 +26,7 @@ def setup_logging(
         extra_namespaces: Additional Python package roots whose loggers should
             also be configured at ``level``.  Use this when module-level loggers
             use ``__name__`` and the resulting names are not children of either
-            ``metaorcha`` or ``service_name`` (e.g. a src-layout service whose
+            ``orcha`` or ``service_name`` (e.g. a src-layout service whose
             top-level packages are ``api``, ``planning``, ``db``, …).
 
     Returns:

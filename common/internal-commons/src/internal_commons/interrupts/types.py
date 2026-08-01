@@ -1,4 +1,4 @@
-"""InterruptType — master registry of all interrupt types in the MetaOrcha platform."""
+"""InterruptType — master registry of all interrupt types in the Orcha platform."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ from enum import StrEnum
 
 class InterruptType(StrEnum):
     """
-    Master registry of all interrupt types in the MetaOrcha platform.
+    Master registry of all interrupt types in the Orcha platform.
 
     Interrupt types represent moments where workflow execution must pause
     and wait for explicit user action before it can continue.
@@ -26,9 +26,9 @@ class InterruptType(StrEnum):
     # — Auth interrupts ──────────────────────────────────────────────────────
     AUTH_CALLBACK = "AUTH_CALLBACK"
     """
-    MetaOrcha-managed OAuth flow. MetaOrcha holds the client_id / client_secret
+    Orcha-managed OAuth flow. Orcha holds the client_id / client_secret
     for a known provider (e.g. Google, GitHub). PreFlightManager builds the
-    authorization URL. After user consent, MetaOrcha exchanges the code for
+    authorization URL. After user consent, Orcha exchanges the code for
     tokens and stores them in VaultService. The agent never sees the OAuth
     mechanics — it just receives an Authorization header on the next call.
     """
@@ -44,7 +44,7 @@ class InterruptType(StrEnum):
     """
     Agent-managed OAuth flow. The agent developer owns their own OAuth client
     (client_id + client_secret) registered with an authorization server.
-    MetaOrcha surfaces the auth URL and pauses execution. The authorization
+    Orcha surfaces the auth URL and pauses execution. The authorization
     server redirects directly to the agent callback, the agent exchanges
     code → token, and then calls Gateway resume endpoint to continue.
     The agent client_secret never leaves the agent server.

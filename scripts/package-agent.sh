@@ -6,7 +6,7 @@ AGENT=$1
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 AGENT_DIR="$REPO_ROOT/agents/$AGENT"
-BUILD_DIR="/tmp/metaorcha-agent-build-$$"
+BUILD_DIR="/tmp/orcha-agent-build-$$"
 ZIP_OUT="$REPO_ROOT/dist/${AGENT}.zip"
 
 [ -d "$AGENT_DIR" ] || { echo "ERROR: Agent directory not found: $AGENT_DIR"; exit 1; }

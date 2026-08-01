@@ -20,6 +20,15 @@ class CreateSessionResponse(BaseModel):
 class MessageRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=32768)
     artifact_ids: list[str] = Field(default_factory=list)
+    model: str | None = Field(
+        default=None,
+        description="Per-turn orchestrator model override (e.g. from the model picker).",
+    )
+    custom_instructions: str | None = Field(
+        default=None,
+        max_length=2000,
+        description="Per-session operator instructions appended to the orchestrator system prompt.",
+    )
 
 
 class ResumeRequest(BaseModel):

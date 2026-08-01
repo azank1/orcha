@@ -38,12 +38,17 @@ RUN uv sync --frozen --no-dev --package superagent
 # ============================================================================
 FROM dependencies AS builder
 
-RUN apt-get update && apt-get install -y --no-install-recommends nodejs npm \
+# Official Node.js tarball (npm 10) — Debian's npm 9 times out fetching large
+# package metadata on some docker bridge networks.
+RUN apt-get update && apt-get install -y --no-install-recommends curl xz-utils ca-certificates \
+    && curl -fsSL https://nodejs.org/dist/v20.20.2/node-v20.20.2-linux-x64.tar.xz \
+       | tar -xJ -C /usr/local --strip-components=1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/common/database
 ENV HOME=/app \
     PATH="/app/.venv/bin:$PATH"
+ENV NODE_OPTIONS=--dns-result-order=ipv4first
 RUN mkdir -p /app/.cache/prisma-python && \
     prisma generate && prisma py fetch
 
@@ -65,6 +70,13 @@ RUN useradd -m -u 1000 appuser && \
 COPY --from=builder --chown=appuser:appuser /app/.venv /app/.venv
 COPY --from=builder --chown=appuser:appuser /app/common /app/common
 COPY --from=builder --chown=appuser:appuser /app/.cache /app/.cache
+
+# Chromium headless shell + system deps for the computer-use Playwright backend
+# (selected via COMPUTER_USE_BACKEND=playwright; inert under the mock default).
+# Fixed browsers path so the appuser runtime finds the root-installed browser.
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN /app/.venv/bin/playwright install --with-deps --only-shell chromium \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --chown=appuser:appuser services/superagent/src ./services/superagent/src
 COPY --chown=appuser:appuser services/superagent/.env.example ./services/superagent/.env.example

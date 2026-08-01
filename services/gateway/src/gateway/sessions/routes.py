@@ -146,6 +146,29 @@ async def get_session_transcript(
     return TranscriptListResponse.model_validate(resp.json())
 
 
+@router.get("/{session_id}/audit")
+async def get_session_audit(
+    session_id: str,
+    request: Request,
+    payload: Annotated[TokenPayload, Depends(require_auth)],
+) -> dict[str, Any]:
+    """Proxy the SuperAgent Verified Runs audit package for this session."""
+    sa = request.app.state.superagent
+    await _assert_session_owner(
+        session_id, payload.user_id, request.app.state.redis, sa
+    )
+    resp = await sa.get(
+        f"/sessions/{session_id}/audit",
+        params={"user_id": payload.user_id},
+    )
+    if resp.status_code == 404:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Session not found"
+        )
+    resp.raise_for_status()
+    return resp.json()
+
+
 @router.post("/{session_id}/message")
 async def send_message(
     session_id: str,
@@ -164,6 +187,10 @@ async def send_message(
         "session_credentials": session_credentials,
         "artifact_ids": body.artifact_ids,
     }
+    if body.model:
+        sa_body["model"] = body.model
+    if body.custom_instructions:
+        sa_body["custom_instructions"] = body.custom_instructions
 
     async def gen() -> AsyncIterator[str]:
         async for chunk in proxy_superagent_sse(

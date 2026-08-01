@@ -31,7 +31,7 @@ status:
 
 init-db:
 	@echo "Applying PnD vector/FTS schema (idempotent)..."
-	@docker exec -i sandbox-postgres psql -U postgres metaorcha \
+	@docker exec -i sandbox-postgres psql -U postgres orcha \
 	  < $(ROOT)/services/planning-discovery/scripts/db/001_create_vector_indices.sql
 	@echo "  schema ready."
 

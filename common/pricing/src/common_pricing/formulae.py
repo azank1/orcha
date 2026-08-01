@@ -28,14 +28,14 @@ def split_revenue(base_fee: Decimal) -> tuple[Decimal, Decimal]:
     return developer_payout, platform_cut
 
 
-def split_revenue_dan(
+def split_revenue_three_way(
     base_fee: Decimal,
     *,
     coordinator_share_bps: int = 0,
     validator_share_bps: int = 0,
 ) -> tuple[Decimal, Decimal, Decimal]:
     """
-    DAN three-way split: (agent_share, validator_share, coordinator_share).
+    Three-way split: (agent_share, validator_share, coordinator_share).
 
     BPS values are basis points of base_fee (500 = 5%). Remainder goes to agent.
     """
@@ -49,6 +49,10 @@ def split_revenue_dan(
     if agent_share < 0:
         raise ValueError("fee shares exceed base_fee")
     return agent_share, validator_cut, coordinator_cut
+
+
+# Backwards-compatible alias for the original name.
+split_revenue_dan = split_revenue_three_way
 
 
 def compute_turn_cost(base_fees: list[Decimal], platform_output_tokens: int) -> Decimal:

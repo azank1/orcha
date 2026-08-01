@@ -79,7 +79,7 @@ def mock_small_llm():
 @pytest.fixture
 def gmail_candidate() -> ToolCandidate:
     return ToolCandidate(
-        agent_id="did:emerge:agent:gmail-mcp-001",
+        agent_id="did:orcha:agent:gmail-mcp-001",
         agent_name="Gmail MCP",
         agent_description="Read and send Gmail emails via MCP",
         protocol_type="MCP",

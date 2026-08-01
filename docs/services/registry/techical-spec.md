@@ -430,7 +430,7 @@ model User {
 // ============================================================================
 
 model Agent {
-  id                String      @id // DID format: did:emerge:agent:xyz
+  id                String      @id // DID format: did:orcha:agent:xyz
   user_id           String
   name              String
   version           String
@@ -679,7 +679,7 @@ async def seed_users():
     await db.connect()
     
     # Test user
-    test_token = "emerge_pat_test123456789"
+    test_token = "emerge_pat_xxxxxxxxxxxxxxxx"
     hashed_token = bcrypt.hashpw(test_token.encode(), bcrypt.gensalt()).decode()
     
     user = await db.user.create(
@@ -726,7 +726,7 @@ Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
 **Token Format:**
 - Prefix: `emerge_pat_`
 - Length: 40 characters total
-- Example: `emerge_pat_abc123def456ghi789jkl012`
+- Example: `emerge_pat_xxxxxxxxxxxxxxxx`
 
 **Validation:**
 - Extract token from header
@@ -755,7 +755,7 @@ emerge_yaml: <file>
 
 ```yaml
 identity:
-  id: "did:emerge:agent:my-agent-01"
+  id: "did:orcha:agent:my-agent-01"
   name: "MyAwesomeAgent"
   version: "1.0.0"
   description: "A powerful financial analysis agent"
@@ -814,7 +814,7 @@ payment:
 {
   "status": "success",
   "data": {
-    "agent_id": "did:emerge:agent:my-agent-01",
+    "agent_id": "did:orcha:agent:my-agent-01",
     "name": "MyAwesomeAgent",
     "version": "1.0.0",
     "registered_at": "2026-01-22T10:30:00Z",
@@ -854,7 +854,7 @@ payment:
     "message": "Invalid emerge.yaml configuration",
     "details": {
       "field": "identity.id",
-      "reason": "Must start with 'did:emerge:agent:'"
+      "reason": "Must start with 'did:orcha:agent:'"
     }
   }
 }
@@ -878,7 +878,7 @@ payment:
 **Request:**
 
 ```http
-GET /api/v1/agents/did:emerge:agent:my-agent-01
+GET /api/v1/agents/did:orcha:agent:my-agent-01
 Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
 ```
 
@@ -889,7 +889,7 @@ Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
   "status": "success",
   "data": {
     "identity": {
-      "id": "did:emerge:agent:my-agent-01",
+      "id": "did:orcha:agent:my-agent-01",
       "name": "MyAwesomeAgent",
       "version": "1.0.0",
       "provider": "EmergeLabs",
@@ -993,7 +993,7 @@ Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
   "data": {
     "agents": [
       {
-        "id": "did:emerge:agent:my-agent-01",
+        "id": "did:orcha:agent:my-agent-01",
         "name": "MyAwesomeAgent",
         "version": "1.0.0",
         "health_status": "healthy",
@@ -1026,7 +1026,7 @@ Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
 **Request:**
 
 ```http
-PUT /api/v1/agents/did:emerge:agent:my-agent-01
+PUT /api/v1/agents/did:orcha:agent:my-agent-01
 Content-Type: multipart/form-data
 Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
 
@@ -1039,7 +1039,7 @@ emerge_yaml: <file>
 {
   "status": "success",
   "data": {
-    "agent_id": "did:emerge:agent:my-agent-01",
+    "agent_id": "did:orcha:agent:my-agent-01",
     "version": "1.1.0",
     "updated_at": "2026-01-22T11:00:00Z",
     "version_created": true
@@ -1065,7 +1065,7 @@ emerge_yaml: <file>
 **Request:**
 
 ```http
-DELETE /api/v1/agents/did:emerge:agent:my-agent-01
+DELETE /api/v1/agents/did:orcha:agent:my-agent-01
 Authorization: Bearer emerge_pat_xxxxxxxxxxxxxxxx
 ```
 
@@ -2041,11 +2041,11 @@ emerge auth create-token --name "my-dev-machine"
 ```
 ✓ Token created successfully
 
-Token: emerge_pat_abc123def456ghi789jkl012
+Token: emerge_pat_xxxxxxxxxxxxxxxx
 Copy this token now - it will not be shown again.
 
 Add to your environment:
-export EMERGE_PAT_TOKEN="emerge_pat_abc123def456ghi789jkl012"
+export EMERGE_PAT_TOKEN="emerge_pat_xxxxxxxxxxxxxxxx"
 ```
 
 **Storage:**
@@ -2752,7 +2752,7 @@ logger = structlog.get_logger()
 # Usage
 logger.info(
     "agent_registered",
-    agent_id="did:emerge:agent:xyz",
+    agent_id="did:orcha:agent:xyz",
     user_id="user_123",
     protocol="mcp",
     capabilities_count=5,
@@ -3030,7 +3030,7 @@ volumes:
 # File: examples/mcp-weather-agent.yaml
 
 identity:
-  id: "did:emerge:agent:weather-bot-01"
+  id: "did:orcha:agent:weather-bot-01"
   name: "WeatherBot"
   version: "1.0.0"
   tags: ["weather", "forecast", "climate"]
@@ -3080,7 +3080,7 @@ payment:
 # File: examples/a2a-calendar-agent.yaml
 
 identity:
-  id: "did:emerge:agent:calendar-assistant-01"
+  id: "did:orcha:agent:calendar-assistant-01"
   name: "CalendarAssistant"
   version: "2.0.0"
   tags: ["calendar", "scheduling", "productivity"]
@@ -3200,22 +3200,22 @@ HARVEST_TIMEOUT_SECONDS=10
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/agents/register \
-  -H "Authorization: Bearer emerge_pat_abc123..." \
+  -H "Authorization: Bearer $REGISTRY_PAT" \
   -F "emerge_yaml=@./examples/mcp-agent.yaml"
 ```
 
 ### Get Agent Manifest
 
 ```bash
-curl http://localhost:8000/api/v1/agents/did:emerge:agent:my-agent-01 \
-  -H "Authorization: Bearer emerge_pat_abc123..."
+curl http://localhost:8000/api/v1/agents/did:orcha:agent:my-agent-01 \
+  -H "Authorization: Bearer $REGISTRY_PAT"
 ```
 
 ### List User's Agents
 
 ```bash
 curl "http://localhost:8000/api/v1/agents?page=1&limit=10&status=healthy" \
-  -H "Authorization: Bearer emerge_pat_abc123..."
+  -H "Authorization: Bearer $REGISTRY_PAT"
 ```
 
 ---
@@ -3308,7 +3308,7 @@ async def test_full_registration_flow():
     async with AsyncClient(app=app, base_url="http://test") as client:
         # Upload emerge.yaml
         files = {"emerge_yaml": open("tests/fixtures/mcp-agent.yaml", "rb")}
-        headers = {"Authorization": "Bearer emerge_pat_test123456789"}
+        headers = {"Authorization": "Bearer emerge_pat_xxxxxxxxxxxxxxxx"}
         
         response = await client.post(
             "/api/v1/agents/register",

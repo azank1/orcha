@@ -11,7 +11,7 @@ protocol:
   transport:
     type: "stdio"
     command: "node"
-    args: ["/home/xen/Desktop/code/fyp/metaorcha-emerge/agents/notion-mcp/dist/index.js"]
+    args: ["/home/xen/Desktop/code/fyp/orcha-emerge/agents/notion-mcp/dist/index.js"]
     env:
       NOTION_API_KEY: "${NOTION_API_KEY}"
 

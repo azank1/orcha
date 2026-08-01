@@ -5,7 +5,7 @@ Full end-to-end example:
 
   User types → "Find me 10 fintech CTOs to contact this week"
        ↓
-  metaorcha orchestrator classifies intent → lead_generation
+  orcha orchestrator classifies intent → lead_generation
        ↓
   Calls lead gen A2A agent with platform keys + user's HubSpot token
        ↓
@@ -40,7 +40,7 @@ PLATFORM_KEYS = {
     "hunter_api_key":    os.getenv("HUNTER_API_KEY", ""),       # mock if missing
 }
 
-# Simulated user context (in real metaorcha this comes from your auth/session)
+# Simulated user context (in real orcha this comes from your auth/session)
 SIMULATED_USER = {
     "id": "user_sulleman_001",
     "name": "Sulleman",
@@ -57,7 +57,7 @@ LEAD_GEN_APIKEY = os.getenv("AGENT_API_KEY", "")
 
 class InMemoryTokenStore:
     """
-    Simulates what your metaorcha platform stores after a user
+    Simulates what your orcha platform stores after a user
     completes HubSpot OAuth. In production this is Redis or Postgres.
     """
     def __init__(self):
@@ -133,11 +133,11 @@ async def call_lead_gen_agent(
         return resp.json()
 
 
-# ── metaorcha orchestrator (simplified) ───────────────────────────────────────
+# ── orcha orchestrator (simplified) ───────────────────────────────────────
 
-async def metaorcha_handle_message(user_message: str, user: dict) -> str:
+async def orcha_handle_message(user_message: str, user: dict) -> str:
     """
-    Simulates what metaorcha does when it receives a user message.
+    Simulates what orcha does when it receives a user message.
     In your real orchestrator this is your LLM routing + tool dispatch loop.
     Here we hardcode intent detection for clarity.
     """
@@ -145,7 +145,7 @@ async def metaorcha_handle_message(user_message: str, user: dict) -> str:
     print(f"  User ({user['name']}): {user_message}")
     print(f"{'━'*60}")
 
-    # In real metaorcha your LLM classifies this — we simulate it
+    # In real orcha your LLM classifies this — we simulate it
     intent = classify_intent(user_message)
     print(f"  → Intent detected: {intent}")
 
@@ -174,7 +174,7 @@ async def metaorcha_handle_message(user_message: str, user: dict) -> str:
 def classify_intent(message: str) -> str:
     """
     Simulates LLM intent classification.
-    In real metaorcha, Claude reads the message and picks the right tool.
+    In real orcha, Claude reads the message and picks the right tool.
     """
     lead_gen_keywords = [
         "find", "leads", "prospects", "contacts", "cto", "ceo", "vp",
@@ -189,7 +189,7 @@ def classify_intent(message: str) -> str:
 def extract_icp_from_message(message: str) -> dict:
     """
     Simulates LLM extracting ICP filters from the user message.
-    In real metaorcha, Claude does this via structured output.
+    In real orcha, Claude does this via structured output.
 
     "Find me 10 fintech CTOs to contact this week"
      → roles: [CTO], industries: [FinTech], geo: [United States]
@@ -266,7 +266,7 @@ def format_response(result: dict, elapsed: float, user: dict) -> str:
 
 async def main():
     print("\n" + "═"*60)
-    print("  metaorcha — Lead Gen Demo")
+    print("  orcha — Lead Gen Demo")
     print("  " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     print("═"*60)
 
@@ -297,12 +297,12 @@ async def main():
     # ── THE ACTUAL USER QUERY ──────────────────────────────────────────────────
     user_message = "Find me 10 fintech CTOs to contact this week"
 
-    response = await metaorcha_handle_message(user_message, SIMULATED_USER)
+    response = await orcha_handle_message(user_message, SIMULATED_USER)
     print(response)
 
     # ── BONUS: try a second query with different ICP ───────────────────────────
     user_message_2 = "I need VP Engineering leads at SaaS companies in London, under 200 employees"
-    response2 = await metaorcha_handle_message(user_message_2, SIMULATED_USER)
+    response2 = await orcha_handle_message(user_message_2, SIMULATED_USER)
     print(response2)
 
 

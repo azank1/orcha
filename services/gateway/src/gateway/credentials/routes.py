@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 from typing import Annotated
+from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel
@@ -27,12 +29,48 @@ class AgentSecretItem(BaseModel):
 _SESSION_CRED_TTL = 3600  # 1 hour
 
 
+def _validate_byok_base_url(value: str) -> None:
+    """SSRF guard for visitor-supplied model endpoints (BYOK).
+
+    Parses the host string only — no DNS resolution. Requires https and a
+    public host: rejects loopback/unspecified/private/link-local IPs,
+    localhost, ``.internal``/``.local`` suffixes, and ``sandbox-*`` hosts.
+    """
+    parsed = urlparse(value)
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme != "https" or not host:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="BYOK base_url must be an https URL with a host",
+        )
+    if (
+        host == "localhost"
+        or host.endswith((".internal", ".local"))
+        or host.startswith("sandbox-")
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"BYOK base_url host is not allowed: {host}",
+        )
+    try:
+        ip = ipaddress.ip_address(host)
+    except ValueError:
+        return  # non-IP hostname — allowed
+    if not ip.is_global:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"BYOK base_url must point to a public address, got: {host}",
+        )
+
+
 @router.post("", status_code=204)
 async def store_credential(
     body: StoreCredentialRequest,
     request: Request,
     payload: Annotated[TokenPayload, Depends(require_auth)],
 ) -> None:
+    if body.agent_id == "__llm__" and body.var_name == "base_url":
+        _validate_byok_base_url(body.value)
     if body.scope == "permanent":
         sa = request.app.state.superagent
         resp = await sa.post(

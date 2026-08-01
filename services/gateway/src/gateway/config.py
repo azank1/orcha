@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     jwt_access_token_expire_days: int = 7
     jwt_refresh_token_expire_days: int = 30
 
-    # Downstream services — ports must match deploy/supervisord.conf in metaorcha-core:
+    # Downstream services — ports must match deploy/supervisord.conf in orcha-core:
     # superagent :8001, planning-discovery :8002, registry :8003, gateway :8000
     superagent_url: str = "http://127.0.0.1:8001"
     registry_url: str = "http://127.0.0.1:8003"
@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     # Allowed CORS origins — comma-separated list.
     # allow_origins=["*"] + allow_credentials=True is rejected by browsers;
     # always list explicit origins here.
-    cors_origins: str = "http://localhost:3000,https://app.metaorcha.ai"
+    cors_origins: str = "http://localhost:3000,https://app.orcha.ai"
 
     # Privy embedded-wallet credentials (dashboard.privy.io → Settings → API Keys)
     privy_app_id: str = ""

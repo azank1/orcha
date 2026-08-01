@@ -19,7 +19,7 @@ echo "[2/4] ExecutionObserver seam tests"
 PYTHONPATH=. uv run pytest services/superagent/tests/unit/test_observers.py -q
 
 echo "[3/4] Fleet manifest validation"
-DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/metaorcha}" \
+DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/orcha}" \
   PYTHONPATH=. uv run pytest services/registry/tests/test_fleet_manifests.py -q
 
 if [[ "${1:-}" == "--full" ]]; then

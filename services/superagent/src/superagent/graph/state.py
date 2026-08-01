@@ -122,6 +122,14 @@ class AgentState(dict):  # type: ignore[type-arg]
     lead_gen_options: Annotated[dict[str, Any], merge_agent_call_results]
     # Session-scoped memory for outbound campaigns (ICP, tone, last task id) — orchestrator prompt.
     email_campaign_context: Annotated[dict[str, Any], merge_agent_call_results]
+    # Per-session orchestrator model override (from the model picker); None = env default.
+    orchestrator_model_override: str | None
+    # Per-session operator instructions appended to the orchestrator system prompt.
+    custom_instructions: str | None
+    # Session-scoped credentials forwarded by the gateway (agent_id → var → value).
+    # Declared so LangGraph does not drop the key from state updates; read by
+    # middleware (auth cascade) and the orchestrator (BYOK `__llm__` entry).
+    _session_credentials: dict[str, dict[str, str]]
     # Ephemeral SSE queue from execute_agent_calls — drained in runner; cleared by orchestrator
     _pending_events: list[Any]
     # In-memory OAuth grant cache: scope_key → True. Persisted in LangGraph state so
@@ -147,6 +155,9 @@ def default_state(session_id: str, user_id: str) -> dict[str, Any]:
         "pnd_candidates": get_baseline_candidates(),
         "lead_gen_options": {},
         "email_campaign_context": {},
+        "orchestrator_model_override": None,
+        "custom_instructions": None,
+        "_session_credentials": {},
         "_pending_events": [],
         "_agent_oauth_grants": {},
         "_last_turn_tokens": 0,

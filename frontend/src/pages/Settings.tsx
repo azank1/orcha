@@ -478,10 +478,9 @@ export function Settings() {
                     aria-label="Default model"
                     className="w-full h-10 px-3 rounded-md bg-surface-elevated border border-surface-border text-label text-text-body focus:outline-none focus:border-brand-primary cursor-pointer"
                   >
-                    <option value="claude-sonnet">Claude Sonnet</option>
-                    <option value="claude-haiku">Claude Haiku</option>
-                    <option value="gpt-4o">GPT-4o</option>
-                    <option value="gpt-4o-mini">GPT-4o Mini</option>
+                    <option value="openai/gpt-oss-120b">GPT OSS 120B — hosted, default (Groq)</option>
+                    <option value="llama-3.3-70b-versatile">Llama 3.3 70B — hosted (Groq)</option>
+                    <option value="gemini-3-flash-preview">Gemini 3 Flash — hosted (Google)</option>
                   </select>
                 </FormField>
               </div>

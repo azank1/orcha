@@ -1,6 +1,6 @@
 # Registry Microservice
 
-The Registry microservice is the entry point for agent developers to register their AI agents into the Metaorcha ecosystem.
+The Registry microservice is the entry point for agent developers to register their AI agents into the Orcha ecosystem.
 
 ## Features
 
@@ -110,7 +110,7 @@ Once running, visit:
 All endpoints (except `/health`) require a PAT (Personal Access Token):
 
 ```http
-Authorization: Bearer metaorcha_pat_xxxxxxxxxxxxxxxx
+Authorization: Bearer orcha_pat_xxxxxxxxxxxxxxxx
 ```
 
 ## Configuration
@@ -119,7 +119,7 @@ Key environment variables:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/metaorcha
+DATABASE_URL=postgresql://user:password@localhost:5432/orcha
 
 # Server
 PORT=8000

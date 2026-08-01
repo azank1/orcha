@@ -6,7 +6,7 @@ Hero clip for README and Show HN. **Target:** &lt;5MB, &lt;30s wall clock in the
 
 **Status: the current `demo-hero.gif` is stale (recorded 2026-06-27) and
 must be re-recorded before launch.** It predates the fix that made the demo
-goal genuinely 3-protocol (see `docs/dev_docs/M0-VERIFICATION.md`) — the old
+goal genuinely 3-protocol — the old
 goal only exercised MCP twice + COMPUTER_USE, not MCP + A2A + COMPUTER_USE.
 Recording requires real screen-capture software against a live browser
 session; it cannot be automated by an agent.

@@ -32,7 +32,7 @@ def _lead_to_properties(lead: dict) -> dict:
         "website":        lead.get("company_domain", ""),
         "city":           lead.get("location", ""),
         "hs_lead_status": "NEW",
-        "lead_source":    "MetaOrcha Lead Gen Agent",
+        "lead_source":    "Orcha Lead Gen Agent",
         "icp_score":      str(lead.get("icp_score", "")),
         "linkedin_url":   lead.get("linkedin_url", ""),
     }

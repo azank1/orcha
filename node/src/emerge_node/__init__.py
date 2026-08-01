@@ -1,4 +1,4 @@
-"""emerge-node — DAN gossip sidecar (Phase D0 spike)."""
+"""emerge-node — experimental gossip sidecar for agent networks (spike)."""
 
 from .envelope import SignedManifestEnvelope, generate_keypair, sign_manifest, verify_envelope
 from .gossip import GossipHub, publish_envelope, subscribe_once

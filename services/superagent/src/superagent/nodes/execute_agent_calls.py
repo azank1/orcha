@@ -49,6 +49,9 @@ def _tool_transcript_meta(
     internal_tool_name: str = "",
     invocation_args: dict[str, Any] | None = None,
     base_fee: str = "0",
+    verified: bool | None = None,
+    verdict_reason: str = "",
+    total_cost_usd: str = "",
 ) -> dict[str, Any]:
     """Structured fields stored in SessionTranscriptEntry.tool_inputs for UI + hydration."""
     meta: dict[str, Any] = {
@@ -61,6 +64,12 @@ def _tool_transcript_meta(
         meta["invocation_args"] = invocation_args
     if base_fee and base_fee != "0":
         meta["base_fee"] = base_fee
+    if verified is not None:
+        meta["verified"] = verified
+    if verdict_reason:
+        meta["verdict_reason"] = verdict_reason
+    if total_cost_usd and total_cost_usd != "0":
+        meta["total_cost_usd"] = total_cost_usd
     return meta
 
 
@@ -489,13 +498,6 @@ async def execute_agent_calls_node(
             internal_tool_name=tool_name,
             pnd_candidates=pnd_candidates,
         )
-        transcript_meta = _tool_transcript_meta(
-            agent_id=agent_id,
-            capability_id=capability_id,
-            protocol=protocol,
-            internal_tool_name=tool_name,
-            invocation_args=args,
-        )
 
         # Bind checklist step to this call before dispatch
         _bind_step_to_call(state.get("task_checklist"), tool_name, call_id, agent_id)
@@ -529,7 +531,9 @@ async def execute_agent_calls_node(
         try:
             from ..config import settings as _sa_settings
 
-            _verify_max_retries = max(0, int(getattr(_sa_settings, "verify_max_retries", 2)))
+            _verify_max_retries = max(
+                0, int(getattr(_sa_settings, "verify_max_retries", 2))
+            )
             middleware = ExecutionMiddleware(state=state)
             result = await _execute_with_retry(
                 middleware,
@@ -544,6 +548,12 @@ async def execute_agent_calls_node(
                 max_retries=_verify_max_retries,
             )
             content = result.get("content", "")
+            _max_out = int(getattr(_sa_settings, "tool_output_max_chars", 0) or 0)
+            if _max_out > 0 and len(content) > _max_out:
+                content = (
+                    content[:_max_out]
+                    + f"\n… [truncated: {len(content) - _max_out} chars omitted]"
+                )
             _call_base_fee = result.get("base_fee", "0")
             _call_total_cost = result.get("total_cost_usd", _call_base_fee)
             _verified = result.get("verified", True)
@@ -753,8 +763,17 @@ async def execute_agent_calls_node(
             pending_events,
         )
 
-        if cost_payload:
-            transcript_meta = {**transcript_meta, **cost_payload}
+        transcript_meta = _tool_transcript_meta(
+            agent_id=agent_id,
+            capability_id=capability_id,
+            protocol=protocol,
+            internal_tool_name=tool_name,
+            invocation_args=args,
+            base_fee=_call_base_fee,
+            verified=_verified,
+            verdict_reason=_verdict_reason,
+            total_cost_usd=_call_total_cost,
+        )
 
         tool_messages.append(
             ToolMessage(

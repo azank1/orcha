@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     database_url: str
 
     # Security
-    pat_token_prefix: str = "metaorcha_pat_"  # noqa: S105
+    pat_token_prefix: str = "orcha_pat_"  # noqa: S105
     pat_token_length: int = 40
 
     # Adapter Settings
@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     max_health_failures: int = 3
 
     # Payment
-    payment_facilitator_url: str = "https://api.metaorcha.bot/verify"
+    payment_facilitator_url: str = "https://api.orcha.bot/verify"
 
     # MCP Protocol
     mcp_protocol_version: str = "2025-11-25"

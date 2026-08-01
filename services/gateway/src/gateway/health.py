@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import logging
+import time
+from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, Request
@@ -38,3 +40,37 @@ async def health(request: Request) -> dict[str, Any]:
 
     overall = "ok" if all(v == "ok" for v in services.values()) else "degraded"
     return {"status": overall, "services": services}
+
+
+# ── Public sandbox status (landing page proof chip) ───────────────────────────
+
+_STATUS_CACHE: dict[str, Any] = {"ts": 0.0, "payload": None}
+_STATUS_TTL_S = 60.0
+
+
+@router.get("/api/v1/sandbox/status")
+async def sandbox_status(request: Request) -> dict[str, Any]:
+    """Unauthenticated, cached (60s) proof-of-life for the public sandbox.
+
+    Landing pages poll this to show 'live · N runs today' — every number is
+    read from the database, never hardcoded.
+    """
+    now = time.monotonic()
+    if _STATUS_CACHE["payload"] and now - _STATUS_CACHE["ts"] < _STATUS_TTL_S:
+        return dict(_STATUS_CACHE["payload"])
+
+    db = request.app.state.db
+    today = datetime.now(UTC).replace(hour=0, minute=0, second=0, microsecond=0)
+    payload: dict[str, Any] = {"status": "live", "runs_today": 0, "agents_fleet": 0}
+    try:
+        payload["runs_today"] = await db.conversationsession.count(
+            where={"created_at": {"gte": today}}
+        )
+        payload["agents_fleet"] = await db.agent.count(where={"is_active": True})
+    except Exception:
+        logger.exception("sandbox_status: db query failed")
+        payload["status"] = "degraded"
+
+    _STATUS_CACHE["ts"] = now
+    _STATUS_CACHE["payload"] = payload
+    return payload

@@ -54,14 +54,18 @@ def is_within_bounds(
     if base_fee < floor:
         return (
             False,
-            f"base_fee ${base_fee} is below market floor ${floor} "
-            f"(10% of category median ${category_median})",
+            (
+                f"base_fee ${base_fee} is below market floor ${floor} "
+                f"(10% of category median ${category_median})"
+            ),
         )
     if base_fee > ceiling:
         return (
             False,
-            f"base_fee ${base_fee} exceeds market ceiling ${ceiling} "
-            f"(5× category median ${category_median})",
+            (
+                f"base_fee ${base_fee} exceeds market ceiling ${ceiling} "
+                f"(5× category median ${category_median})"
+            ),
         )
 
     return True, ""

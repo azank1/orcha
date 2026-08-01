@@ -130,6 +130,7 @@ def load_baseline_from_manifests(emerge_tools_dir: str) -> None:
         try:
             manifest = yaml.safe_load(yaml_path.read_text())
         except Exception:
+            logger.warning("Skipping unreadable manifest %s", yaml_path, exc_info=True)
             continue
 
         if (manifest.get("protocol") or {}).get("type", "").lower() != "mcp":

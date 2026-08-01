@@ -12,7 +12,7 @@ from .gossip import GossipHub
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(
         prog="emerge-node",
-        description="DAN gossip sidecar (TCP spike — libp2p in production)",
+        description="Experimental gossip sidecar (TCP spike)",
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=9100)

@@ -1,3 +1,7 @@
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
 @import '@fontsource/inter/400.css';
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
@@ -12,21 +16,21 @@
 
 :root {
   /* Brand */
-  --color-brand-primary: #3B6EF8;
-  --color-brand-primary-light: #6B93FA;
-  --color-brand-primary-dim: #0A1F3D;
-  --color-brand-primary-deep: #060F3A;
-  --color-brand-primary-hover: #2251D6;
-  --color-brand-secondary: #00C8E8;
-  --color-brand-secondary-dim: #002A30;
-  --color-brand-secondary-hover: #009BB8;
+  --color-brand-primary: #6366F1;
+  --color-brand-primary-light: #818CF8;
+  --color-brand-primary-dim: #1E1B3A;
+  --color-brand-primary-deep: #12102E;
+  --color-brand-primary-hover: #4F52C8;
+  --color-brand-secondary: #8B8B96;
+  --color-brand-secondary-dim: #16161D;
+  --color-brand-secondary-hover: #A1A1AA;
 
   /* Surface — zinc-neutral (cyber-technical theme) */
-  --color-surface-canvas: #09090B;
-  --color-surface-base: #121214;
-  --color-surface-elevated: #18181B;
-  --color-surface-overlay: #1F1F23;
-  --color-surface-border: #27272A;
+  --color-surface-canvas: #0B0B0E;
+  --color-surface-base: #101014;
+  --color-surface-elevated: #16161D;
+  --color-surface-overlay: #1E1E26;
+  --color-surface-border: #1E1E26;
   --color-surface-border-light: #3F3F46;
   --color-surface-muted: #52525B;
   --color-surface-subtle: #71717A;
@@ -38,8 +42,8 @@
   --color-warning-dim: #1C1400;
   --color-error: #EF4444;
   --color-error-dim: #2D0A0A;
-  --color-info: #3B82F6;
-  --color-info-dim: #0A1F3D;
+  --color-info: #6366F1;
+  --color-info-dim: #1E1B3A;
   --color-purple: #A78BFA;
   --color-purple-dim: #1A0A3D;
 
@@ -49,8 +53,8 @@
   --color-text-secondary: #9CA3AF;
   --color-text-disabled: #52525B;
   --color-text-inverse: #09090B;
-  --color-text-brand: #3B6EF8;
-  --color-text-accent: #00C8E8;
+  --color-text-brand: #6366F1;
+  --color-text-accent: #A5A8FF;
 
   /* Radius */
   --radius-xs: 4px;

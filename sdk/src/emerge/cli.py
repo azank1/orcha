@@ -5,7 +5,7 @@ Three commands only (resist scope creep — test/deploy/login are post-launch):
 - ``emerge init [name]``   scaffold a new agent from the bundled template
 - ``emerge run [module]``  serve decorated agents locally + register them
 - ``emerge publish [module]``  register decorated agents against a remote registry
-- ``emerge validate``  DAN validator spike (`--once` demo attestation)
+- ``emerge validate``  validator demo (``--once`` synthetic attestation)
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ _TEMPLATE_DIR = Path(__file__).parent / "templates" / "your-first-agent"
 
 
 def _dan_experimental_enabled() -> bool:
-    """True when ORCHA_DAN_EXPERIMENTAL=1 (pre-Day-30 DAN spike opt-in)."""
+    """True when ORCHA_DAN_EXPERIMENTAL=1 (experimental network opt-in)."""
     return os.getenv("ORCHA_DAN_EXPERIMENTAL", "").lower() in ("1", "true", "yes")
 
 
@@ -39,9 +39,8 @@ def _require_dan_experimental(feature: str) -> bool:
     if _dan_experimental_enabled():
         return True
     print(
-        f"emerge: {feature} requires DAN experimental mode.\n"
-        "  Set ORCHA_DAN_EXPERIMENTAL=1 or network.experimental: true in emerge.yaml "
-        "(Day-30 gate applies to public defaults).",
+        f"emerge: {feature} requires experimental network mode.\n"
+        "  Set ORCHA_DAN_EXPERIMENTAL=1 or network.experimental: true in emerge.yaml.",
         file=sys.stderr,
     )
     return False
@@ -175,7 +174,7 @@ def cmd_publish(args: argparse.Namespace) -> int:
 
 
 def _synthetic_attestation(*, validator_did: str) -> dict:
-    """Build a demo attestation for `emerge validate --once` (D1 spike)."""
+    """Build a demo attestation for `emerge validate --once`."""
     success = True
     content = "ok"
     score = 0.85 if success and content and not content.startswith("Error:") else 0.2
@@ -208,7 +207,7 @@ def cmd_validate(args: argparse.Namespace) -> int:
         return 1
     if args.kafka:
         print(
-            "emerge validate: Kafka consumer is not wired in the D1 spike.\n"
+            "emerge validate: Kafka consumer is not wired yet.\n"
             "  Use --once for a local demo, or run a validator process against "
             "execution.step_complete when KAFKA_ENABLED=true.",
             file=sys.stderr,
@@ -262,13 +261,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pp.add_argument(
         "--network",
-        help="DAN bootstrap peer for gossip publish (experimental; Phase 0)",
+        help="network bootstrap peer for publish (experimental)",
     )
     pp.set_defaults(func=cmd_publish)
 
     pv = sub.add_parser(
         "validate",
-        help="run a DAN observer node (Phase 1 experimental — --once demo)",
+        help="run a validator observer node (experimental — --once demo)",
     )
     pv.add_argument(
         "--validator-did",
@@ -276,7 +275,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     pv.add_argument(
         "--bootstrap",
-        help="network bootstrap peer (D0 — reserved for gossip sidecar)",
+        help="network bootstrap peer (reserved)",
     )
     pv.add_argument(
         "--kafka",

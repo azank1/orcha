@@ -1,4 +1,4 @@
-# Docker Compose for Metaorcha Local Development
+# Docker Compose for Orcha Local Development
 
 services:
   # ============================================================================
@@ -6,11 +6,11 @@ services:
   # ============================================================================
   postgres:
     image: pgvector/pgvector:pg15
-    container_name: metaorcha-postgres
+    container_name: orcha-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: metaorcha
+      POSTGRES_DB: orcha
       POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
     ports:
       - "5432:5432"
@@ -22,14 +22,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - metaorcha-network
+      - orcha-network
 
   # ============================================================================
   # Redis (SuperAgent checkpointing on DB 0, Gateway session/auth on DB 1)
   # ============================================================================
   redis:
     image: redis/redis-stack-server:latest
-    container_name: metaorcha-redis
+    container_name: orcha-redis
     ports:
       - "6379:6379"
     volumes:
@@ -40,14 +40,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - metaorcha-network
+      - orcha-network
 
   # ============================================================================
   # Kafka Broker (KRaft mode — no Zookeeper)
   # ============================================================================
-  metaorcha-kafka:
+  orcha-kafka:
     image: bitnamilegacy/kafka:4.0.0-debian-12-r10
-    container_name: metaorcha-kafka
+    container_name: orcha-kafka
     hostname: kafka
     environment:
       KAFKA_CFG_NODE_ID: 0
@@ -67,7 +67,7 @@ services:
     volumes:
       - kafka_data:/bitnami/kafka
     networks:
-      - metaorcha-network
+      - orcha-network
     healthcheck:
       test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server kafka:9092 --list"]
       interval: 15s
@@ -80,7 +80,7 @@ services:
   # ============================================================================
   localstack:
     image: localstack/localstack:3.8
-    container_name: metaorcha-localstack
+    container_name: orcha-localstack
     ports:
       - "4566:4566"
     environment:
@@ -96,7 +96,7 @@ services:
       retries: 5
       start_period: 20s
     networks:
-      - metaorcha-network
+      - orcha-network
 
   # ============================================================================
   # Registry Service (internal — auth disabled, behind Gateway)
@@ -105,7 +105,7 @@ services:
     build:
       context: .
       dockerfile: services/registry/Dockerfile
-    container_name: metaorcha-registry
+    container_name: orcha-registry
     environment:
       # Service
       SERVICE_NAME: registry-service
@@ -122,11 +122,11 @@ services:
       GRPC_PORT: 50051
 
       # Database
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/metaorcha?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
 
       # Security — disabled: Registry is internal, Gateway owns auth
       DISABLE_AUTH: "true"
-      PAT_TOKEN_PREFIX: metaorcha_pat_
+      PAT_TOKEN_PREFIX: orcha_pat_
       PAT_TOKEN_LENGTH: 40
 
       # Adapter Settings
@@ -139,7 +139,7 @@ services:
       MAX_HEALTH_FAILURES: 3
 
       # Payment
-      PAYMENT_FACILITATOR_URL: https://api.metaorcha.bot/verify
+      PAYMENT_FACILITATOR_URL: https://api.orcha.bot/verify
 
       # MCP Protocol
       MCP_PROTOCOL_VERSION: 2025-11-25
@@ -157,10 +157,10 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      metaorcha-kafka:
+      orcha-kafka:
         condition: service_healthy
     networks:
-      - metaorcha-network
+      - orcha-network
     volumes:
       - ./services/registry/src:/app/services/registry/src
       - ./common:/app/common
@@ -182,7 +182,7 @@ services:
     build:
       context: .
       dockerfile: services/planning-discovery/Dockerfile
-    container_name: metaorcha-planning-discovery
+    container_name: orcha-planning-discovery
     environment:
       # Service
       SERVICE_NAME: planning-discovery-service
@@ -194,7 +194,7 @@ services:
       PORT: 8001
 
       # Database
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/metaorcha?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
 
       # Kafka
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -220,10 +220,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      metaorcha-kafka:
+      orcha-kafka:
         condition: service_healthy
     networks:
-      - metaorcha-network
+      - orcha-network
     volumes:
       - ./services/planning-discovery/src:/app/services/planning-discovery/src
       - ./common:/app/common
@@ -242,12 +242,12 @@ services:
     build:
       context: .
       dockerfile: services/superagent/Dockerfile
-    container_name: metaorcha-superagent
+    container_name: orcha-superagent
     environment:
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       VAULT_KEY: ${VAULT_KEY:-}
       REDIS_URL: redis://redis:6379/0
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/metaorcha?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
       PND_SERVICE_URL: http://planning-discovery:8001
       REGISTRY_SERVICE_URL: http://registry:8000
       HOST: 0.0.0.0
@@ -274,7 +274,7 @@ services:
       localstack:
         condition: service_healthy
     networks:
-      - metaorcha-network
+      - orcha-network
     volumes:
       - ./services/superagent/src:/app/services/superagent/src
       - ./common:/app/common
@@ -286,9 +286,9 @@ services:
     build:
       context: .
       dockerfile: services/gateway/Dockerfile
-    container_name: metaorcha-gateway
+    container_name: orcha-gateway
     environment:
-      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/metaorcha?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
       REDIS_URL: redis://redis:6379/1
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
       JWT_ALGORITHM: HS256
@@ -320,7 +320,7 @@ services:
       registry:
         condition: service_started
     networks:
-      - metaorcha-network
+      - orcha-network
     volumes:
       - ./services/gateway/src:/app/services/gateway/src
       - ./common:/app/common
@@ -332,7 +332,7 @@ services:
     build:
       context: .
       dockerfile: agents/ecommerce-automation/Dockerfile
-    container_name: metaorcha-ecommerce-automation
+    container_name: orcha-ecommerce-automation
     environment:
       SHOPIFY_STORE_URL: ${SHOPIFY_STORE_URL:-}
       SHOPIFY_ACCESS_TOKEN: ${SHOPIFY_ACCESS_TOKEN:-}
@@ -344,7 +344,7 @@ services:
     ports:
       - "3009:3009"
     networks:
-      - metaorcha-network
+      - orcha-network
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:3009/health')"]
       interval: 10s
@@ -357,9 +357,9 @@ services:
   # ============================================================================
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: metaorcha-pgadmin
+    container_name: orcha-pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@metaorcha.local
+      PGADMIN_DEFAULT_EMAIL: admin@orcha.local
       PGADMIN_DEFAULT_PASSWORD: admin
       PGADMIN_CONFIG_SERVER_MODE: "False"
     ports:
@@ -367,7 +367,7 @@ services:
     depends_on:
       - postgres
     networks:
-      - metaorcha-network
+      - orcha-network
     profiles:
       - tools
 
@@ -376,7 +376,7 @@ services:
   # ============================================================================
   ollama:
     image: ollama/ollama:latest
-    container_name: metaorcha-ollama
+    container_name: orcha-ollama
     ports:
       - "11434:11434"
     volumes:
@@ -388,7 +388,7 @@ services:
       retries: 10
       start_period: 15s
     networks:
-      - metaorcha-network
+      - orcha-network
 
 volumes:
   postgres_data:
@@ -403,5 +403,5 @@ volumes:
     driver: local
 
 networks:
-  metaorcha-network:
+  orcha-network:
     driver: bridge

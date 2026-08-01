@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orcha — One goal. Many agents. Any protocol.</title>
+<meta name="description" content="Orcha is the open-source runtime for multi-protocol AI agent orchestration. One natural-language goal, planned and executed across MCP, A2A, and computer-use agents — rendered as a live dashboard, not a chat reply.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0b0b0e;
+    --bg-raise: #101014;
+    --line: #1e1e26;
+    --line-soft: #16161d;
+    --text: #e8e8ec;
+    --muted: #8b8b96;
+    --faint: #5a5a66;
+    --accent: #6366f1;
+    --accent-dim: #4f52c8;
+    --ok: #3ecf8e;
+    --warn: #e5c07b;
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --display: 'Space Grotesk', var(--sans);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    font-size:16px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{ background:var(--accent); color:#fff; }
+  a{ color:var(--text); text-decoration:none; }
+  a:hover{ color:var(--accent); }
+
+  .wrap{ max-width:1120px; margin:0 auto; padding:0 32px; }
+
+  /* ---------- top bar ---------- */
+  header{
+    position:sticky; top:0; z-index:50;
+    background:rgba(11,11,14,.85);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    height:60px;
+  }
+  .brand{
+    font-family:var(--display); font-weight:700; font-size:19px; letter-spacing:-.02em;
+    display:flex; align-items:center; gap:10px;
+  }
+  .brand .dot{ width:9px; height:9px; background:var(--accent); border-radius:2px; display:inline-block; }
+  nav{ display:flex; gap:28px; }
+  nav a{
+    font-family:var(--mono); font-size:12px; letter-spacing:.04em;
+    color:var(--muted); text-transform:uppercase;
+  }
+  nav a:hover{ color:var(--text); }
+  .gh-btn{
+    font-family:var(--mono); font-size:12.5px;
+    border:1px solid var(--line); padding:7px 14px; border-radius:6px;
+    display:flex; align-items:center; gap:8px; color:var(--text);
+    transition:border-color .15s;
+  }
+  .gh-btn:hover{ border-color:var(--accent); color:var(--text); }
+  @media(max-width:860px){ nav{ display:none; } }
+
+  /* ---------- hero ---------- */
+  .hero{
+    padding:96px 0 80px;
+    display:grid; grid-template-columns:1.05fr .95fr; gap:64px; align-items:center;
+  }
+  @media(max-width:960px){ .hero{ grid-template-columns:1fr; padding:64px 0; } }
+  .kicker{
+    font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:22px; display:flex; align-items:center; gap:10px;
+  }
+  .kicker::before{ content:''; width:24px; height:1px; background:var(--accent); }
+  h1{
+    font-family:var(--display); font-weight:700;
+    font-size:clamp(38px, 5vw, 58px);
+    line-height:1.06; letter-spacing:-.03em; margin-bottom:24px;
+  }
+  h1 .em{ color:var(--accent); }
+  .lede{
+    font-size:17px; color:var(--muted); max-width:520px; margin-bottom:36px;
+  }
+  .lede strong{ color:var(--text); font-weight:600; }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--mono); font-size:13.5px; font-weight:500;
+    padding:12px 22px; border-radius:7px; display:inline-flex; align-items:center; gap:9px;
+    transition:all .15s;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-primary:hover{ background:var(--accent-dim); color:#fff; }
+  .btn-ghost{ border:1px solid var(--line); color:var(--text); }
+  .btn-ghost:hover{ border-color:var(--faint); color:var(--text); }
+
+  /* terminal */
+  .term{
+    background:var(--bg-raise); border:1px solid var(--line); border-radius:10px;
+    overflow:hidden; font-family:var(--mono); font-size:13px;
+    box-shadow:0 24px 60px -24px rgba(0,0,0,.6);
+  }
+  .term-bar{
+    display:flex; align-items:center; gap:8px;
+    padding:11px 14px; border-bottom:1px solid var(--line-soft);
+    color:var(--faint); font-size:11.5px;
+  }
+  .term-bar .c{ width:10px; height:10px; border-radius:50%; background:var(--line); }
+  .term-bar .t{ margin-left:8px; letter-spacing:.03em; }
+  .term-body{ padding:18px 18px 22px; min-height:248px; line-height:1.75; }
+  .term-body .p{ color:var(--accent); }
+  .term-body .cm{ color:var(--faint); }
+  .term-body .ok{ color:var(--ok); }
+  .caret{
+    display:inline-block; width:8px; height:15px; background:var(--text);
+    vertical-align:-2px; animation:blink 1.05s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* proof strip */
+  .proof{
+    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+  }
+  .proof-row{
+    display:grid; grid-template-columns:repeat(4,1fr);
+  }
+  .proof-cell{
+    padding:26px 28px; border-left:1px solid var(--line);
+  }
+  .proof-cell:first-child{ border-left:none; padding-left:0; }
+  .proof-num{
+    font-family:var(--display); font-weight:700; font-size:28px; letter-spacing:-.02em;
+    display:block; margin-bottom:4px;
+  }
+  .proof-num .u{ color:var(--accent); }
+  .proof-label{ font-family:var(--mono); font-size:11.5px; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; }
+  @media(max-width:860px){
+    .proof-row{ grid-template-columns:1fr 1fr; }
+    .proof-cell{ border-left:none; padding-left:0; border-top:1px solid var(--line); }
+    .proof-cell:nth-child(-n+2){ border-top:none; }
+  }
+
+  /* sections */
+  section{ padding:88px 0; border-bottom:1px solid var(--line-soft); }
+  .sec-head{ display:flex; align-items:baseline; gap:20px; margin-bottom:14px; }
+  .sec-num{
+    font-family:var(--mono); font-size:13px; color:var(--accent); letter-spacing:.1em;
+  }
+  h2{
+    font-family:var(--display); font-weight:700; font-size:clamp(26px,3.4vw,36px);
+    letter-spacing:-.025em; line-height:1.15;
+  }
+  .sec-sub{ color:var(--muted); max-width:640px; margin-bottom:48px; font-size:16px; }
+  .sec-sub strong{ color:var(--text); font-weight:600; }
+
+  /* islands */
+  .islands{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .island{
+    padding:32px 28px; border-left:1px solid var(--line); background:var(--bg-raise);
+  }
+  .island:first-child{ border-left:none; }
+  .island .tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:.1em; color:var(--accent);
+    text-transform:uppercase; display:block; margin-bottom:14px;
+  }
+  .island h3{ font-family:var(--display); font-size:17px; font-weight:600; margin-bottom:10px; letter-spacing:-.01em; }
+  .island p{ font-size:14px; color:var(--muted); line-height:1.65; }
+  @media(max-width:860px){ .islands{ grid-template-columns:1fr; } .island{ border-left:none; border-top:1px solid var(--line); } .island:first-child{ border-top:none; } }
+  .islands-cap{
+    font-family:var(--mono); font-size:13px; color:var(--faint); margin-top:18px;
+  }
+  .islands-cap b{ color:var(--warn); font-weight:500; }
+
+  /* run timeline */
+  .run{ border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .run-goal{
+    padding:22px 28px; border-bottom:1px solid var(--line); background:var(--bg-raise);
+    font-size:15px;
+  }
+  .run-goal .lbl{ font-family:var(--mono); font-size:11px; color:var(--faint); text-transform:uppercase; letter-spacing:.12em; display:block; margin-bottom:6px; }
+  .run-goal em{ color:var(--accent); font-style:normal; }
+  .run-steps{ display:grid; grid-template-columns:repeat(3,1fr); }
+  .run-step{ padding:26px 28px; border-left:1px solid var(--line); position:relative; }
+  .run-step:first-child{ border-left:none; }
+  .run-step .proto{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; font-weight:600;
+    padding:3px 9px; border-radius:4px; display:inline-block; margin-bottom:14px;
+  }
+  .p-mcp{ background:rgba(99,102,241,.14); color:#a5a8ff; }
+  .p-a2a{ background:rgba(62,207,142,.12); color:#7fe0b6; }
+  .p-cu{ background:rgba(229,192,123,.12); color:#e8cd95; }
+  .run-step h4{ font-family:var(--display); font-size:15.5px; font-weight:600; margin-bottom:8px; }
+  .run-step p{ font-size:13.5px; color:var(--muted); line-height:1.6; }
+  .run-step .chk{
+    position:absolute; top:26px; right:24px;
+    font-family:var(--mono); font-size:11px; color:var(--ok);
+  }
+  .run-out{
+    padding:18px 28px; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:12.5px; color:var(--muted);
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+  }
+  .run-out .arrow{ color:var(--accent); }
+  .run-out b{ color:var(--text); font-weight:500; }
+  @media(max-width:860px){ .run-steps{ grid-template-columns:1fr; } .run-step{ border-left:none; border-top:1px solid var(--line); } .run-step:first-child{ border-top:none; } }
+
+  /* compare */
+  .compare{ display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:stretch; }
+  @media(max-width:860px){ .compare{ grid-template-columns:1fr; } }
+  .cmp{ border:1px solid var(--line); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+  .cmp-head{
+    padding:14px 20px; border-bottom:1px solid var(--line);
+    font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase;
+  }
+  .cmp-old .cmp-head{ color:var(--faint); }
+  .cmp-new .cmp-head{ color:var(--accent); }
+  .cmp-body{ padding:22px 20px; font-size:14px; color:var(--muted); flex:1; }
+  .cmp-old .cmp-body{ font-style:italic; color:var(--faint); }
+  .dash{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .dash .mc{
+    border:1px solid var(--line); border-radius:7px; padding:14px 16px; background:var(--bg-raise);
+  }
+  .dash .mc .l{ font-family:var(--mono); font-size:10.5px; color:var(--faint); text-transform:uppercase; letter-spacing:.08em; display:block; margin-bottom:5px; }
+  .dash .mc .v{ font-family:var(--display); font-weight:700; font-size:20px; letter-spacing:-.01em; }
+  .dash .mc .v .up{ color:var(--ok); font-size:13px; font-family:var(--mono); font-weight:500; }
+  .dash .bar-row{ display:flex; align-items:flex-end; gap:5px; height:44px; margin-top:6px; }
+  .dash .bar{ flex:1; background:var(--accent); opacity:.85; border-radius:2px 2px 0 0; }
+  .cmp-foot{
+    padding:12px 20px; border-top:1px solid var(--line);
+    font-family:var(--mono); font-size:11.5px; color:var(--faint);
+  }
+  .cmp-new .cmp-foot{ color:var(--ok); }
+
+  /* code blocks */
+  .code{
+    background:var(--bg-raise); border:1px solid var(--line); border-radius:10px;
+    font-family:var(--mono); font-size:13px; overflow:hidden;
+  }
+  .code-head{
+    padding:10px 16px; border-bottom:1px solid var(--line-soft);
+    color:var(--faint); font-size:11.5px; letter-spacing:.04em;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .code pre{ padding:18px 20px; overflow-x:auto; line-height:1.7; }
+  .code .k{ color:var(--accent); }       /* keyword/decorator */
+  .code .s{ color:#a5d6a7; }             /* string */
+  .code .c{ color:var(--faint); }        /* comment */
+  .code .f{ color:#e8cd95; }             /* function */
+  .code .n{ color:#7fb5d5; }             /* yaml keys */
+  .split{ display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; }
+  @media(max-width:960px){ .split{ grid-template-columns:1fr; gap:36px; } }
+  .split .sticky-note h3{
+    font-family:var(--display); font-size:20px; font-weight:600; letter-spacing:-.015em;
+    margin-bottom:14px; margin-top:34px;
+  }
+  .split .sticky-note h3:first-child{ margin-top:0; }
+  .split .sticky-note p{ color:var(--muted); font-size:15px; margin-bottom:12px; }
+  .split .sticky-note p strong{ color:var(--text); font-weight:600; }
+  .cli-list{ list-style:none; margin-top:8px; }
+  .cli-list li{
+    font-family:var(--mono); font-size:13px; padding:9px 0; border-bottom:1px solid var(--line-soft);
+    color:var(--text); display:flex; gap:14px; align-items:baseline;
+  }
+  .cli-list li span{ color:var(--faint); font-size:12px; }
+
+  /* scope block */
+  .scope-quote{
+    border-left:2px solid var(--accent); padding:6px 0 6px 22px; margin:34px 0;
+    font-family:var(--display); font-size:19px; font-weight:500; letter-spacing:-.01em;
+    line-height:1.5; max-width:560px;
+  }
+  .scope-quote span{ color:var(--muted); }
+
+  /* arch */
+  .arch-svg{ width:100%; height:auto; display:block; margin-bottom:40px; }
+  .svc{ display:grid; grid-template-columns:repeat(5,1fr); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .svc-cell{ padding:22px 20px; border-left:1px solid var(--line); background:var(--bg-raise); }
+  .svc-cell:first-child{ border-left:none; }
+  .svc-cell .port{ font-family:var(--mono); font-size:11px; color:var(--accent); display:block; margin-bottom:8px; }
+  .svc-cell h4{ font-family:var(--display); font-size:15px; font-weight:600; margin-bottom:6px; }
+  .svc-cell p{ font-size:12.5px; color:var(--muted); line-height:1.55; }
+  @media(max-width:960px){ .svc{ grid-template-columns:1fr 1fr; } .svc-cell{ border-top:1px solid var(--line); } .svc-cell:nth-child(-n+2){ border-top:none; } .svc-cell:nth-child(odd){ border-left:none; } }
+  @media(max-width:560px){ .svc{ grid-template-columns:1fr; } .svc-cell{ border-left:none; } .svc-cell:nth-child(2){ border-top:1px solid var(--line); } }
+
+  /* honesty / roadmap */
+  .phases{ border-top:1px solid var(--line); }
+  .phase{
+    display:grid; grid-template-columns:170px 1fr auto; gap:32px; align-items:baseline;
+    padding:26px 0; border-bottom:1px solid var(--line);
+  }
+  .phase .ver{ font-family:var(--mono); font-size:13px; color:var(--text); font-weight:600; }
+  .phase .ver .st{ display:block; font-size:11px; font-weight:400; margin-top:4px; letter-spacing:.06em; text-transform:uppercase; }
+  .st-now{ color:var(--ok); } .st-next{ color:var(--warn); } .st-aim{ color:var(--faint); }
+  .phase .desc{ color:var(--muted); font-size:14.5px; }
+  .phase .desc b{ color:var(--text); font-weight:600; display:block; font-size:15.5px; margin-bottom:4px; font-family:var(--display); }
+  .phase .gate{ font-family:var(--mono); font-size:11.5px; color:var(--faint); text-align:right; max-width:230px; }
+  @media(max-width:860px){ .phase{ grid-template-columns:1fr; gap:10px; } .phase .gate{ text-align:left; max-width:none; } }
+  .nongoals{
+    margin-top:44px; border:1px solid var(--line); border-radius:10px; padding:26px 28px;
+    background:var(--bg-raise);
+  }
+  .nongoals h3{
+    font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--warn); margin-bottom:16px; font-weight:500;
+  }
+  .nongoals ul{ list-style:none; }
+  .nongoals li{
+    font-size:14px; color:var(--muted); padding:8px 0 8px 26px; position:relative;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nongoals li:last-child{ border-bottom:none; }
+  .nongoals li::before{
+    content:'—'; position:absolute; left:0; color:var(--faint); font-family:var(--mono);
+  }
+
+  /* contribute */
+  .contrib{ display:grid; grid-template-columns:repeat(3,1fr); gap:0; border:1px solid var(--line); border-radius:10px; overflow:hidden; margin-bottom:36px; }
+  .contrib-cell{ padding:30px 28px; border-left:1px solid var(--line); background:var(--bg-raise); }
+  .contrib-cell:first-child{ border-left:none; }
+  .contrib-cell .lev{ font-family:var(--mono); font-size:10.5px; color:var(--ok); letter-spacing:.1em; text-transform:uppercase; display:block; margin-bottom:14px; }
+  .contrib-cell h4{ font-family:var(--display); font-size:16.5px; font-weight:600; margin-bottom:9px; }
+  .contrib-cell p{ font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:14px; }
+  .contrib-cell code{ font-family:var(--mono); font-size:12px; color:var(--accent); background:rgba(99,102,241,.1); padding:2px 7px; border-radius:4px; }
+  @media(max-width:860px){ .contrib{ grid-template-columns:1fr; } .contrib-cell{ border-left:none; border-top:1px solid var(--line); } .contrib-cell:first-child{ border-top:none; } }
+
+  /* footer */
+  footer{ padding:56px 0 48px; }
+  .foot{ display:flex; justify-content:space-between; align-items:flex-start; gap:32px; flex-wrap:wrap; }
+  .foot .l{ font-family:var(--mono); font-size:12px; color:var(--faint); line-height:2; }
+  .foot .l b{ color:var(--muted); font-weight:500; }
+  .foot .r{ display:flex; gap:24px; font-family:var(--mono); font-size:12.5px; }
+  .foot .r a{ color:var(--muted); }
+  .foot .r a:hover{ color:var(--accent); }
+
+  /* DAG svg colors */
+  .svg-node{ fill:var(--bg-raise); stroke:var(--line); }
+  .svg-node-hi{ stroke:var(--accent); }
+  .svg-edge{ stroke:var(--faint); stroke-width:1.2; fill:none; }
+  .svg-edge-hi{ stroke:var(--accent); }
+  .svg-txt{ fill:var(--text); font-family:var(--mono); font-size:11px; }
+  .svg-sub{ fill:var(--faint); font-family:var(--mono); font-size:9.5px; }
+
+  /* scroll reveal — subtle, off when reduced motion is preferred */
+  .reveal{ opacity:0; transform:translateY(14px); transition:opacity .5s ease, transform .5s ease; }
+  .reveal.in{ opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .reveal{ opacity:1; transform:none; transition:none; }
+    .caret{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap topbar">
+    <a class="brand" href="#"><span class="dot"></span>Orcha</a>
+    <nav>
+      <a href="#runtime">Runtime</a>
+      <a href="#canvaskit">CanvasKit</a>
+      <a href="#sdk">SDK</a>
+      <a href="#arch">Architecture</a>
+      <a href="#roadmap">Roadmap</a>
+    </nav>
+    <a class="gh-btn" href="https://github.com/azank1/orcha" target="_blank" rel="noopener">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg>
+      azank1/orcha
+    </a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="kicker">Open-source runtime · Apache 2.0</div>
+      <h1>One goal.<br>Many agents.<br><span class="em">Any protocol.</span></h1>
+      <p class="lede">Orcha decomposes a natural-language goal into a DAG of agent calls across <strong>MCP, A2A, and computer-use</strong> — executes it with verification and human-in-the-loop gates — and renders a <strong>live CanvasKit dashboard</strong>, not a chat reply.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://sandbox.orcha.ai" target="_blank" rel="noopener">Try the live sandbox</a>
+        <a class="btn btn-ghost" href="https://github.com/azank1/orcha" target="_blank" rel="noopener">GitHub</a>
+      </div>
+      <p style="margin-top:16px;font-size:13.5px;"><a href="https://github.com/azank1/orcha#quickstart" target="_blank" rel="noopener" style="color:var(--muted);">5-minute quickstart →</a></p>
+    </div>
+    <div class="term">
+      <div class="term-bar"><span class="c"></span><span class="c"></span><span class="c"></span><span class="t">~/agents — zsh</span></div>
+      <div class="term-body" id="term"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PROOF -->
+<div class="proof">
+  <div class="wrap proof-row">
+    <div class="proof-cell"><span class="proof-num">3<span class="u">×</span></span><span class="proof-label">Protocols in a single run</span></div>
+    <div class="proof-cell"><span class="proof-num">5/5</span><span class="proof-label">Verified e2e demo runs</span></div>
+    <div class="proof-cell"><span class="proof-num">13<span class="u">s</span></span><span class="proof-label">Best wall clock, 3-protocol goal</span></div>
+    <div class="proof-cell"><span class="proof-num">4<span class="u"> lines</span></span><span class="proof-label">To register a new agent</span></div>
+  </div>
+</div>
+
+<!-- 01 PROBLEM -->
+<section id="problem">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Agents are islands.</h2></div>
+    <p class="sec-sub">MCP servers live here. A2A agents live there. Legacy systems with no API get driven by computer-use. Every serious agent stack now speaks <strong>several protocols at once</strong> — and the glue code between them is where projects drown.</p>
+    <div class="islands">
+      <div class="island">
+        <span class="tag">Protocol · Anthropic</span>
+        <h3>MCP</h3>
+        <p>Tool and resource servers with real ecosystem adoption. Every host wires them in differently; none of them compose with anything else on their own.</p>
+      </div>
+      <div class="island">
+        <span class="tag">Protocol · Google</span>
+        <h3>A2A</h3>
+        <p>Agent-to-agent messaging between independently running services. Great for one hop — silent on how a dozen agents get planned into one goal.</p>
+      </div>
+      <div class="island">
+        <span class="tag">Fallback · No API</span>
+        <h3>Computer-use</h3>
+        <p>The long tail of software that will never expose an API. Drive it with screenshots and input events — if your harness can route there at all.</p>
+      </div>
+    </div>
+    <p class="islands-cap">// <b>not a model problem</b> — an orchestration, observability, and distribution problem</p>
+  </div>
+</section>
+
+<!-- 02 RUN -->
+<section id="runtime">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">02</span><h2>One goal in, one verified run out.</h2></div>
+    <p class="sec-sub">The planner decomposes your goal, discovery matches each step to a registered agent, and the SuperAgent dispatches every call through its protocol handler — with credential vault, auth cascade, and per-call payments in mock mode by default. Every step is verified, and you can <strong>download the run audit</strong> — per-step verdicts, protocols, timings — for any run.</p>
+    <div class="run">
+      <div class="run-goal">
+        <span class="lbl">Goal</span>
+        "Show me my portfolio performance, <em>use your web scraper agent</em> to summarize en.wikipedia.org/wiki/Nvidia, and <em>screenshot the dashboard</em>"
+      </div>
+      <div class="run-steps">
+        <div class="run-step">
+          <span class="proto p-mcp">MCP</span><span class="chk">✓ verified</span>
+          <h4>finance-dashboard-agent</h4>
+          <p>Portfolio metrics over MCP. Returns a CanvasKit manifest — metric cards and charts, not prose.</p>
+        </div>
+        <div class="run-step">
+          <span class="proto p-a2a">A2A</span><span class="chk">✓ verified</span>
+          <h4>web-scraper agent</h4>
+          <p>An independent A2A service summarizes the page. Discovered by vector search over the registry.</p>
+        </div>
+        <div class="run-step">
+          <span class="proto p-cu">COMPUTER_USE</span><span class="chk">✓ verified</span>
+          <h4>desktop screenshot</h4>
+          <p>No API? No problem. The computer-use handler drives the screen and captures the result.</p>
+        </div>
+      </div>
+      <div class="run-out">
+        <span>output</span><span class="arrow">→</span>
+        <span>normalized · verified · settled (mock)</span><span class="arrow">→</span>
+        <b>CanvasKit dashboard rendered live over SSE</b>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 CANVASKIT -->
+<section id="canvaskit">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">03</span><h2>Dashboards, not chat bubbles.</h2></div>
+    <p class="sec-sub">A chat reply evaporates the moment you scroll. Orcha agents return a declarative <strong>CanvasKit manifest</strong> that the runtime renders as metric cards, charts, tables, and alerts — output that persists, and output you can verify.</p>
+    <div class="compare">
+      <div class="cmp cmp-old">
+        <div class="cmp-head">Before · chat reply</div>
+        <div class="cmp-body">"Your portfolio is worth approximately $142,300 across 8 positions. NVDA is your largest holding at around 22%. Tech did well this week. Let me know if you'd like a chart!"</div>
+        <div class="cmp-foot">scrolls away · unverifiable · gone</div>
+      </div>
+      <div class="cmp cmp-new">
+        <div class="cmp-head">Orcha · canvaskit manifest</div>
+        <div class="cmp-body">
+          <div class="dash">
+            <div class="mc"><span class="l">Total value</span><span class="v">$142,300 <span class="up">▲</span></span></div>
+            <div class="mc"><span class="l">Positions</span><span class="v">8</span></div>
+            <div class="mc"><span class="l">NVDA weight</span><span class="v">22.4%</span></div>
+            <div class="mc">
+              <span class="l">7-day pnl</span>
+              <div class="bar-row">
+                <div class="bar" style="height:35%"></div><div class="bar" style="height:55%"></div><div class="bar" style="height:45%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:62%"></div><div class="bar" style="height:88%"></div><div class="bar" style="height:100%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="cmp-foot">✓ structured · persisted · verifiable</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 SDK -->
+<section id="sdk">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">04</span><h2>Register an agent in four lines.</h2></div>
+    <p class="sec-sub">The <strong>emerge SDK</strong> wraps any Python function into a discoverable, composable agent. No clone, no rewrite, no bespoke integration.</p>
+    <div class="split">
+      <div>
+        <div class="code">
+          <div class="code-head"><span>my_agent.py</span><span>python</span></div>
+<pre><span class="k">import</span> emerge
+
+<span class="k">@emerge.agent</span>(name=<span class="s">"My Agent"</span>, description=<span class="s">"What I do"</span>)
+<span class="k">def</span> <span class="f">handle</span>(task: <span class="n">str</span>) -> <span class="n">str</span>:
+    <span class="k">return</span> <span class="s">f"handled: {task}"</span></pre>
+        </div>
+        <ul class="cli-list">
+          <li>uvx emerge init my-agent <span># scaffold, zero clone</span></li>
+          <li>uvx emerge run <span># serve + register with the runtime</span></li>
+          <li>emerge publish <span># push a versioned emerge.yaml manifest</span></li>
+        </ul>
+      </div>
+      <div class="sticky-note">
+        <h3>A manifest spec, not a vibe.</h3>
+        <p><strong>emerge.yaml</strong> is versioned, JSON-Schema validated, and RFC-governed. Once external agents exist, breaking the spec breaks everyone — so additive changes ship freely and breaking changes go through RFC.</p>
+        <h3>Allowed, not just capable.</h3>
+        <p>With <strong>authorized_scope</strong> (emerge/1.1, RFC 0001), agents declare what they're <em>allowed</em> to do — not just what they can do. Identity plus declared scope, verifiable at orchestration time.</p>
+        <div class="scope-quote">did:orcha:agent:* — <span>a fixed DID namespace, versioned identity, scope as a first-class contract.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 ARCH -->
+<section id="arch">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">05</span><h2>Neutral ground between agents.</h2></div>
+    <p class="sec-sub">Orcha is a <strong>harness</strong>, not an agent: plan → route → dispatch → verify → normalize → render. Agents stay external and independent. Runs fully local with <strong>PAYMENT_MODE=mock</strong> — no closed-service dependency.</p>
+
+    <svg class="arch-svg" viewBox="0 0 1000 300" id="dag" aria-label="Orcha architecture diagram">
+      <!-- edges -->
+      <path class="svg-edge" id="e1" d="M 128 150 L 232 150"/>
+      <path class="svg-edge" id="e2" d="M 352 150 L 456 150"/>
+      <path class="svg-edge" id="e3" d="M 576 150 L 680 150"/>
+      <path class="svg-edge" id="e4" d="M 790 130 L 850 62"/>
+      <path class="svg-edge" id="e5" d="M 790 150 L 850 150"/>
+      <path class="svg-edge" id="e6" d="M 790 170 L 850 238"/>
+      <!-- nodes -->
+      <g class="node" data-edges="e1">
+        <rect class="svg-node" x="18" y="122" width="110" height="56" rx="8"/>
+        <text class="svg-txt" x="73" y="146" text-anchor="middle">Goal</text>
+        <text class="svg-sub" x="73" y="163" text-anchor="middle">natural language</text>
+      </g>
+      <g class="node" data-edges="e1 e2">
+        <rect class="svg-node" x="232" y="122" width="120" height="56" rx="8"/>
+        <text class="svg-txt" x="292" y="146" text-anchor="middle">Registry</text>
+        <text class="svg-sub" x="292" y="163" text-anchor="middle">:8000 · manifests</text>
+      </g>
+      <g class="node" data-edges="e2 e3">
+        <rect class="svg-node" x="456" y="122" width="120" height="56" rx="8"/>
+        <text class="svg-txt" x="516" y="146" text-anchor="middle">Plan + Discover</text>
+        <text class="svg-sub" x="516" y="163" text-anchor="middle">:8001 · vector + LLM</text>
+      </g>
+      <g class="node" data-edges="e3 e4 e5 e6">
+        <rect class="svg-node svg-node-hi" x="680" y="122" width="110" height="56" rx="8"/>
+        <text class="svg-txt" x="735" y="146" text-anchor="middle">SuperAgent</text>
+        <text class="svg-sub" x="735" y="163" text-anchor="middle">:8002 · LangGraph</text>
+      </g>
+      <g class="node" data-edges="e4">
+        <rect class="svg-node" x="850" y="34" width="132" height="56" rx="8"/>
+        <text class="svg-txt" x="916" y="58" text-anchor="middle">MCP handler</text>
+        <text class="svg-sub" x="916" y="75" text-anchor="middle">tools + resources</text>
+      </g>
+      <g class="node" data-edges="e5">
+        <rect class="svg-node" x="850" y="122" width="132" height="56" rx="8"/>
+        <text class="svg-txt" x="916" y="146" text-anchor="middle">A2A handler</text>
+        <text class="svg-sub" x="916" y="163" text-anchor="middle">+ ACP alias route</text>
+      </g>
+      <g class="node" data-edges="e6">
+        <rect class="svg-node" x="850" y="210" width="132" height="56" rx="8"/>
+        <text class="svg-txt" x="916" y="234" text-anchor="middle">Computer-use</text>
+        <text class="svg-sub" x="916" y="251" text-anchor="middle">screens + input</text>
+      </g>
+    </svg>
+
+    <div class="svc">
+      <div class="svc-cell"><span class="port">:8000</span><h4>Registry</h4><p>Agent registration, manifests, REST + gRPC. Internal by design — the Gateway owns auth.</p></div>
+      <div class="svc-cell"><span class="port">:8001</span><h4>Planning &amp; Discovery</h4><p>Vector search over registered agents plus an LLM planner that emits a 5-stage DAG.</p></div>
+      <div class="svc-cell"><span class="port">:8002</span><h4>SuperAgent</h4><p>LangGraph orchestration engine. Protocol dispatch, verification, retry — and the ExecutionObserver seam.</p></div>
+      <div class="svc-cell"><span class="port">:8080</span><h4>Gateway</h4><p>Public ingress. JWT auth, SSE run streaming, session management, mock payments.</p></div>
+      <div class="svc-cell"><span class="port">:3000</span><h4>Frontend</h4><p>React UI with the CanvasKit renderer — where runs become dashboards live.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 ROADMAP -->
+<section id="roadmap">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">06</span><h2>Shipped, next, and honestly not yet.</h2></div>
+    <p class="sec-sub">Every phase is gated on the previous one being <strong>validated by real adoption</strong> — not on dates. The network layer is an aim, earned phase by phase.</p>
+    <div class="phases">
+      <div class="phase">
+        <div class="ver">v1 · runtime<span class="st st-now">● shipping</span></div>
+        <div class="desc"><b>Multi-protocol orchestration, today</b>Registry, planner, SuperAgent, Gateway. MCP + A2A + computer-use in one run. Credential vault, human-in-the-loop interrupts, mock payments. 7 example agents, emerge SDK, versioned emerge.yaml.</div>
+        <div class="gate">fully local · PAYMENT_MODE=mock</div>
+      </div>
+      <div class="phase">
+        <div class="ver">v1.2 · harness<span class="st st-next">◐ next</span></div>
+        <div class="desc"><b>Production-grade reliability</b>DAG executor for parallel and dependent steps, output verification and semantic judging, retry and fallback policies, context management for long-running tasks.</div>
+        <div class="gate">gated on v1 validation</div>
+      </div>
+      <div class="phase">
+        <div class="ver">network layer<span class="st st-aim">○ aim</span></div>
+        <div class="desc"><b>Peer discovery, fulfillment, reputation</b>Agents discover each other beyond a single registry; fulfillment is recorded through the ExecutionObserver seam. Experimental spikes ship in the open: the gossip sidecar (node/) and the validator's FulfillmentRecorder.</div>
+        <div class="gate">gate: ≥1 external agent registered in the wild</div>
+      </div>
+    </div>
+    <div class="nongoals">
+      <h3>Explicit non-goals, so the vision isn't mistaken for a shipping claim</h3>
+      <ul>
+        <li>No default-on token, staking, or on-chain settlement in the current product.</li>
+        <li>No ML ranking presented as a launch capability — discovery today is vector + gate logic.</li>
+        <li>No claim that a production decentralized network exists today. It does not. Seams do — and they ship labeled as experimental.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- 07 CONTRIBUTE -->
+<section id="contribute" style="border-bottom:none;">
+  <div class="wrap">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Grow at the edges, freeze the core.</h2></div>
+    <p class="sec-sub">The community moves the edges — bridges, agents, CanvasKit components — with no prior discussion needed. The core engine and the emerge.yaml spec change only through issue and RFC.</p>
+    <div class="contrib">
+      <div class="contrib-cell">
+        <span class="lev">Highest leverage</span>
+        <h4>Write a bridge</h4>
+        <p>One protocol handler unlocks an entire ecosystem of agents Orcha couldn't orchestrate yesterday — n8n, LangGraph, OpenAPI, whatever speaks next.</p>
+        <code>templates/your-first-bridge/</code>
+      </div>
+      <div class="contrib-cell">
+        <span class="lev">Grow the fleet</span>
+        <h4>Ship an agent</h4>
+        <p>Every new agent proves the runtime and hits edge cases nobody has seen. Each one becomes a test the project needs.</p>
+        <code>templates/your-first-agent/</code>
+      </div>
+      <div class="contrib-cell">
+        <span class="lev">New output types</span>
+        <h4>Build a CanvasKit component</h4>
+        <p>New dashboard primitives for agent output — so the next run renders something a chat bubble never could.</p>
+        <code>frontend/src/components/canvas/</code>
+      </div>
+    </div>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/azank1/orcha/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">Read CONTRIBUTING.md</a>
+      <a class="btn btn-ghost" href="https://github.com/azank1/orcha/issues/new?labels=rfc" target="_blank" rel="noopener">Open an RFC</a>
+      <a class="btn btn-ghost" href="https://discord.gg/orcha" target="_blank" rel="noopener">Join the Discord</a>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap foot">
+    <div class="l">
+      <b>Orcha</b> — the open-source runtime for multi-protocol AI agent orchestration.<br>
+      Apache 2.0 · engineered, then released · no token, no promises, just seams.
+    </div>
+    <div class="r">
+      <a href="https://github.com/azank1/orcha" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/azank1/orcha/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a>
+      <a href="https://github.com/azank1/orcha/security" target="_blank" rel="noopener">Security</a>
+      <a href="https://discord.gg/orcha" target="_blank" rel="noopener">Discord</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ---- terminal typing ----
+const lines = [
+  { t: '$ uvx emerge init my-agent', d: 900 },
+  { t: '  ✓ scaffolded my-agent/  (emerge.yaml, server.py)', cls: 'ok', d: 700 },
+  { t: '$ cd my-agent && uvx emerge run', d: 900 },
+  { t: '  ✓ serving on :3010', cls: 'ok', d: 500 },
+  { t: '  ✓ registered → did:orcha:agent:my-agent', cls: 'ok', d: 800 },
+  { t: '$ ./scripts/poc-e2e.sh', d: 1000 },
+  { t: '  ⠿ register → goal → 3 protocols · verify · retry · settle', cls: 'cm', d: 900 },
+  { t: '  ✓ POC: PROVEN', cls: 'ok', d: 0 },
+];
+const term = document.getElementById('term');
+let li = 0, ci = 0, cur;
+function newLine(){
+  cur = document.createElement('div');
+  if (lines[li].cls) cur.className = lines[li].cls;
+  term.appendChild(cur);
+}
+function type(){
+  if (li >= lines.length){
+    const c = document.createElement('div');
+    c.innerHTML = '<span class="p">$</span> <span class="caret"></span>';
+    term.appendChild(c);
+    return;
+  }
+  if (ci === 0) newLine();
+  const line = lines[li];
+  cur.textContent = line.t.slice(0, ++ci);
+  if (ci >= line.t.length){
+    li++; ci = 0;
+    setTimeout(type, line.d || 350);
+  } else {
+    setTimeout(type, 14 + Math.random() * 26);
+  }
+}
+type();
+
+// ---- scroll reveal ----
+if (!matchMedia('(prefers-reduced-motion: reduce)').matches && 'IntersectionObserver' in window) {
+  document.querySelectorAll('section .wrap, .proof-row, .hero').forEach(el => el.classList.add('reveal'));
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+}
+
+document.querySelectorAll('#dag .node').forEach(g => {
+  g.style.cursor = 'default';
+  g.addEventListener('mouseenter', () => {
+    (g.dataset.edges || '').split(' ').forEach(id => {
+      const e = document.getElementById(id);
+      if (e) e.classList.add('svg-edge-hi');
+    });
+    g.querySelector('rect').classList.add('svg-node-hi');
+  });
+  g.addEventListener('mouseleave', () => {
+    (g.dataset.edges || '').split(' ').forEach(id => {
+      const e = document.getElementById(id);
+      if (e) e.classList.remove('svg-edge-hi');
+    });
+    const r = g.querySelector('rect');
+    if (g.textContent.indexOf('SuperAgent') === -1) r.classList.remove('svg-node-hi');
+  });
+});
+</script>
+
+</body>
+</html>

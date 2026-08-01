@@ -3,6 +3,8 @@
 Ships with a zero-dependency mock backend by default. External backends (e.g.
 GodHands or any screenshot/action provider) plug in behind the ComputerUseBackend
 ABC — set COMPUTER_USE_BACKEND to the fully-qualified class path to swap them in.
+The built-in real backend is selected with COMPUTER_USE_BACKEND=playwright
+(see computer_use_playwright.py — headless Chromium + screenshot artifacts).
 
 See docs/bridges.md for the contributor guide on building a production backend.
 """
@@ -91,9 +93,22 @@ def _load_backend() -> ComputerUseBackend:
 
     Set COMPUTER_USE_BACKEND to a fully-qualified class path to swap backends:
         COMPUTER_USE_BACKEND=mypackage.backends.GodHandsBackend
+    The shorthand "playwright" selects the built-in PlaywrightBackend.
     """
     backend_path = os.getenv("COMPUTER_USE_BACKEND", "").strip()
-    if backend_path:
+    if backend_path == "playwright":
+        try:
+            from .computer_use_playwright import PlaywrightBackend
+
+            logger.info("ComputerUseHandler: loaded PlaywrightBackend")
+            return PlaywrightBackend()
+        except Exception:
+            logger.warning(
+                "ComputerUseHandler: failed to load playwright backend — "
+                "falling back to mock",
+                exc_info=True,
+            )
+    elif backend_path:
         try:
             module_path, cls_name = backend_path.rsplit(".", 1)
             import importlib
@@ -142,10 +157,18 @@ class ComputerUseHandler(AgentHandler):
         transport: dict[str, Any],
         config: RunnableConfig | None = None,
         call_id: str = "",
+        state: dict[str, Any] | None = None,
     ) -> str:
         action = str(args.get("action", "screenshot"))
         target = args.get("target")
         extra = {k: v for k, v in args.items() if k not in ("action", "target")}
+        # Run context for backends that persist artifacts / emit stream events
+        # (e.g. PlaywrightBackend screenshot flipbook). Underscore-prefixed so
+        # backends can tell framework context apart from invocation args.
+        if state:
+            extra.setdefault("_session_id", state.get("session_id", ""))
+            extra.setdefault("_user_id", state.get("user_id", ""))
+        extra["_config"] = config
 
         await self.emit_event(
             config,

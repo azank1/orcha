@@ -82,8 +82,7 @@ the registry and routes the matching step to it.
 
 ## Next steps
 
-- [`join.md`](join.md) — pick a role, phased journey diagram
-- [`INCEPTION.md`](../INCEPTION.md) — why Orcha → DAN
+- [`join.md`](join.md) — pick a role, contributor journey
 - [`ROADMAP.md`](../ROADMAP.md) — milestones
 - Edit `agent.py` — see [`emerge-yaml.md`](emerge-yaml.md)
 - Contributor setup: [`setup.md`](setup.md)

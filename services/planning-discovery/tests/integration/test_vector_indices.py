@@ -74,7 +74,7 @@ class TestVectorIndices:
         async with test_db_pool.acquire() as conn:
             await conn.execute(
                 _AGENT_INSERT,
-                "did:emerge:agent:sv-test",
+                "did:orcha:agent:sv-test",
                 _TEST_USER_ID,
                 "SearchTestAgent",
                 "1.0.0",
@@ -88,7 +88,7 @@ class TestVectorIndices:
             )
             result = await conn.fetchval(
                 "SELECT search_vector FROM agents WHERE id = $1",
-                "did:emerge:agent:sv-test",
+                "did:orcha:agent:sv-test",
             )
 
         assert result is not None
