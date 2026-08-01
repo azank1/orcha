@@ -15,6 +15,9 @@ on:
       - 'common/**'
       - 'deploy/sandbox/**'
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     if: vars.SANDBOX_DEPLOY_ENABLED == 'true'
