@@ -1389,7 +1389,7 @@ requires-dist = [
     { name = "python-jose", extras = ["cryptography"], specifier = ">=3.3" },
     { name = "redis", specifier = ">=5" },
     { name = "svix", specifier = ">=1.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.0" },
 ]
 
 [[package]]
@@ -2812,7 +2812,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.0.0" },
     { name = "sentence-transformers", specifier = ">=2.3.1" },
     { name = "torch", specifier = ">=2.1.0", index = "https://download.pytorch.org/whl/cpu" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.27.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.0" },
 ]
 
 [[package]]
@@ -3549,7 +3549,7 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.6" },
     { name = "pyyaml", specifier = ">=6.0.1" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.27.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.0" },
 ]
 provides-extras = ["dev"]
 
@@ -4013,7 +4013,7 @@ requires-dist = [
     { name = "pydantic-settings", specifier = ">=2" },
     { name = "redis", specifier = ">=5" },
     { name = "sentence-transformers", specifier = ">=3" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.52.0" },
 ]
 
 [[package]]
