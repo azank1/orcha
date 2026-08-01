@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { REAL_RUN_REPLAY, ReplayLine, CAPTURED_AT } from '../data/realRunReplay';
 import { HeroShaderCanvas } from './HeroShaderCanvas';
-import { GoalDecomposition } from './GoalDecomposition';
-import { McpLogo, A2aLogo, ComputerUseLogo } from './ProtocolIcons';
-import { Play, Copy, Check, ShieldCheck, Layers, ArrowRight, BookOpen } from 'lucide-react';
+import { Play, Copy, Check, ArrowRight, BookOpen } from 'lucide-react';
 
 const replayLineColor = (cls?: ReplayLine['cls']): string => {
   if (cls === 'ok') return 'text-[var(--ok)]';
@@ -82,39 +80,25 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
   ];
 
   return (
-    <section id="hero" className="relative overflow-hidden pt-8 pb-16 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
+    <section id="hero" className="relative overflow-hidden pt-16 pb-24 sm:pt-24 sm:pb-32 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
       <HeroShaderCanvas />
 
-      {/* Edge anchors */}
-      <div className="absolute bottom-4 left-4 sm:left-8 font-mono text-[10px] text-[var(--faint)] z-20">
-        apache 2.0
-      </div>
-      <div className="absolute bottom-4 right-4 sm:right-8 font-mono text-[10px] text-[var(--faint)] z-20">
-        PAYMENT_MODE=mock
-      </div>
-
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+      <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
 
         {/* Hero Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
           {/* Left Text & CTA */}
-          <div className="lg:col-span-6 space-y-5">
+          <div className="lg:col-span-5 space-y-8">
 
             <motion.h1
               custom={0}
               initial="hidden"
               animate="visible"
               variants={fadeUp}
-              className="font-display font-bold text-3xl sm:text-4xl lg:text-5xl tracking-tight leading-[1.12] text-[var(--text)]"
+              className="font-display font-bold text-5xl sm:text-6xl lg:text-7xl tracking-tight leading-[1.05] text-[var(--text)]"
             >
-              One goal in.{' '}
-              <span className="inline-flex items-center gap-1.5 align-middle">
-                <McpLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#6366f1]" />
-                <A2aLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#3ecf8e]" />
-                <ComputerUseLogo className="w-6 h-6 sm:w-8 sm:h-8 text-[#e5c07b]" />
-              </span>{' '}
-              Verified multi-agent run out.
+              One goal in. Verified multi-agent run out.
             </motion.h1>
 
             <motion.p
@@ -122,103 +106,80 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
               initial="hidden"
               animate="visible"
               variants={fadeUp}
-              className="font-mono text-xs text-[var(--muted)]"
+              className="text-lg sm:text-xl text-[var(--muted)] leading-relaxed max-w-xl"
             >
-              plan → route → verify → render · MCP · A2A · COMPUTER_USE · apache 2.0
+              Open-source runtime for multi-protocol agent orchestration.
             </motion.p>
 
-            {/* Interactive Goal Decomposition */}
+            {/* CTAs */}
             <motion.div
               custom={2}
               initial="hidden"
               animate="visible"
               variants={fadeUp}
-              className="pt-2"
+              className="flex flex-wrap items-center gap-4 pt-4"
             >
-              <GoalDecomposition />
+              {onLaunchSandbox && (
+                <button
+                  onClick={onLaunchSandbox}
+                  className="group font-sans text-sm font-semibold pl-6 pr-2 py-2.5 rounded-full bg-[#6366f1] text-white hover:bg-[#4f52c8] transition-all flex items-center gap-3 shadow-lg"
+                >
+                  <span className="block overflow-hidden h-[1.2em]">
+                    <span className="flex flex-col leading-[1.2em] transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2">
+                      <span>Launch Sandbox</span>
+                      <span>Launch Sandbox</span>
+                    </span>
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-white flex items-center justify-center transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:rotate-[-45deg]">
+                    <ArrowRight className="w-4 h-4 text-[#6366f1]" />
+                  </span>
+                </button>
+              )}
+
+              {onExploreDocs && (
+                <button
+                  onClick={onExploreDocs}
+                  className="font-sans text-sm font-semibold px-6 py-2.5 rounded-full border border-[var(--line)] bg-[var(--card-bg)] text-[var(--text)] hover:border-[#6366f1] transition-all flex items-center gap-2"
+                >
+                  <BookOpen className="w-4 h-4" />
+                  Documentation
+                </button>
+              )}
             </motion.div>
 
-            {/* CTAs */}
+            {/* Quickstart */}
             <motion.div
               custom={3}
               initial="hidden"
               animate="visible"
               variants={fadeUp}
-              className="space-y-3 pt-1"
+              className="pt-4 space-y-3"
             >
-
-              <div className="flex flex-wrap items-center gap-3">
-                {onExploreDocs && (
-                  <button
-                    onClick={onExploreDocs}
-                    className="font-mono text-xs font-semibold px-4 py-3 rounded-md bg-[#6366f1] text-white hover:bg-[#4f52c8] transition-all flex items-center gap-2 shadow-md"
-                  >
-                    <BookOpen className="w-3.5 h-3.5" />
-                    Explore System Docs
-                  </button>
+              <div
+                onClick={handleCopyGit}
+                className="inline-flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--card-bg)] border border-[var(--line)] hover:border-[#6366f1] cursor-pointer transition-all group"
+              >
+                <span className="text-[#6366f1] font-mono text-sm">$</span>
+                <code className="text-sm text-[var(--text)] font-mono">git clone github.com/azank1/orcha</code>
+                {copiedGit ? (
+                  <Check className="w-4 h-4 text-[#6366f1]" />
+                ) : (
+                  <Copy className="w-4 h-4 text-[var(--faint)] group-hover:text-[var(--text)] transition-colors" />
                 )}
-
-                {onLaunchSandbox && (
-                  <button
-                    onClick={onLaunchSandbox}
-                    className="group font-mono text-xs font-semibold px-4 py-3 rounded-md bg-[var(--card-bg)] border border-[var(--line)] hover:border-[#6366f1] text-[var(--text)] transition-all flex items-center gap-2 shadow-sm"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current text-[#6366f1]" />
-                    <span className="block overflow-hidden h-[1em]">
-                      <span className="flex flex-col leading-[1em] transition-transform duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] group-hover:-translate-y-1/2">
-                        <span>Launch Sandbox</span>
-                        <span>Launch Sandbox</span>
-                      </span>
-                    </span>
-                  </button>
-                )}
-
-                <button
-                  onClick={handleCopyGit}
-                  className="font-mono text-xs font-semibold px-4 py-3 rounded-md bg-[var(--card-bg)] border border-[var(--line)] hover:border-[#6366f1] text-[var(--text)] transition-all flex items-center gap-3 group shadow-sm"
-                >
-                  <span className="text-[#6366f1]">$</span>
-                  <code>git clone github.com/azank1/orcha</code>
-                  {copiedGit ? (
-                    <Check className="w-4 h-4 text-[#6366f1] ml-1" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-[var(--faint)] group-hover:text-[var(--text)] ml-1 transition-colors" />
-                  )}
-                </button>
               </div>
 
-              {/* Quick Terminal Box */}
-              <div className="pt-1">
-                <div
-                  onClick={handleCopyUvx}
-                  className="inline-flex items-center gap-3 px-3.5 py-2 rounded-lg bg-[var(--card-bg)] border border-[var(--line)] hover:border-[#6366f1] cursor-pointer transition-all text-xs font-mono group shadow-sm"
-                >
-                  <span className="text-[var(--muted)]">Quickstart:</span>
-                  <code className="text-[var(--text)]">uvx emerge init my-agent</code>
-                  {copiedUvx ? (
-                    <span className="text-[11px] text-[#6366f1] font-semibold">Copied</span>
-                  ) : (
-                    <Copy className="w-3.5 h-3.5 text-[var(--faint)] group-hover:text-[var(--text)]" />
-                  )}
-                </div>
+              <div
+                onClick={handleCopyUvx}
+                className="inline-flex items-center gap-3 px-4 py-2.5 rounded-lg bg-[var(--card-bg)] border border-[var(--line)] hover:border-[#6366f1] cursor-pointer transition-all group ml-0 sm:ml-3"
+              >
+                <span className="text-[var(--muted)] text-sm">Quickstart:</span>
+                <code className="text-sm text-[var(--text)] font-mono">uvx emerge init my-agent</code>
+                {copiedUvx ? (
+                  <span className="text-xs text-[#6366f1] font-semibold">Copied</span>
+                ) : (
+                  <Copy className="w-4 h-4 text-[var(--faint)] group-hover:text-[var(--text)] transition-colors" />
+                )}
               </div>
-
-            </motion.div>
-
-            {/* Quick feature tags */}
-            <motion.div
-              custom={4}
-              initial="hidden"
-              animate="visible"
-              variants={fadeUp}
-              className="pt-2 flex flex-wrap items-center gap-6 text-xs font-mono text-[var(--muted)]"
-            >
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#6366f1]" /> PAYMENT_MODE=mock
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-[#6366f1]" /> LangGraph SuperAgent
-              </span>
             </motion.div>
 
           </div>
@@ -229,21 +190,21 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
             initial="hidden"
             animate="visible"
             variants={fadeUp}
-            className="lg:col-span-6"
+            className="lg:col-span-7"
           >
-            <div className="bg-[#080C14] border border-[var(--line)] rounded-xl overflow-hidden font-mono text-xs shadow-xl">
+            <div className="bg-[#080C14] border border-[var(--line)] rounded-2xl overflow-hidden font-mono text-sm shadow-2xl">
 
               {/* Titlebar */}
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800 bg-[#0c0f17]">
-                <div className="flex items-center gap-2 text-xs text-slate-300 font-semibold">
+              <div className="flex items-center justify-between px-5 py-3 border-b border-slate-800 bg-[#0c0f17]">
+                <div className="flex items-center gap-2 text-sm text-slate-300 font-semibold">
                   <span className="w-2 h-2 rounded-full bg-[#6366f1]"></span>
                   ~/orcha · runtime live
                 </div>
-                <div className="text-[11px] text-slate-400">v1.0-active</div>
+                <div className="text-xs text-slate-400">v1.0-active</div>
               </div>
 
               {/* Terminal Screen Output */}
-              <div className="p-4 sm:p-5 min-h-[240px] space-y-2 leading-relaxed bg-[#080C14]">
+              <div className="p-5 sm:p-6 min-h-[280px] space-y-2 leading-relaxed bg-[#080C14]">
                 {displayedLines.map((line, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <span className={`${replayLineColor(line.cls)} font-mono leading-relaxed`}>{line.t}</span>
@@ -260,60 +221,59 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onLaunchSandbox, onExp
                 )}
               </div>
 
-              <div className="px-4 py-2 border-t border-slate-800 bg-[#0c0f17] text-[11px] text-slate-400 flex justify-between items-center">
+              <div className="px-5 py-2.5 border-t border-slate-800 bg-[#0c0f17] text-xs text-slate-400 flex justify-between items-center">
                 <span>Handlers: MCP · A2A · Computer-Use</span>
                 <span className="text-slate-400">verified</span>
               </div>
 
             </div>
-            <p className="mt-2 font-mono text-[11px] text-[var(--faint)]">
+            <p className="mt-3 text-xs text-[var(--faint)]">
               captured from a live run · {CAPTURED_AT}
             </p>
           </motion.div>
 
         </div>
 
-        {/* Interactive Visual Pipeline */}
+        {/* Execution Flow */}
         <motion.div
-          custom={5}
+          custom={4}
           initial="hidden"
           animate="visible"
           variants={fadeUp}
-          className="bg-[var(--card-bg)] border border-[var(--line)] rounded-xl p-5 space-y-3 shadow-sm transition-colors"
+          className="mt-20 sm:mt-24"
         >
-          <div className="flex items-center justify-between font-mono text-xs">
-            <span className="text-[var(--text)] font-semibold uppercase tracking-wider">
-              Execution Flow Architecture
+          <div className="flex items-center justify-between mb-6">
+            <span className="text-sm font-semibold uppercase tracking-wider text-[var(--text)]">
+              Execution Flow
             </span>
-
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             {pipelineSteps.map((step, index) => (
               <div
                 key={step.id}
                 onMouseEnter={() => setActiveStep(index)}
                 onMouseLeave={() => setActiveStep(null)}
-                className={`p-3.5 rounded-lg border transition-all cursor-pointer relative group ${
+                className={`p-5 rounded-xl border transition-all cursor-pointer relative group ${
                   activeStep === index
                     ? 'border-[#6366f1] bg-[#6366f1]/10'
-                    : 'border-[var(--line)] bg-[var(--bg)] hover:border-[var(--faint)]'
+                    : 'border-[var(--line)] bg-[var(--card-bg)] hover:border-[var(--faint)]'
                 }`}
               >
-                <div className="flex items-center justify-between font-mono text-[10px] text-[var(--faint)] mb-1">
-                  <span className="w-5 h-5 rounded-full bg-[#6366f1] text-white flex items-center justify-center text-[10px] font-bold">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="w-6 h-6 rounded-full bg-[#6366f1] text-white flex items-center justify-center text-xs font-bold">
                     {step.num}
                   </span>
                   {index < pipelineSteps.length - 1 && (
-                    <ArrowRight className="w-3 h-3 text-[#6366f1] hidden md:block opacity-40 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-4 h-4 text-[#6366f1] hidden md:block opacity-40 group-hover:opacity-100 transition-opacity" />
                   )}
                 </div>
 
-                <div className="font-display font-bold text-xs text-[var(--text)] mb-1 group-hover:text-[#6366f1] transition-colors">
+                <div className="font-display font-bold text-sm text-[var(--text)] mb-1 group-hover:text-[#6366f1] transition-colors">
                   {step.label}
                 </div>
 
-                <p className="text-[11px] text-[var(--muted)] leading-tight">
+                <p className="text-xs text-[var(--muted)] leading-relaxed">
                   {step.desc}
                 </p>
               </div>

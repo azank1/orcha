@@ -126,41 +126,42 @@ export const ProtocolSlideshow: React.FC = () => {
   const currentSlide = SLIDES[activeSlideIndex];
 
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="space-y-4">
+    <section className="py-24 sm:py-32 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-12">
+
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--line)] pb-4">
-          <div>
-            <div className="font-mono text-xs text-[#6366f1] font-bold uppercase tracking-wider flex items-center gap-2">
-              <Layout className="w-3.5 h-3.5" />
-              Protocol Architecture Showcase
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[var(--line)] pb-6">
+          <div className="space-y-2">
+            <div className="text-sm text-[#6366f1] font-semibold uppercase tracking-wider flex items-center gap-2">
+              <Layout className="w-4 h-4" />
+              Protocol Architecture
             </div>
-            <h3 className="font-display font-bold text-xl sm:text-2xl text-[var(--text)]">
+            <h3 className="font-display font-bold text-3xl sm:text-4xl text-[var(--text)]">
               Multi-Agent Protocol Capabilities
             </h3>
-            <p className="text-xs sm:text-sm text-[var(--muted)] mt-1">
+            <p className="text-lg text-[var(--muted)]">
               the first two bridges are MCP and A2A — the harness doesn't care what ships next.
             </p>
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-[var(--faint)] mr-2 hidden sm:inline">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-[var(--faint)] mr-2 hidden sm:inline">
               0{activeSlideIndex + 1} / 0{SLIDES.length}
             </span>
             <button
               onClick={() => setActiveSlideIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length)}
-              className="p-2 rounded-lg border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] text-[var(--text)] transition-colors"
+              className="p-2.5 rounded-full border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] text-[var(--text)] transition-colors"
               aria-label="Previous Slide"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={() => setActiveSlideIndex((prev) => (prev + 1) % SLIDES.length)}
-              className="p-2 rounded-lg border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] text-[var(--text)] transition-colors"
+              className="p-2.5 rounded-full border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] text-[var(--text)] transition-colors"
               aria-label="Next Slide"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -169,7 +170,7 @@ export const ProtocolSlideshow: React.FC = () => {
         <div
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
-          className={`relative min-h-[320px] rounded-2xl border bg-[var(--card-bg)] p-6 sm:p-8 shadow-sm overflow-hidden flex flex-col justify-between ${
+          className={`relative min-h-[360px] rounded-2xl border bg-[var(--card-bg)] p-8 sm:p-10 shadow-sm overflow-hidden flex flex-col justify-between ${
             currentSlide.invitation ? 'border-dashed border-[var(--line)]' : 'border-[var(--line)]'
           }`}
         >
@@ -180,12 +181,12 @@ export const ProtocolSlideshow: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.4, ease: 'easeInOut' }}
-              className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center"
+              className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center"
             >
               {/* Left Content */}
-              <div className="lg:col-span-5 space-y-4">
+              <div className="lg:col-span-5 space-y-5">
                 <div
-                  className={`inline-flex items-center gap-2 font-mono text-xs font-semibold px-2.5 py-1 rounded-md ${
+                  className={`inline-flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-full ${
                     currentSlide.invitation
                       ? 'border border-dashed border-[var(--line)] text-[var(--muted)]'
                       : 'uppercase bg-[#6366f1]/10 text-[#6366f1] border border-[#6366f1]/30'
@@ -195,24 +196,24 @@ export const ProtocolSlideshow: React.FC = () => {
                   <span>{currentSlide.badge}</span>
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-2">
                   <h4
-                    className={`font-display font-bold text-xl sm:text-2xl ${
+                    className={`font-display font-bold text-2xl sm:text-3xl ${
                       currentSlide.invitation ? 'text-[var(--muted)]' : 'text-[var(--text)]'
                     }`}
                   >
                     {currentSlide.title}
                   </h4>
-                  <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
+                  <p className="text-base text-[var(--muted)] leading-relaxed">
                     {currentSlide.subtitle}
                   </p>
                 </div>
 
                 {currentSlide.highlights.length > 0 && (
-                  <ul className="space-y-2 pt-2 font-mono text-xs">
+                  <ul className="space-y-3 pt-3">
                     {currentSlide.highlights.map((h, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-[var(--text)]">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#6366f1] flex-shrink-0" />
+                      <li key={idx} className="flex items-center gap-3 text-sm text-[var(--text)]">
+                        <CheckCircle2 className="w-4 h-4 text-[#6366f1] flex-shrink-0" />
                         <span>{h}</span>
                       </li>
                     ))}
@@ -222,27 +223,27 @@ export const ProtocolSlideshow: React.FC = () => {
 
               {/* Right Code Block / Invitation CTAs */}
               {currentSlide.codeSnippet ? (
-                <div className="lg:col-span-7 rounded-xl border border-slate-800 bg-[#070A10] p-4 shadow-inner overflow-x-auto">
-                  <div className="flex items-center justify-between font-mono text-[11px] text-slate-400 border-b border-slate-800 pb-2 mb-3">
+                <div className="lg:col-span-7 rounded-xl border border-slate-800 bg-[#070A10] p-5 shadow-inner overflow-x-auto">
+                  <div className="flex items-center justify-between text-xs text-slate-400 border-b border-slate-800 pb-3 mb-4">
                     <span>{currentSlide.codeLabel}</span>
                     <span className="text-[#6366f1]">Python 3.11</span>
                   </div>
-                  <pre className="font-mono text-xs text-slate-200 leading-relaxed custom-scrollbar">
+                  <pre className="font-mono text-sm text-slate-200 leading-relaxed custom-scrollbar">
                     <code>{currentSlide.codeSnippet}</code>
                   </pre>
                 </div>
               ) : (
-                <div className="lg:col-span-7 rounded-xl border border-dashed border-[var(--line)] p-4 sm:p-6 space-y-3">
+                <div className="lg:col-span-7 rounded-xl border border-dashed border-[var(--line)] p-6 space-y-4">
                   {currentSlide.ctas?.map((cta) => (
                     <a
                       key={cta.href}
                       href={cta.href}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex items-center justify-between gap-2 font-mono text-xs text-[var(--muted)] hover:text-[#6366f1] border border-dashed border-[var(--line)] hover:border-[#6366f1] rounded-lg px-4 py-3 transition-colors"
+                      className="flex items-center justify-between gap-3 text-sm text-[var(--muted)] hover:text-[#6366f1] border border-dashed border-[var(--line)] hover:border-[#6366f1] rounded-xl px-5 py-4 transition-colors"
                     >
                       <span>{cta.label}</span>
-                      <ArrowUpRight className="w-3.5 h-3.5 flex-shrink-0" />
+                      <ArrowUpRight className="w-4 h-4 flex-shrink-0" />
                     </a>
                   ))}
                 </div>
@@ -251,21 +252,22 @@ export const ProtocolSlideshow: React.FC = () => {
           </AnimatePresence>
 
           {/* Dots Indicator */}
-          <div className="flex items-center justify-center gap-2 pt-6">
+          <div className="flex items-center justify-center gap-2 pt-8">
             {SLIDES.map((slide, idx) => (
               <button
                 key={slide.id}
                 onClick={() => setActiveSlideIndex(idx)}
-                className={`h-2 rounded-full transition-all ${
+                className={`h-2.5 rounded-full transition-all ${
                   idx === activeSlideIndex
-                    ? 'w-8 bg-[#6366f1]'
-                    : 'w-2 bg-[var(--line)] hover:bg-[var(--faint)]'
+                    ? 'w-10 bg-[#6366f1]'
+                    : 'w-2.5 bg-[var(--line)] hover:bg-[var(--faint)]'
                 }`}
                 aria-label={`Go to slide ${idx + 1}`}
               />
             ))}
           </div>
         </div>
+
       </div>
     </section>
   );

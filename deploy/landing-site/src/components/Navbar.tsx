@@ -38,7 +38,7 @@ const LiveStatusChip: React.FC = () => {
   if (!status) return null;
 
   return (
-    <span className="font-mono text-[11px] text-[var(--muted)] flex items-center gap-1.5">
+    <span className="text-xs text-[var(--muted)] flex items-center gap-1.5">
       <span className="w-1.5 h-1.5 rounded-full bg-[var(--ok)] inline-block"></span>
       live · {status.runs_today} runs today
     </span>
@@ -55,29 +55,29 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
-  theme = 'light',
+  theme = 'dark',
   onToggleTheme
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'overview', label: 'Overview', icon: <Home className="w-3.5 h-3.5" /> },
-    { id: 'docs', label: 'Documentation', icon: <FileText className="w-3.5 h-3.5" />, badge: 'System Docs' },
-    { id: 'playground', label: 'Sandbox', icon: <Terminal className="w-3.5 h-3.5" /> },
-    { id: 'roadmap', label: 'Roadmap', icon: <MapPin className="w-3.5 h-3.5" /> },
-    { id: 'contributing', label: 'Contributing', icon: <GitPullRequest className="w-3.5 h-3.5" /> }
+    { id: 'overview', label: 'Overview', icon: <Home className="w-4 h-4" /> },
+    { id: 'docs', label: 'Documentation', icon: <FileText className="w-4 h-4" /> },
+    { id: 'playground', label: 'Sandbox', icon: <Terminal className="w-4 h-4" /> },
+    { id: 'roadmap', label: 'Roadmap', icon: <MapPin className="w-4 h-4" /> },
+    { id: 'contributing', label: 'Contributing', icon: <GitPullRequest className="w-4 h-4" /> }
   ];
 
   return (
-    <header className="sticky top-0 z-50 bg-[var(--bg)]/80 backdrop-blur-xl border-b border-[var(--line)]/50 transition-colors shadow-[0_1px_0_0_rgba(255,255,255,0.03)_inset]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14">
-          
+    <header className="sticky top-0 z-50 bg-[var(--bg)]/80 backdrop-blur-xl border-b border-[var(--line)]/50 transition-colors">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between h-16">
+
           {/* Left: Logo */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => setActiveTab('overview')}
-              className="flex items-center gap-2 font-mono font-bold text-lg tracking-tight text-[var(--text)] hover:opacity-80 transition-opacity"
+              className="flex items-center gap-2 font-display font-bold text-xl tracking-tight text-[var(--text)] hover:opacity-80 transition-opacity"
             >
               <span className="w-2.5 h-2.5 bg-[#6366f1] rounded-[2px] inline-block"></span>
               Orcha
@@ -85,7 +85,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           {/* Center: Main Tab Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-[var(--card-bg)]/80 p-1 rounded-lg border border-[var(--line)]">
+          <nav className="hidden md:flex items-center gap-1 bg-[var(--card-bg)]/80 p-1.5 rounded-full border border-[var(--line)]">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               if (item.id === 'playground') {
@@ -95,11 +95,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                     href={SANDBOX_URL}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-mono text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all relative text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]"
+                    className="text-sm px-4 py-2 rounded-full flex items-center gap-2 transition-all relative text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]"
                   >
                     {item.icon}
                     <span>{item.label}</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded font-mono uppercase bg-[#6366f1]/15 text-[#6366f1]">live</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold uppercase bg-[#6366f1]/15 text-[#6366f1]">live</span>
                   </a>
                 );
               }
@@ -107,7 +107,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`font-mono text-xs px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all relative ${
+                  className={`text-sm px-4 py-2 rounded-full flex items-center gap-2 transition-all relative ${
                     isActive
                       ? 'bg-[#6366f1] text-white font-semibold shadow-sm'
                       : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]'
@@ -115,35 +115,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   {item.icon}
                   <span>{item.label}</span>
-                  {item.badge && (
-                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase ${
-                      isActive ? 'bg-white/20 text-white' : 'bg-[#6366f1]/15 text-[#6366f1]'
-                    }`}>
-                      {item.badge}
-                    </span>
-                  )}
                 </button>
               );
             })}
           </nav>
 
           {/* Right: Theme Toggle & GitHub */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-4">
             <LiveStatusChip />
             <button
               onClick={onToggleTheme}
-              className="font-mono text-xs border border-[var(--line)] hover:border-[#6366f1] bg-[var(--card-bg)] text-[var(--text)] px-2.5 py-1.5 rounded-md flex items-center gap-1.5 transition-all shadow-sm"
+              className="text-sm border border-[var(--line)] hover:border-[#6366f1] bg-[var(--card-bg)] text-[var(--text)] px-3 py-2 rounded-full flex items-center gap-2 transition-all"
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Theme`}
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-[11px] font-medium">Light</span>
+                  <Sun className="w-4 h-4 text-amber-400" />
+                  <span className="text-sm font-medium">Light</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-indigo-600" />
-                  <span className="text-[11px] font-medium">Dark</span>
+                  <Moon className="w-4 h-4 text-indigo-600" />
+                  <span className="text-sm font-medium">Dark</span>
                 </>
               )}
             </button>
@@ -152,10 +145,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               href="https://github.com/azank1/orcha"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-mono text-xs border border-[var(--line)] hover:border-[#6366f1] bg-[var(--card-bg)] text-[var(--text)] px-3 py-1.5 rounded-md flex items-center gap-2 transition-all group shadow-sm"
+              className="text-sm border border-[var(--line)] hover:border-[#6366f1] bg-[var(--card-bg)] text-[var(--text)] px-4 py-2 rounded-full flex items-center gap-2 transition-all group"
             >
-              <Github className="w-3.5 h-3.5 text-[var(--muted)] group-hover:text-[var(--text)]" />
-              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400/20" />
+              <Github className="w-4 h-4 text-[var(--muted)] group-hover:text-[var(--text)]" />
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400/20" />
               <span>GitHub</span>
             </a>
           </div>
@@ -164,14 +157,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div className="flex items-center gap-2 md:hidden">
             <button
               onClick={onToggleTheme}
-              className="p-1.5 text-[var(--text)] border border-[var(--line)] rounded bg-[var(--card-bg)]"
+              className="p-2 text-[var(--text)] border border-[var(--line)] rounded-full bg-[var(--card-bg)]"
               title="Toggle Theme"
             >
-              {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}
+              {theme === 'dark' ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5 text-indigo-600" />}
             </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--line)] rounded bg-[var(--card-bg)]"
+              className="p-2 text-[var(--muted)] hover:text-[var(--text)] border border-[var(--line)] rounded-full bg-[var(--card-bg)]"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -183,18 +176,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-[var(--line)] bg-[var(--card-bg)] px-4 pt-3 pb-5 space-y-2">
+        <div className="md:hidden border-b border-[var(--line)] bg-[var(--card-bg)] px-6 pt-4 pb-6 space-y-2">
           {navItems.map((item) => item.id === 'playground' ? (
             <a
               key={item.id}
               href={SANDBOX_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full text-left font-mono text-xs px-3 py-2 rounded-md flex items-center justify-between transition-colors text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]"
+              className="w-full text-left text-sm px-4 py-3 rounded-full flex items-center justify-between transition-colors text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]"
               onClick={() => setMobileMenuOpen(false)}
             >
               <span className="flex items-center gap-2">{item.icon}{item.label}</span>
-              <span className="text-[9px] font-mono uppercase text-[#6366f1]">live</span>
+              <span className="text-[10px] font-semibold uppercase text-[#6366f1]">live</span>
             </a>
           ) : (
             <button
@@ -203,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 setActiveTab(item.id);
                 setMobileMenuOpen(false);
               }}
-              className={`w-full text-left font-mono text-xs px-3 py-2 rounded-md flex items-center justify-between transition-colors ${
+              className={`w-full text-left text-sm px-4 py-3 rounded-full flex items-center justify-between transition-colors ${
                 activeTab === item.id
                   ? 'bg-[#6366f1] text-white font-semibold'
                   : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--bg)]'
@@ -213,20 +206,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {item.icon}
                 {item.label}
               </span>
-              {item.badge && (
-                <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded">
-                  {item.badge}
-                </span>
-              )}
             </button>
           ))}
-          
-          <div className="pt-2 border-t border-[var(--line)] flex items-center justify-between">
+
+          <div className="pt-4 border-t border-[var(--line)] flex items-center justify-between">
             <a
               href="https://github.com/azank1/orcha"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 font-mono text-xs text-[#6366f1]"
+              className="inline-flex items-center gap-2 text-sm text-[#6366f1]"
             >
               <Github className="w-4 h-4" />
               Star on GitHub

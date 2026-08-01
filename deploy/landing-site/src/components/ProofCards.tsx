@@ -30,50 +30,57 @@ const PROOF_CARDS: ProofCard[] = [
 
 export const ProofCards: React.FC = () => {
   return (
-    <section id="proof" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-      <div className="space-y-2">
-        <div className="font-mono text-xs text-[#6366f1] uppercase tracking-widest font-semibold">
-          watch it work
-        </div>
-        <p className="text-[var(--muted)] text-xs sm:text-sm max-w-2xl leading-relaxed">
-          Captured from the live sandbox — no mockups, no staged demos.
-        </p>
-      </div>
+    <section id="proof" className="py-24 sm:py-32 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 space-y-12">
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {PROOF_CARDS.map((card) => (
-          <div
-            key={card.title}
-            className="group rounded-2xl border border-[var(--line)] bg-[var(--card-bg)] overflow-hidden shadow-sm transition-colors hover:border-[#6366f1]"
-          >
-            <div className="relative">
-              <video
-                src={card.src}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="w-full aspect-video object-cover bg-[#0b0b0e]"
-              />
-              {/* Expanding-circle reveal */}
-              <div className="absolute bottom-3 left-3 flex items-center h-9 w-9 group-hover:w-[148px] rounded-full bg-[#6366f1] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] shadow-md">
-                <Play className="w-3.5 h-3.5 shrink-0 ml-[11px] text-white fill-current" />
-                <span className="ml-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  watch
-                </span>
+        <div className="space-y-4 max-w-3xl">
+          <div className="text-sm text-[#6366f1] uppercase tracking-widest font-semibold">
+            watch it work
+          </div>
+          <h2 className="font-display font-bold text-3xl sm:text-4xl tracking-tight text-[var(--text)]">
+            Captured from the live sandbox.
+          </h2>
+          <p className="text-lg text-[var(--muted)] leading-relaxed">
+            No mockups, no staged demos. Real runs, real verdicts.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {PROOF_CARDS.map((card) => (
+            <div
+              key={card.title}
+              className="group rounded-2xl border border-[var(--line)] bg-[var(--card-bg)] overflow-hidden shadow-sm transition-colors hover:border-[#6366f1]"
+            >
+              <div className="relative">
+                <video
+                  src={card.src}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="w-full aspect-video object-cover bg-[#0b0b0e]"
+                />
+                {/* Expanding-circle reveal */}
+                <div className="absolute bottom-4 left-4 flex items-center h-10 w-10 group-hover:w-[160px] rounded-full bg-[#6366f1] overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] shadow-lg">
+                  <Play className="w-4 h-4 shrink-0 ml-[12px] text-white fill-current" />
+                  <span className="ml-2 text-sm font-semibold uppercase tracking-wider text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    watch
+                  </span>
+                </div>
+              </div>
+              <div className="p-5 space-y-2">
+                <h3 className="font-display font-bold text-base text-[var(--text)]">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-[var(--muted)] leading-relaxed">
+                  {card.caption}
+                </p>
               </div>
             </div>
-            <div className="p-4 space-y-1">
-              <h3 className="font-display font-bold text-sm text-[var(--text)]">
-                {card.title}
-              </h3>
-              <p className="text-[11px] font-mono text-[var(--muted)] leading-relaxed">
-                {card.caption}
-              </p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
+
       </div>
     </section>
   );

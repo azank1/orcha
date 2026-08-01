@@ -60,11 +60,11 @@ export const FleetGrid: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {Array.from({ length: 6 }).map((_, i) => (
           <div
             key={i}
-            className="h-20 rounded-lg border border-[var(--line)] bg-[var(--card-bg)] animate-pulse"
+            className="h-24 rounded-xl border border-[var(--line)] bg-[var(--card-bg)] animate-pulse"
           />
         ))}
       </div>
@@ -74,28 +74,28 @@ export const FleetGrid: React.FC = () => {
   if (agents.length === 0) return null;
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-xs text-[var(--muted)] uppercase tracking-wider">
+        <span className="text-sm font-semibold uppercase tracking-wider text-[var(--text)]">
           Live Fleet · {agents.length} agents
         </span>
-        <span className="font-mono text-[11px] text-[var(--faint)]">
+        <span className="text-xs text-[var(--faint)]">
           polling every 5m
         </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
         {agents.map((agent, idx) => (
           <motion.div
             key={agent.did}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.05, duration: 0.3 }}
-            className="group p-3 rounded-lg border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] transition-all cursor-default"
+            className="group p-4 rounded-xl border border-[var(--line)] bg-[var(--card-bg)] hover:border-[#6366f1] transition-all cursor-default"
           >
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-3">
               <span
-                className="w-6 h-6 rounded-md flex items-center justify-center"
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
                 style={{
                   backgroundColor: `${PROTOCOL_COLORS[agent.protocol] || '#6366f1'}15`,
                   color: PROTOCOL_COLORS[agent.protocol] || '#6366f1',
@@ -110,10 +110,10 @@ export const FleetGrid: React.FC = () => {
               />
             </div>
 
-            <div className="font-mono text-[11px] font-semibold text-[var(--text)] truncate leading-tight">
+            <div className="text-sm font-semibold text-[var(--text)] truncate leading-tight">
               {agent.name}
             </div>
-            <div className="font-mono text-[9px] text-[var(--faint)] truncate leading-tight mt-0.5">
+            <div className="text-xs text-[var(--faint)] truncate leading-tight mt-1">
               {agent.protocol}
             </div>
           </motion.div>

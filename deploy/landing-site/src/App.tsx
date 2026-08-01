@@ -19,7 +19,7 @@ import { SANDBOX_URL, SANDBOX_HOST } from './config/sandbox';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('overview');
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     if (theme === 'light') {
@@ -39,6 +39,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans selection:bg-[#6366f1] selection:text-white transition-colors duration-200">
+      <div className="grain-overlay" aria-hidden="true" />
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
