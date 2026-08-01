@@ -1,0 +1,109 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+.env.*
+.env
+.venv/
+env/
+venv/
+ENV/
+
+# uv
+.uv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+*.cover
+*.log
+
+# Prisma
+node_modules/
+common/database/src/generated_client/
+*.db
+*.db-journal
+
+# gRPC Generated
+common/proto/src/*_pb2.py
+common/proto/src/*_pb2_grpc.py
+common/proto/src/*_pb2.pyi
+
+# Logs
+*.log
+logs/
+dist/
+
+# Database
+*.sqlite
+*.sqlite3
+
+# Environment
+.env.local
+.env.*.local
+.env.production
+.env.*
+!.env.example
+!.env.sandbox.example
+
+# Docker
+.dockerignore
+
+# SSH keys / certificates / credentials (never commit these)
+*.pem
+*.key
+*.p12
+*.pfx
+*_SERV_ACC*.json
+*service-account*.json
+*service_account*.json
+GOOGLE_SERV_ACC*.json
+*credentials*.json
+*-credentials.json
+gcp-*.json
+startup.log
+
+# OS
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+.ruff_cache
+.logs
+ctx/
+
+# Local-only docs — internal moat/strategy/pricing notes, PDFs, recordings.
+# Populated by scripts/mirror-local-docs.sh; never meant to leave this machine.
+docs-local/

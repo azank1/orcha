@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Community chat (Discord)
+    url: https://discord.gg/orcha
+    about: Questions, getting started, show-and-tell. Fastest way to get help.
+  - name: 🔒 Report a security vulnerability
+    url: https://github.com/azank1/orcha/security/policy
+    about: Do NOT open a public issue for security reports. See SECURITY.md.

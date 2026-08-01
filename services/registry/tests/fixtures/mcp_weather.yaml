@@ -1,0 +1,38 @@
+# mcp-weather.yaml
+identity:
+  id: "did:orcha:agent:weather-oracle-v1"
+  name: "SkyCast-Oracle"
+  version: "1.2.0"
+  description: "Hyper-local weather forecasting and historical climate data."
+  tags: ["weather", "data", "oracle", "environment"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_weather.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_api_key"
+      type: "x_api_key"
+      config:
+        header_name: "X-Weather-Key"
+        key_vault_ref: "SKYCAST_API_KEY"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "eip155:8453" # Base Mainnet
+    asset: "USDC"
+    token_address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    recipient_address: "0x1234567890abcdef1234567890abcdef12345678"
+    default_price: "0.10" # 10 cents per call
+    currency: "USD"
+    facilitator_url: "https://api.emerge.bot/verify" # Required for fast-path

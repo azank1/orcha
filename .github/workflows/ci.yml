@@ -1,0 +1,780 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, develop]
+  push:
+    branches: [main, develop]
+
+jobs:
+  # ============================================================================
+  # Detect Changed Services
+  # ============================================================================
+  detect-changes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      registry: ${{ steps.filter.outputs.registry }}
+      common: ${{ steps.filter.outputs.common }}
+      planning_discovery: ${{ steps.filter.outputs.planning_discovery }}
+      superagent: ${{ steps.filter.outputs.superagent }}
+      sdk: ${{ steps.filter.outputs.sdk }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      agents: ${{ steps.filter.outputs.agents }}
+      node: ${{ steps.filter.outputs.node }}
+      validator: ${{ steps.filter.outputs.validator }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            registry:
+              - 'services/registry/**'
+              - 'common/**'
+            common:
+              - 'common/**'
+            planning_discovery:
+              - 'services/planning-discovery/**'
+              - 'common/**'
+            superagent:
+              - 'services/superagent/**'
+              - 'common/**'
+            sdk:
+              - 'sdk/**'
+            gateway:
+              - 'services/gateway/**'
+              - 'common/**'
+            agents:
+              - 'agents/**'
+              - 'docs/spec/**'
+            node:
+              - 'node/**'
+            validator:
+              - 'services/validator/**'
+              - 'services/superagent/src/superagent/middleware/**'
+
+  # ============================================================================
+  # Registry Service Tests
+  # ============================================================================
+  registry-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.registry == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Registry Service (Lint, Format, Test, Build)
+    timeout-minutes: 15
+
+    env:
+      # Service Config
+      SERVICE_NAME: registry-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: test
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8000
+      RELOAD: "false"
+
+      # gRPC
+      GRPC_HOST: "[::]"
+      GRPC_PORT: 50051
+
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
+
+      # Security
+      PAT_TOKEN_PREFIX: orcha_pat_
+      PAT_TOKEN_LENGTH: 40
+
+      # Adapter Settings
+      ADAPTER_TIMEOUT: 10
+      ADAPTER_MAX_RETRIES: 3
+
+      # Health Check
+      HEALTH_CHECK_INTERVAL: 300
+      MAX_HEALTH_FAILURES: 3
+
+      # Payment
+      PAYMENT_FACILITATOR_URL: https://api.orcha.bot/verify
+
+      # MCP Protocol
+      MCP_PROTOCOL_VERSION: 2025-11-25
+
+      # Logging
+      LOG_LEVEL: DEBUG
+
+      # Python path — exposes workspace root so `from common.xxx.src import ...`
+      # works as namespace-package imports (no __init__.py needed in common/).
+      PYTHONPATH: .
+
+    services:
+      # PostgreSQL with pgvector extension (required by Prisma migrations)
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Run database migrations
+        run: |
+          cd common/database
+          uv run prisma migrate deploy
+
+      - name: Generate gRPC stubs
+        run: |
+          cd common/proto
+          uv run python -m grpc_tools.protoc \
+            -I./src \
+            --python_out=./src \
+            --grpc_python_out=./src \
+            ./src/registry.proto
+          # grpc_tools generates absolute bare imports by default; fix to relative
+          # so the stub works inside the namespace-package monorepo.
+          sed -i \
+            's/^import registry_pb2 as registry__pb2$/from . import registry_pb2 as registry__pb2/' \
+            ./src/registry_pb2_grpc.py
+
+      - name: Lint with ruff
+        run: |
+          uv run ruff check services/registry/src/ common/ --no-cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check services/registry/src/ common/
+
+      - name: Type check with mypy (optional)
+        continue-on-error: true
+        run: |
+          uv run mypy services/registry/src/ || echo "Type checking completed with warnings"
+
+      - name: Run tests
+        run: |
+          uv run pytest services/registry/tests/ \
+            --cov=services/registry/src \
+            --cov-report=xml \
+            --cov-report=term \
+            --verbose
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: registry
+          name: registry-coverage
+
+      - name: Build check
+        run: |
+          # Verify imports work
+          uv run python -c "from services.registry.src import main"
+
+  # ============================================================================
+  # Common Packages Tests
+  # ============================================================================
+  common-packages:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Common Packages (Lint, Format, Build)
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint common packages
+        run: |
+          uv run ruff check common/ --no-cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check common/
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Validate Prisma schema
+        run: |
+          cd common/database
+          uv run prisma validate
+
+      - name: Generate gRPC stubs
+        run: |
+          cd common/proto
+          uv run python -m grpc_tools.protoc \
+            -I./src \
+            --python_out=./src \
+            --grpc_python_out=./src \
+            ./src/registry.proto
+          # grpc_tools generates absolute bare imports by default; fix to relative
+          # so the stub works inside the namespace-package monorepo.
+          sed -i \
+            's/^import registry_pb2 as registry__pb2$/from . import registry_pb2 as registry__pb2/' \
+            ./src/registry_pb2_grpc.py
+
+      - name: Test common utilities
+        run: |
+          # Run unit tests if they exist
+          if [ -d "common/utils/tests" ]; then
+            uv run pytest common/utils/tests/ --verbose
+          fi
+
+  # ============================================================================
+  # Planning & Discovery Service Tests
+  # ============================================================================
+  planning-discovery-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.planning_discovery == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Planning & Discovery Service (Lint, Format, Test, Build)
+    timeout-minutes: 30
+
+    env:
+      # Service Config
+      SERVICE_NAME: planning-discovery-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: test
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8001
+
+      # Database (no ?schema= suffix — asyncpg does not accept Prisma-specific params)
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test
+
+      # Kafka (not started in CI — all consumers are mocked in tests)
+      KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+
+      # LLM — use Ollama for both providers to avoid requiring OPENROUTER_API_KEY.
+      # All LLM calls are mocked in tests so no real Ollama instance is needed.
+      LLM_PROVIDER: ollama
+      LLM_COMPLETION_PROVIDER: ollama
+      LLM_EMBEDDING_PROVIDER: ollama
+      OLLAMA_BASE_URL: http://localhost:11434
+      LLM_DECOMPOSITION_MODEL: llama3.1:8b
+      LLM_FALLBACK_MODEL: llama3.1:8b
+      LLM_EMBEDDING_MODEL: nomic-embed-text
+      LLM_VALIDATION_MODEL: llama3.1:8b
+      LLM_CONFIDENCE_THRESHOLD: "0.75"
+
+      # Search
+      SIMILARITY_THRESHOLD: "0.75"
+      TOP_K_CANDIDATES: "5"
+
+      # Logging
+      LOG_LEVEL: DEBUG
+
+      # Python path — workspace root for namespace package imports
+      PYTHONPATH: .
+
+    services:
+      # PostgreSQL with pgvector extension (required for HNSW / embedding queries)
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orcha_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Run database migrations
+        run: |
+          cd common/database
+          uv run prisma migrate deploy
+
+      - name: Initialise pgvector indices
+        run: |
+          uv run python services/planning-discovery/scripts/db/initialize_database.py
+
+      - name: Lint with ruff
+        run: |
+          uv run ruff check services/planning-discovery/src/ common/ --no-cache
+
+      - name: Format check with ruff
+        run: |
+          uv run ruff format --check services/planning-discovery/src/ common/
+
+      - name: Type check with mypy (optional)
+        continue-on-error: true
+        run: |
+          uv run mypy services/planning-discovery/src/ || echo "Type checking completed with warnings"
+
+      - name: Run tests
+        working-directory: services/planning-discovery
+        run: |
+          uv run pytest tests/ \
+            --cov-report=xml \
+            --cov-report=term \
+            --verbose
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./services/planning-discovery/coverage.xml
+          flags: planning-discovery
+          name: planning-discovery-coverage
+
+      - name: Build check
+        run: |
+          uv run python -m py_compile services/planning-discovery/src/planning_discovery/main.py
+          echo "Build check passed"
+
+  # ============================================================================
+  # SDK + emerge CLI Tests (self-contained — no DB/services needed)
+  # ============================================================================
+  sdk:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.sdk == 'true' }}
+    runs-on: ubuntu-latest
+    name: SDK + emerge CLI (Lint, Format, Test)
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff
+        run: uv run ruff check sdk/src/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check sdk/src/
+
+      - name: Run SDK tests
+        run: uv run pytest sdk/tests/ --verbose
+
+      - name: Smoke test the emerge CLI
+        run: |
+          uv run emerge --version
+          uv run emerge init "CI Agent" --dir /tmp/ci-agent
+          test -f /tmp/ci-agent/agent.py
+          uv run python -c "import json,yaml; from jsonschema import Draft202012Validator as V; \
+            import emerge; from emerge.manifest import build_manifest; from emerge.sdk import registered_agents, clear_registry; \
+            clear_registry(); \
+            (lambda: emerge.agent(name='Schema Check', description='d')(lambda t: t))(); \
+            V(json.load(open('docs/spec/emerge-yaml.schema.json'))).validate(build_manifest(registered_agents()[0]))"
+
+  # ============================================================================
+  # SuperAgent — lint + execution-pipeline seam tests
+  # ============================================================================
+  superagent-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.superagent == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: SuperAgent (Lint, Observer Seam Tests)
+    timeout-minutes: 15
+
+    env:
+      PYTHONPATH: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff (middleware pipeline — auth cascade + dispatch + observer seam)
+        run: uv run ruff check services/superagent/src/superagent/middleware/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check services/superagent/src/superagent/middleware/observers.py services/superagent/src/superagent/middleware/pipeline.py
+
+      - name: Test the ExecutionObserver seam (open/closed boundary)
+        working-directory: services/superagent
+        run: |
+          uv run pytest tests/unit/test_observers.py \
+            tests/unit/test_step_events.py \
+            tests/unit/test_settlement_three_way.py --verbose
+
+  # ============================================================================
+  # emerge-node — signed envelope helpers
+  # ============================================================================
+  emerge-node:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.node == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: emerge-node (envelope tests)
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run emerge-node tests
+        working-directory: node
+        run: uv run pytest tests/ -v
+
+  # ============================================================================
+  # Validator — attestation reference observer
+  # ============================================================================
+  validator:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.validator == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Validator (attestation reference)
+    timeout-minutes: 10
+
+    env:
+      PYTHONPATH: services/superagent/src:services/validator/src
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run validator tests
+        working-directory: services/validator
+        run: uv run pytest tests/ -v
+
+      - name: Run three-way pricing split tests
+        run: uv run pytest common/pricing/tests/ -v
+
+  # ============================================================================
+  # Fleet manifest validation (JSON Schema + ValidationService)
+  # ============================================================================
+  manifest-validate:
+    runs-on: ubuntu-latest
+    name: Fleet Manifest Validation
+    timeout-minutes: 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
+      PYTHONPATH: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Generate Prisma client
+        run: |
+          cd common/database
+          uv run prisma generate
+
+      - name: Validate fleet emerge.yaml manifests
+        run: uv run pytest services/registry/tests/test_fleet_manifests.py --verbose
+
+  # ============================================================================
+  # Gateway — lint + unit tests
+  # ============================================================================
+  gateway-service:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.gateway == 'true' || needs.detect-changes.outputs.common == 'true' }}
+    runs-on: ubuntu-latest
+    name: Gateway (Lint, Test)
+    timeout-minutes: 15
+
+    env:
+      PYTHONPATH: .
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha_test?schema=public
+      JWT_SECRET_KEY: ci-test-secret-key-for-gateway-tests-only
+      REDIS_URL: redis://localhost:6379/1
+      SUPERAGENT_URL: http://127.0.0.1:8002
+      REGISTRY_URL: http://127.0.0.1:8000
+      PAYMENT_MODE: mock
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Lint with ruff
+        run: uv run ruff check services/gateway/src/
+
+      - name: Format check with ruff
+        run: uv run ruff format --check services/gateway/src/
+
+      - name: Run Gateway unit tests
+        working-directory: services/gateway
+        run: uv run pytest tests/unit/test_auth_routes.py tests/unit/test_jwt.py --verbose
+
+  # ============================================================================
+  # Launch gate — infra → migrate → register → SDK smoke
+  # ============================================================================
+  launch-gate:
+    runs-on: ubuntu-latest
+    name: Launch Gate (register + SDK smoke)
+    timeout-minutes: 25
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/orcha?schema=public
+      PYTHONPATH: .
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: orcha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-extras --all-groups
+
+      - name: Run launch gate
+        run: ./scripts/launch-gate-ci.sh
+
+  # # ============================================================================
+  # # Docker Build Test
+  # # ============================================================================
+  # docker-build:
+  #   needs: [detect-changes, registry-service]
+  #   if: ${{ needs.detect-changes.outputs.registry == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   name: Docker Build Test
+  #   timeout-minutes: 20
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Docker Buildx
+  #       uses: docker/setup-buildx-action@v3
+
+  #     - name: Build Registry Docker image
+  #       uses: docker/build-push-action@v5
+  #       with:
+  #         context: .
+  #         file: ./services/registry/Dockerfile
+  #         push: false
+  #         tags: orcha/registry:test
+  #         cache-from: type=gha
+  #         cache-to: type=gha,mode=max
+
+  #     - name: Test Docker image
+  #       run: |
+  #         docker run --rm orcha/registry:test python -c "import services.registry.src.main"
+
+  # # ============================================================================
+  # # Security Scan
+  # # ============================================================================
+  # security-scan:
+  #   needs: detect-changes
+  #   if: ${{ needs.detect-changes.outputs.registry == 'true' || needs.detect-changes.outputs.common == 'true' }}
+  #   runs-on: ubuntu-latest
+  #   name: Security Scan
+  #   timeout-minutes: 10
+
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+
+  #     - name: Set up Python
+  #       uses: actions/setup-python@v5
+  #       with:
+  #         python-version: '3.12'
+
+  #     - name: Install uv
+  #       uses: astral-sh/setup-uv@v5
+
+  #     - name: Install dependencies
+  #       run: uv sync --frozen
+
+  #     - name: Run safety check
+  #       continue-on-error: true
+  #       run: |
+  #         uv run pip install safety
+  #         uv run safety check --json || echo "Safety check completed with warnings"
+
+  #     - name: Run bandit security linter
+  #       continue-on-error: true
+  #       run: |
+  #         uv run pip install bandit
+  #         uv run bandit -r services/registry/src/ common/ -f json || echo "Bandit scan completed with warnings"

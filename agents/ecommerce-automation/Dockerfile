@@ -1,0 +1,17 @@
+FROM --platform=linux/amd64 python:3.12-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# ── Deps layer (cached unless pyproject.toml / uv.lock change) ───────────────
+COPY pyproject.toml uv.lock ./
+RUN uv export --no-hashes --frozen --no-dev > /tmp/req.txt && \
+    uv pip install --system --no-cache -r /tmp/req.txt && \
+    python3 -c "import pydantic_core, fastapi"
+
+# ── Source layer (only invalidates when code changes) ─────────────────────────
+COPY src/ ./src/
+
+EXPOSE 8080
+CMD ["uvicorn", "src.a2a_server:app", "--host", "0.0.0.0", "--port", "8080"]

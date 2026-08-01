@@ -1,0 +1,246 @@
+# Tavily MCP — https://github.com/tavily-ai/tavily-mcp
+# Tool names use underscores (tavily_search, …) as registered in src/index.ts ListToolsRequestSchema.
+identity:
+  id: "did:orcha:system:web-search"
+  name: "Web Search"
+  version: "1.1.0"
+  description: "Real-time web search, extract, crawl, map, and research via Tavily MCP. Tool names must match the server (tavily_search, tavily_extract, tavily_crawl, tavily_map, tavily_research)."
+  tags: ["search", "web", "research", "system"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "tavily-mcp@latest"]
+
+health_endpoint: "http://localhost:0/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies:
+    - id: "strategy_tavily_platform"
+      type: "platform_env"
+      capability_ids: []
+      config:
+        env_key: "TAVILY_API_KEY"
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "tavily_search"
+      description: "Search the web for current information on any topic. Use for news, facts, or data beyond your knowledge cutoff. Returns snippets and source URLs."
+      inputSchema:
+        type: object
+        properties:
+          query:
+            type: string
+            description: "Search query"
+          search_depth:
+            type: string
+            enum: ["basic", "advanced", "fast", "ultra-fast"]
+            description: "Depth of search — basic, advanced, fast, or ultra-fast"
+            default: "basic"
+          topic:
+            type: string
+            enum: ["general"]
+            description: "Search category (agent selection)"
+            default: "general"
+          time_range:
+            type: string
+            enum: ["day", "week", "month", "year"]
+            description: "Time range back from today for results"
+          start_date:
+            type: string
+            description: "Results after this date (YYYY-MM-DD)"
+            default: ""
+          end_date:
+            type: string
+            description: "Results before this date (YYYY-MM-DD)"
+            default: ""
+          max_results:
+            type: number
+            description: "Maximum search results to return"
+            default: 5
+            minimum: 5
+            maximum: 20
+          include_images:
+            type: boolean
+            description: "Include query-related images"
+            default: false
+          include_image_descriptions:
+            type: boolean
+            description: "Include images and descriptions"
+            default: false
+          include_raw_content:
+            type: boolean
+            description: "Include cleaned HTML per result"
+            default: false
+          include_domains:
+            type: array
+            items:
+              type: string
+            description: "Domains to include"
+            default: []
+          exclude_domains:
+            type: array
+            items:
+              type: string
+            description: "Domains to exclude"
+            default: []
+          country:
+            type: string
+            description: "Boost results from this country (full name, e.g. United States)"
+            default: ""
+          include_favicon:
+            type: boolean
+            description: "Include favicon URL per result"
+            default: false
+          exact_match:
+            type: boolean
+            description: "Only results matching exact quoted phrases in the query"
+        required: ["query"]
+    - name: "tavily_extract"
+      description: "Extract content from URLs. Returns raw page content in markdown or text format."
+      inputSchema:
+        type: object
+        properties:
+          urls:
+            type: array
+            items:
+              type: string
+            description: "URLs to extract content from"
+          extract_depth:
+            type: string
+            enum: ["basic", "advanced"]
+            description: "Use advanced for LinkedIn, protected sites, or tables"
+            default: "basic"
+          include_images:
+            type: boolean
+            description: "Include images from pages"
+            default: false
+          format:
+            type: string
+            enum: ["markdown", "text"]
+            description: "Output format"
+            default: "markdown"
+          include_favicon:
+            type: boolean
+            description: "Include favicon URLs"
+            default: false
+          query:
+            type: string
+            description: "Query to rerank content chunks by relevance"
+        required: ["urls"]
+    - name: "tavily_crawl"
+      description: "Crawl a website from a root URL with configurable depth, breadth, and filters."
+      inputSchema:
+        type: object
+        properties:
+          url:
+            type: string
+            description: "Root URL to begin the crawl"
+          max_depth:
+            type: integer
+            description: "Max depth from the base URL"
+            default: 1
+            minimum: 1
+          max_breadth:
+            type: integer
+            description: "Max links to follow per level"
+            default: 20
+            minimum: 1
+          limit:
+            type: integer
+            description: "Total links to process before stopping"
+            default: 50
+            minimum: 1
+          instructions:
+            type: string
+            description: "Natural-language instructions for which pages to return"
+          select_paths:
+            type: array
+            items:
+              type: string
+            description: "Regex path patterns (e.g. /docs/.*)"
+            default: []
+          select_domains:
+            type: array
+            items:
+              type: string
+            description: "Regex domain patterns"
+            default: []
+          allow_external:
+            type: boolean
+            description: "Include external links in the response"
+            default: true
+          extract_depth:
+            type: string
+            enum: ["basic", "advanced"]
+            default: "basic"
+          format:
+            type: string
+            enum: ["markdown", "text"]
+            default: "markdown"
+          include_favicon:
+            type: boolean
+            default: false
+        required: ["url"]
+    - name: "tavily_map"
+      description: "Map a site's structure — list URLs discovered from a base URL."
+      inputSchema:
+        type: object
+        properties:
+          url:
+            type: string
+            description: "Root URL to begin mapping"
+          max_depth:
+            type: integer
+            description: "Max depth from the base URL"
+            default: 1
+            minimum: 1
+          max_breadth:
+            type: integer
+            description: "Max links per level"
+            default: 20
+            minimum: 1
+          limit:
+            type: integer
+            description: "Total links to process before stopping"
+            default: 50
+            minimum: 1
+          instructions:
+            type: string
+            description: "Natural-language instructions for the mapper"
+          select_paths:
+            type: array
+            items:
+              type: string
+            default: []
+          select_domains:
+            type: array
+            items:
+              type: string
+            default: []
+          allow_external:
+            type: boolean
+            default: true
+        required: ["url"]
+    - name: "tavily_research"
+      description: "Deep research across sources. Rate limit applies (see Tavily docs)."
+      inputSchema:
+        type: object
+        properties:
+          input:
+            type: string
+            description: "Comprehensive description of the research task"
+          model:
+            type: string
+            enum: ["mini", "pro", "auto"]
+            description: "Research depth — mini, pro, or auto"
+            default: "auto"
+        required: ["input"]

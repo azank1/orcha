@@ -1,0 +1,41 @@
+name: 🤖 Agent submission
+description: Share an agent you registered against Orcha (example or real).
+labels: ["agent", "show-and-tell"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Built an agent and registered it with `emerge publish`? Tell us about it.
+        See [templates/your-first-agent/](../../templates/your-first-agent/).
+  - type: input
+    id: name
+    attributes:
+      label: Agent name
+    validations:
+      required: true
+  - type: dropdown
+    id: protocol
+    attributes:
+      label: Protocol
+      options: ["MCP", "A2A", "ACP"]
+    validations:
+      required: true
+  - type: input
+    id: did
+    attributes:
+      label: DID
+      placeholder: "did:orcha:agent:my-agent"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What does it do?
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: Link to source / manifest (optional)
+    validations:
+      required: false

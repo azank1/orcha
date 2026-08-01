@@ -1,0 +1,30 @@
+# a2a-scheduler.yaml
+identity:
+  id: "did:orcha:agent:med-scheduler-v1"
+  name: "DrBookingAgent"
+  version: "1.1.0"
+  description: "HIPAA-compliant appointment scheduling assistant."
+  tags: ["healthcare", "scheduling", "sensitive"]
+
+protocol:
+  type: "a2a"
+  version: "1.0"
+  transport:
+    type: "http"
+    endpoint: "http://localhost:9000/agents/a2a_scheduler.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_healthcare_id"
+      type: "http_bearer"
+      config:
+        header_name: "Authorization"
+        scheme: "Bearer"
+        validation_endpoint: "https://auth.hospital-network.com/validate"
+
+payment:
+  type: "none"

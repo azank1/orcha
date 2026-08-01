@@ -1,0 +1,23 @@
+[project]
+name = "emerge-node"
+version = "0.1.0"
+description = "emerge-node — experimental gossip sidecar for agent networks (spike transport)"
+requires-python = ">=3.12"
+dependencies = [
+  "cryptography>=42",
+  "pyyaml>=6",
+]
+
+[project.scripts]
+emerge-node = "emerge_node.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/emerge_node"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

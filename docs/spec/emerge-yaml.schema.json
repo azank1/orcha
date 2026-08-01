@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/azank1/orcha/docs/spec/emerge-yaml.schema.json",
+  "title": "emerge.yaml",
+  "description": "Agent manifest for the Orcha orchestration runtime. Versioned, frozen-by-default. Changes go through the RFC process in docs/spec/governance.md.",
+  "type": "object",
+  "required": ["identity", "protocol", "health_endpoint", "security"],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of this manifest schema. Defaults to \"1.0\" when absent.",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "default": "1.0"
+    },
+    "identity": {
+      "type": "object",
+      "required": ["id", "name", "version", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Decentralized identifier. did:orcha:agent:* for user agents, did:orcha:system:* for platform tools.",
+          "pattern": "^did:orcha:(agent|system):[A-Za-z0-9._-]+$"
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "public_key": {
+          "type": "string",
+          "description": "Optional base64 Ed25519 public key for signed identity (emerge/1.1). Unused in mock OSS mode."
+        }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["type", "version", "transport"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["mcp", "a2a", "acp", "computer_use"],
+          "description": "acp is accepted for compatibility and routes through the A2A handler at runtime (IBM's ACP merged into A2A upstream in August 2025); it is not an independently maintained protocol."
+        },
+        "version": { "type": "string" },
+        "transport": {
+          "type": "object",
+          "required": ["type"],
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string", "enum": ["sse", "stdio", "http"] },
+            "endpoint": { "type": "string", "description": "Required for sse/http transports." },
+            "command": { "type": "string", "description": "Required for stdio transport." },
+            "args": { "type": "array", "items": { "type": "string" } },
+            "env": {
+              "type": "object",
+              "additionalProperties": { "type": "string" },
+              "description": "Env var templates for stdio agents, e.g. {\"KEY\": \"${KEY}\"}."
+            }
+          }
+        }
+      }
+    },
+    "health_endpoint": { "type": "string", "minLength": 1 },
+    "security": {
+      "type": "object",
+      "required": ["transport_layer"],
+      "additionalProperties": false,
+      "properties": {
+        "transport_layer": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": { "type": "string", "enum": ["tls", "mtls", "none"] },
+            "mtls_config": {
+              "type": "object",
+              "required": ["cert_vault_key", "key_vault_key", "ca_vault_key"],
+              "properties": {
+                "cert_vault_key": { "type": "string" },
+                "key_vault_key": { "type": "string" },
+                "ca_vault_key": { "type": "string" }
+              }
+            }
+          }
+        },
+        "auth_strategies": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "type", "config"],
+            "properties": {
+              "id": { "type": "string" },
+              "type": {
+                "type": "string",
+                "enum": ["x_api_key", "http_bearer", "oauth2", "oauth2_dcr"]
+              },
+              "capability_ids": { "type": "array", "items": { "type": "string" } },
+              "config": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "payment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": { "type": "boolean", "default": false },
+        "base_fee": {
+          "type": ["string", "null"],
+          "description": "Price per invocation in USD as a string, e.g. \"0.15\". Null/absent means free."
+        }
+      }
+    },
+    "network": {
+      "type": "object",
+      "description": "Experimental network configuration. Requires network.experimental: true.",
+      "additionalProperties": false,
+      "properties": {
+        "experimental": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt in to pre-release network features (validate live, gossip transport)."
+        },
+        "gossip": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "bootstrap_peers": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Multiaddr bootstrap peers for emerge-node (Phase 0)."
+            }
+          }
+        },
+        "cognitive_loop": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "enabled": { "type": "boolean", "default": false },
+            "cycle_seconds": { "type": "integer", "minimum": 1, "default": 120 }
+          }
+        }
+      }
+    },
+    "skills": {
+      "type": "array",
+      "description": "A2A skills — harvested from /.well-known/agent.json at registration; listed for documentation and PnD embedding.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "examples": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+# mcp-iot-controller.yaml
+identity:
+  id: "did:orcha:agent:building-hvac-control"
+  name: "BuildingOps-HVAC"
+  version: "1.0.4"
+  description: "Control interface for HVAC systems in Sector 7."
+  tags: ["iot", "infrastructure", "smart-building"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse" 
+    endpoint: "ws://localhost:9000/agents/mcp_iot.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_subscription"
+      type: "x_api_key"
+      config:
+        header_name: "X-Sub-Token"
+        key_vault_ref: "SUB_KEY"
+
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "POLYGON"
+    recipient_address: "0xABC...123"
+    asset: "MATIC"
+    default_price: "1" # 1 MATIC per session
+    currency: "MATIC"

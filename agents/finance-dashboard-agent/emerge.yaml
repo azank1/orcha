@@ -1,0 +1,52 @@
+identity:
+  id: "did:orcha:agent:finance-dashboard"
+  name: "Finance Dashboard Agent"
+  version: "1.0.0"
+  description: "Returns a live portfolio dashboard as a CanvasKit UIManifest — portfolio value, 90-day performance chart, open positions table, and alerts. Renders as a visual dashboard instead of a chat reply."
+  tags: ["finance", "dashboard", "canvaskit", "portfolio", "mcp", "sse"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:3010/sse"
+
+health_endpoint: "http://localhost:3010/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies: []
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "get_portfolio_dashboard"
+      description: "Build a portfolio dashboard for the given user. Returns a CanvasKit UIManifest that the Orcha frontend renders as a live dashboard (metric cards, performance chart, positions table, alerts). Use this when the user asks about their portfolio, investments, holdings, or financial overview."
+      inputSchema:
+        type: object
+        properties:
+          user_id:
+            type: string
+            description: "Optional user identifier. Omit for the demo portfolio."
+          date_range_days:
+            type: integer
+            description: "Number of days to include in the performance chart. Default 90."
+            default: 90
+        required: []
+      outputSchema:
+        type: object
+        description: "CanvasKit canvas envelope containing a UIManifest dashboard"
+        properties:
+          __canvas__:
+            type: boolean
+          summary:
+            type: string
+          manifest:
+            type: object
+
+  resources: []
+  prompts: []

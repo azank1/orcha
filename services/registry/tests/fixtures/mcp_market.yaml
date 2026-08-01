@@ -1,0 +1,36 @@
+# mcp-market-data.yaml
+identity:
+  id: "did:orcha:agent:alpha-feed-provider"
+  name: "AlphaDataFeed"
+  version: "3.0.0"
+  description: "Real-time aggregated order book data for DeFi assets."
+  tags: ["finance", "data", "defi", "analytics"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_market.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_subscription"
+      type: "x_api_key"
+      config:
+        header_name: "X-Sub-Token"
+        key_vault_ref: "SUB_KEY"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "SOLANA"
+    recipient_address: "SolAddress123..."
+    asset: "USDC"
+    default_price: "0.01"
+    currency: "USDC"

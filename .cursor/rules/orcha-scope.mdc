@@ -1,0 +1,70 @@
+---
+description: Milestone scope, README rules, and doc source-of-truth references. Auto-attached when editing docs or markdown.
+globs: ["docs/**/*.md", "*.md", "ROADMAP.md", "README.md", "CONTRIBUTING.md", "docs/**/*.json"]
+alwaysApply: false
+---
+
+# Orcha — Documentation Scope Rules
+
+## What Goes Where
+
+### README.md (above the fold)
+- **Show:** Working multi-protocol orchestration runtime. One goal → agent composition → CanvasKit dashboard.
+- **Show:** `emerge init` / `emerge run` quickstart.
+- **Do NOT show above the fold:** gossip network, token, autonomy, reputation, network-layer phases — these go in the ROADMAP section only.
+
+### ROADMAP.md
+Network-layer phases, token launch, CanvasKit marketplace, Studio, OrchFlow all live here — not in README hero or product docs.
+
+### docs/ (public-facing)
+- `docs/quickstart.md` — 5-minute install + first agent
+- `docs/bridges.md` — how to build a bridge (computer-use is the reference bridge)
+- `docs/emerge-yaml.md` — manifest format and fields
+- `docs/protocols.md` — MCP, A2A, ACP, COMPUTER_USE protocol guide
+- `docs/archtecture/system-architecture.md` — system architecture (v2.1)
+- `docs/srs.md` — software requirements specification (source of truth for requirements)
+- `docs/spec/emerge-yaml.schema.json` — versioned schema (do not change without RFC)
+- `docs/spec/governance.md` — RFC process for schema/protocol changes
+
+### docs/dev_docs/ (internal)
+- `docs/dev_docs/MASTER-PLAN.md` — milestone navigation index (M0–M7)
+- `docs/dev_docs/SCOPE-MAP.md` — in/out-of-scope per milestone (canonical spec)
+- `docs/dev_docs/M0-VERIFICATION.md` — M0 gate sign-off checklist
+- `docs/dev_docs/M2-DEMO.md` — demo validation + Show HN template
+- `docs/dev_docs/oss-launch/sprint-plan.md` — legacy F0–F3 foundation (superseded by M0–M7 in SCOPE-MAP)
+
+## Milestone Scope at a Glance
+
+### M0 — In Scope (merged on `main`)
+- CanvasKit v0.1 (8 components, `canvas_manifest` SSE, UIManifest)
+- Finance dashboard agent (MCP, port 3010 — started by `run-all.sh` Phase 3b)
+- Open computer-use bridge (MockComputerUseBackend default)
+- emerge SDK v0.1 (decorator, CLI, A2A server)
+- Architecture doc, SRS, milestone spec
+
+### M0 — Out of Scope
+Anything not in the above list. If unsure, check `docs/dev_docs/SCOPE-MAP.md`.
+
+### M1 — Hosted Sandbox (built; deploy pending)
+Fill `.env.sandbox`, set `SANDBOX_MAX_DAILY_MESSAGES`, add TLS, public URL. See `deploy/sandbox/README.md`.
+
+### M2 — Demo + Launch (in progress)
+Hero clip, Show HN, Discord. Demo goal validated ≥4/5 runs before recording. See `docs/dev_docs/M2-DEMO.md`.
+
+### M3+ — ROADMAP
+Network phases, traction metrics, token, any new product.
+
+## Schema Change Protocol
+
+The `emerge.yaml` schema (`docs/spec/emerge-yaml.schema.json`) is the public contract. Once external agents register, breaking it breaks everyone.
+
+**Additive changes** (new optional fields): allowed, bump `schema_version` in the example only.
+**Breaking changes** (remove/rename required fields): open an RFC in `docs/spec/governance.md` first.
+
+## Writing Style Rules
+
+- Product name: **Orcha** (no variants, no internal codenames)
+- Agent identity: `did:orcha:agent:*`
+- The SDK package: `orcha-sdk`, import as `emerge`
+- CanvasKit component output: always contrast with "not a text reply"
+- Network layer: ROADMAP section only; never in above-the-fold copy or product docs

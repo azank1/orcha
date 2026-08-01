@@ -1,0 +1,207 @@
+# a2a_itinerary_planner.yaml
+# A2A agent for AI-powered travel itinerary creation
+identity:
+  id: "did:orcha:agent:wandercraft-itinerary-planner"
+  name: "WanderCraft-ItineraryPlanner"
+  version: "2.0.0"
+  description: "AI-powered travel itinerary planner that creates detailed day-by-day plans based on destination, duration, interests, and budget. Incorporates local attractions, dining recommendations, transport links, and practical travel tips."
+  tags: ["travel", "itinerary", "planning", "ai", "tourism", "recommendations"]
+
+protocol:
+  type: "a2a"
+  version: "1.0"
+  transport:
+    type: "http"
+    endpoint: "http://localhost:9000/agents/a2a_itinerary_planner.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_api_key"
+      type: "x_api_key"
+      config:
+        header_name: "X-WanderCraft-Key"
+        key_vault_ref: "WANDERCRAFT_API_KEY"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "eip155:8453"
+    asset: "USDC"
+    token_address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    recipient_address: "0xFeed5678Feed5678Feed5678Feed5678Feed5678"
+    default_price: "0.25"
+    currency: "USD"
+    facilitator_url: "https://api.wandercraft.io/x402/verify"
+
+capabilities:
+  skills:
+    - id: "create_itinerary"
+      name: "Create Travel Itinerary"
+      description: "Generates a detailed day-by-day travel itinerary for a destination. Each day includes morning, afternoon, and evening activities with estimated durations, transport between locations, restaurant suggestions, and estimated costs."
+      input_schema:
+        type: object
+        properties:
+          destination:
+            type: string
+            description: "Travel destination city or region (e.g., 'Tokyo, Japan')"
+          arrival_date:
+            type: string
+            format: date
+            description: "Arrival date in YYYY-MM-DD format"
+          departure_date:
+            type: string
+            format: date
+            description: "Departure date in YYYY-MM-DD format"
+          interests:
+            type: array
+            items:
+              type: string
+              enum:
+                - "culture"
+                - "food"
+                - "nature"
+                - "shopping"
+                - "nightlife"
+                - "history"
+                - "art"
+                - "technology"
+                - "sports"
+                - "architecture"
+            description: "Traveller's interests for personalisation"
+          budget_per_day:
+            type: number
+            description: "Daily budget in the specified currency (excluding accommodation)"
+          budget_currency:
+            type: string
+            minLength: 3
+            maxLength: 3
+            default: "USD"
+            description: "Currency for the daily budget"
+          accommodation_area:
+            type: string
+            description: "Preferred area or neighbourhood to stay in (e.g., 'Shibuya')"
+          traveller_count:
+            type: integer
+            minimum: 1
+            default: 1
+          mobility_requirements:
+            type: string
+            enum: ["none", "limited_walking", "wheelchair_accessible"]
+            default: "none"
+            description: "Mobility considerations for activity selection"
+          notes:
+            type: string
+            description: "Any additional preferences or constraints"
+        required:
+          - destination
+          - arrival_date
+          - departure_date
+      output_schema:
+        type: object
+        properties:
+          destination:
+            type: string
+          total_days:
+            type: integer
+          days:
+            type: array
+            items:
+              type: object
+              properties:
+                day_number:
+                  type: integer
+                date:
+                  type: string
+                  format: date
+                theme:
+                  type: string
+                  description: "Theme for the day (e.g., 'Traditional Tokyo')"
+                activities:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      time_slot:
+                        type: string
+                        enum: ["morning", "afternoon", "evening"]
+                      name:
+                        type: string
+                      description:
+                        type: string
+                      location:
+                        type: string
+                      duration_minutes:
+                        type: integer
+                      estimated_cost:
+                        type: number
+                      transport_from_previous:
+                        type: string
+                lunch_recommendation:
+                  type: string
+                dinner_recommendation:
+                  type: string
+                estimated_daily_cost:
+                  type: number
+          practical_tips:
+            type: array
+            items:
+              type: string
+          estimated_total_cost:
+            type: number
+          currency:
+            type: string
+
+    - id: "optimize_itinerary"
+      name: "Optimize Travel Itinerary"
+      description: "Optimises an existing itinerary for efficiency — minimises travel time between locations, balances activity intensity, and adjusts for opening hours and crowd patterns."
+      input_schema:
+        type: object
+        properties:
+          itinerary:
+            type: object
+            description: "Existing itinerary from create_itinerary"
+          optimization_goals:
+            type: array
+            items:
+              type: string
+              enum:
+                - "minimize_travel_time"
+                - "minimize_cost"
+                - "avoid_crowds"
+                - "maximize_activities"
+                - "balance_intensity"
+            description: "Goals to optimise for"
+          constraints:
+            type: object
+            properties:
+              must_include:
+                type: array
+                items:
+                  type: string
+                description: "Activities or places that must be kept"
+              must_exclude:
+                type: array
+                items:
+                  type: string
+                description: "Activities or places to remove"
+        required:
+          - itinerary
+          - optimization_goals
+      output_schema:
+        type: object
+        properties:
+          optimized_itinerary:
+            type: object
+            description: "Revised itinerary with the same structure as create_itinerary output"
+          changes_made:
+            type: array
+            items:
+              type: string
+            description: "Summary of changes applied during optimisation"
+          improvement_summary:
+            type: string

@@ -1,0 +1,17 @@
+[project]
+name = "validator-service"
+version = "0.1.0"
+description = "Validator attestation reference implementation"
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/validator"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "../../superagent/src"]

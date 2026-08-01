@@ -1,0 +1,71 @@
+# PDF reading via MCP — https://github.com/SylphxAI/pdf-reader-mcp
+# npm: @sylphx/pdf-reader-mcp (Node ≥22). Requires `npx` on the SuperAgent host.
+identity:
+  id: "did:orcha:system:pdf-reader"
+  name: "PDF Reader"
+  version: "2.3.1"
+  description: "PDF reader MCP — extract text, metadata, page counts, embedded images, and tables from local PDF files or remote PDF URLs. Accepts multiple sources in a single call with per-source page selection. Use stage_artifact to get a local path for session uploads, then pass that path via sources[].path."
+  tags: ["documents", "pdf", "parsing", "tables", "images", "system"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "@sylphx/pdf-reader-mcp"]
+
+health_endpoint: "http://localhost:0/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies: []
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "read_pdf"
+      description: "Read content, metadata, images, and tables from one or more PDF files (local path or URL). Stage session-upload artifacts first with stage_artifact to obtain a local path."
+      inputSchema:
+        type: object
+        properties:
+          sources:
+            type: array
+            description: "Array of PDF sources to process. Provide path (local) or url (remote) for each. Optionally restrict to specific pages."
+            items:
+              type: object
+              properties:
+                path:
+                  type: string
+                  description: "Absolute or relative path to a local PDF file (e.g. /tmp/{session_id}/upload.pdf)"
+                url:
+                  type: string
+                  description: "URL of a remote PDF file"
+                pages:
+                  description: "Pages to extract — list of 1-based integers or range string e.g. '1-5'"
+                  oneOf:
+                    - type: array
+                      items:
+                        type: integer
+                        minimum: 1
+                    - type: string
+                      minLength: 1
+          include_full_text:
+            type: boolean
+            description: "Include full text content of each PDF (applies when 'pages' is not set for that source)"
+          include_metadata:
+            type: boolean
+            description: "Include document metadata and info objects"
+          include_page_count:
+            type: boolean
+            description: "Include total page count for each PDF"
+          include_images:
+            type: boolean
+            description: "Extract embedded images as base64-encoded data"
+          include_tables:
+            type: boolean
+            description: "Detect and extract tables using spatial clustering of text coordinates"
+        required: ["sources"]

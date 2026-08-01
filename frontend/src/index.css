@@ -1,0 +1,177 @@
+@import '@fontsource/space-grotesk/400.css';
+@import '@fontsource/space-grotesk/500.css';
+@import '@fontsource/space-grotesk/600.css';
+@import '@fontsource/space-grotesk/700.css';
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/500.css';
+@import '@fontsource/jetbrains-mono/600.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand */
+  --color-brand-primary: #6366F1;
+  --color-brand-primary-light: #818CF8;
+  --color-brand-primary-dim: #1E1B3A;
+  --color-brand-primary-deep: #12102E;
+  --color-brand-primary-hover: #4F52C8;
+  --color-brand-secondary: #8B8B96;
+  --color-brand-secondary-dim: #16161D;
+  --color-brand-secondary-hover: #A1A1AA;
+
+  /* Surface — zinc-neutral (cyber-technical theme) */
+  --color-surface-canvas: #0B0B0E;
+  --color-surface-base: #101014;
+  --color-surface-elevated: #16161D;
+  --color-surface-overlay: #1E1E26;
+  --color-surface-border: #1E1E26;
+  --color-surface-border-light: #3F3F46;
+  --color-surface-muted: #52525B;
+  --color-surface-subtle: #71717A;
+
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-success-dim: #052E16;
+  --color-warning: #F59E0B;
+  --color-warning-dim: #1C1400;
+  --color-error: #EF4444;
+  --color-error-dim: #2D0A0A;
+  --color-info: #6366F1;
+  --color-info-dim: #1E1B3A;
+  --color-purple: #A78BFA;
+  --color-purple-dim: #1A0A3D;
+
+  /* Typography */
+  --color-text-heading: #EEEEF2;
+  --color-text-body: #C4C4D4;
+  --color-text-secondary: #9CA3AF;
+  --color-text-disabled: #52525B;
+  --color-text-inverse: #09090B;
+  --color-text-brand: #6366F1;
+  --color-text-accent: #A5A8FF;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.6);
+  --shadow-blue: 0 0 20px rgba(59,110,248,0.25);
+  --shadow-cyan: 0 0 12px rgba(0,200,232,0.2);
+}
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #09090B;
+    color: #C4C4D4;
+    font-family: 'Inter', ui-sans-serif, system-ui;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  #root {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+    border: none;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #27272A transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #27272A;
+    border-radius: 9999px;
+  }
+
+  .animate-pulse-dot {
+    animation: pulseDot 1.4s ease-in-out infinite;
+  }
+
+  .animate-pulse-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .animate-pulse-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 110, 248, 0.3); }
+  50% { box-shadow: 0 0 0 4px rgba(59, 110, 248, 0); }
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 2s ease-in-out infinite;
+}
+
+@keyframes canvasEnter {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-canvas-enter {
+  animation: canvasEnter 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes toolCardEnter {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-tool-enter {
+  animation: toolCardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
