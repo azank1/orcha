@@ -1,0 +1,11 @@
+# OSV-Scanner ignore list — root uv.lock.
+# ecdsa is pulled in transitively by python-jose (JWT). The Minerva timing
+# attack (GHSA-wj6h-64fc-37mp / PYSEC-2026-1325) is unfixed upstream as of
+# 0.19.2 (latest); the project has stated it will not patch. JWT verification
+# here happens server-side over short-lived tokens; the timing side channel is
+# not remotely exploitable in this deployment. Tracked for replacement of
+# python-jose with a maintained JWT library.
+[[IgnoredVulns]]
+id = "GHSA-wj6h-64fc-37mp"
+reason = "Transitive via python-jose; no upstream fix (won't-patch). Server-side JWT verify only; replacement tracked."
+ignoreUntil = 2026-11-01
