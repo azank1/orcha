@@ -121,5 +121,5 @@ node/tests/test_gossip_spike.py
 kimi files/
 .superpowers/
 
-# Landing site lives in solvent-metaorcha/orcha-landing; local checkout kept here for convenience.
+# Landing site lives in solvent-labs-org/orcha-landing; local checkout kept here for convenience.
 deploy/landing-site/

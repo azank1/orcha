@@ -47,7 +47,7 @@ fail() { echo "[oss-carve] FAIL: $*" >&2; exit 1; }
 #
 # Substring allowlist (infra identifiers + live endpoints + org name):
 ALLOWLIST=(
-  'solvent-metaorcha'
+  'solvent-labs-org'
   'metaorcha_test'
   'metaorcha_pat_'
   'api.metaorcha.bot'

@@ -9,10 +9,10 @@ working in this repository. Human contributors: see [CONTRIBUTING.md](CONTRIBUTI
 
 ## Two-repo topology (since 2026-07-25)
 
-- **`solvent-metaorcha/orcha-internal`** (private, this repo) — the working repo. All
+- **`solvent-labs-org/orcha-internal`** (private, this repo) — the working repo. All
   branches, full history, `docs-local/`, strategy docs. (KY-A/hackathon work
   moved to the standalone `kya-supervisor` repo on 2026-07-31.)
-- **`solvent-metaorcha/orcha`** (public) — the OSS face. Two refs only:
+- **`solvent-labs-org/orcha`** (public) — the OSS face. Two refs only:
   - `main` — single orphan ref, sanitized downstream export of this repo's
     `main` + selected core deltas. No KY-A, no `docs/dev_docs/`, no internal
     codenames, no history.

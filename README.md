@@ -6,8 +6,8 @@
 
 *The open-source runtime for multi-protocol AI agent orchestration.*
 
-[![Build](https://github.com/solvent-metaorcha/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/solvent-metaorcha/orcha/actions)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/solvent-metaorcha/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/solvent-metaorcha/orcha)
+[![Build](https://github.com/solvent-labs-org/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/solvent-labs-org/orcha/actions)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/solvent-labs-org/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/solvent-labs-org/orcha)
 [![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
@@ -69,7 +69,7 @@ uvx emerge init my-agent && cd my-agent && uvx emerge run
 Running the full runtime (registry, planner, orchestrator, dashboard):
 
 ```bash
-git clone https://github.com/solvent-metaorcha/orcha && cd orcha
+git clone https://github.com/solvent-labs-org/orcha && cd orcha
 ./scripts/run-all.sh        # infra + all services + seed agents
 ```
 
@@ -118,7 +118,7 @@ The harness stays neutral ground between agents. Agents remain external, indepen
 | **New agent** | `agents/` | Grows the fleet, stress-tests the runtime |
 | **CanvasKit component** | `frontend/src/components/canvas/` | New dashboard primitives for agent output |
 
-→ [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](templates/your-first-bridge/) · [Open a RFC](https://github.com/solvent-metaorcha/orcha/issues/new?labels=rfc)
+→ [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](templates/your-first-bridge/) · [Open a RFC](https://github.com/solvent-labs-org/orcha/issues/new?labels=rfc)
 
 ## What's next
 
