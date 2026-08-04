@@ -1,60 +1,43 @@
 @import "tailwindcss";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+@import "@fontsource/fragment-mono/400.css";
 
-:root {
-  --bg: #0b0b0e;
-  --bg-raise: #101014;
-  --bg-hover: #16161d;
-  --line: #1e1e26;
-  --line-soft: #16161d;
-  --text: #e8e8ec;
-  --muted: #8b8b96;
-  --faint: #5a5a66;
-  --accent: #6366f1;
-  --accent-dim: #4f52c8;
-  --card-bg: #101014;
-  --code-bg: #080c14;
-  --terminal-bg: #080c14;
-  --diagram-bg: #101014;
-  --diagram-node-fill: #141824;
-  --diagram-node-stroke: #33394c;
-  --diagram-node-text: #ffffff;
-  --diagram-sub-text: #94a3b8;
-  --ok: #3ecf8e;
-  --warn: #e5c07b;
-  --err: #f43f5e;
-  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --display: 'Space Grotesk', var(--sans);
+@font-face {
+  font-family: 'Geist Pixel';
+  src: url('/fonts/GeistPixel-Line.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
-.light {
-  --bg: #f8fafc;
-  --bg-raise: #ffffff;
-  --bg-hover: #f1f5f9;
-  --line: #cbd5e1;
-  --line-soft: #e2e8f0;
-  --text: #0f172a;
-  --muted: #475569;
-  --faint: #64748b;
-  --accent: #4f46e5;
-  --accent-dim: #4338ca;
-  --card-bg: #ffffff;
-  --code-bg: #0f172a;
-  --terminal-bg: #0f172a;
-  --diagram-bg: #ffffff;
-  --diagram-node-fill: #ffffff;
-  --diagram-node-stroke: #4f46e5;
-  --diagram-node-text: #0f172a;
-  --diagram-sub-text: #64748b;
+:root {
+  /* Monochrome observatory tokens — no accent color. See docs/design.md */
+  --bg: #000000;
+  --fg: #ffffff;
+  --paper: #fafafa;
+  --ink: #0a0a0a;
+  --line-dark: #1f1f1f;
+  --line-light: #0a0a0a;
+  --muted-dark: #a3a3a3;
+  --muted-light: #525252;
+  --faint: #525252;
+  --ok: #3ecf8e; /* data semantics only (verdicts, verified) — never decorative */
+  --mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ascii: 'Fragment Mono', 'IBM Plex Mono', monospace;
+  --display: 'Geist Pixel', 'IBM Plex Mono', monospace;
 }
 
 body {
   background-color: var(--bg);
-  color: var(--text);
-  font-family: var(--sans);
-  font-size: 16px;
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 15px;
   line-height: 1.6;
-  transition: background-color 0.25s ease, color 0.25s ease;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-display {
@@ -65,17 +48,33 @@ body {
   font-family: var(--mono);
 }
 
-/* Hero shader layer is indigo-on-zinc (dark); hide it in light theme to keep contrast */
-.light .hero-shader {
-  display: none;
+.font-ascii {
+  font-family: var(--ascii);
 }
 
-/* Custom terminal blinking caret */
+/* Brand artwork ships in indigo; render it as a white silhouette (monochrome rule) */
+.brand-white {
+  filter: grayscale(1) brightness(0) invert(1);
+}
+
+/* Global film grain — brand texture, keep subtle (docs/design.md §1) */
+.grain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.10;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 128px 128px;
+}
+
+/* Terminal blinking caret */
 .caret {
   display: inline-block;
   width: 8px;
   height: 15px;
-  background: var(--text);
+  background: currentColor;
   vertical-align: -2px;
   animation: blink 1.05s steps(1) infinite;
 }
@@ -84,6 +83,19 @@ body {
   50% {
     opacity: 0;
   }
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.status-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
 }
 
 /* Custom scrollbars */
@@ -95,58 +107,54 @@ body {
   background: var(--bg);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--line);
+  background: var(--line-dark);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--faint);
 }
 
-/* SVG DAG styles - crisp white popout in both dark and light modes */
+/* SVG DAG styles — monochrome */
 .svg-node {
-  fill: var(--diagram-node-fill);
-  stroke: var(--diagram-node-stroke);
-  stroke-width: 2px;
-  filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.08));
+  fill: var(--bg);
+  stroke: var(--faint);
+  stroke-width: 1.5px;
   transition: all 0.2s ease;
 }
 .svg-node-hi {
-  stroke: var(--accent) !important;
-  stroke-width: 2.5px !important;
-  fill: #ffffff !important;
-  filter: drop-shadow(0px 4px 12px rgba(99, 102, 241, 0.35)) !important;
+  stroke: var(--fg) !important;
+  stroke-width: 2px !important;
+  fill: var(--fg) !important;
 }
 .svg-edge {
   stroke: var(--faint);
-  stroke-width: 1.8;
+  stroke-width: 1.5;
   fill: none;
   transition: all 0.2s ease;
 }
 .svg-edge-hi {
-  stroke: var(--accent) !important;
-  stroke-width: 2.5 !important;
+  stroke: var(--fg) !important;
+  stroke-width: 2 !important;
 }
 .svg-txt {
-  fill: var(--diagram-node-text);
+  fill: var(--fg);
   font-family: var(--mono);
   font-size: 11.5px;
   font-weight: 600;
 }
 .svg-node-hi .svg-txt {
-  fill: #0f172a !important;
+  fill: var(--ink) !important;
 }
 .svg-sub {
-  fill: var(--diagram-sub-text);
+  fill: var(--muted-dark);
   font-family: var(--mono);
   font-size: 9.5px;
   font-weight: 500;
 }
 
-/* Code syntax highlights */
-.code-keyword { color: #818cf8; }
-.code-string { color: #34d399; }
-.code-comment { color: #94a3b8; }
-.code-func { color: #fbbf24; }
-.code-type { color: #38bdf8; }
-
-
+/* Code syntax — grayscale */
+.code-keyword { color: #ffffff; font-weight: 600; }
+.code-string { color: #a3a3a3; }
+.code-comment { color: #525252; }
+.code-func { color: #d4d4d4; }
+.code-type { color: #e5e5e5; }

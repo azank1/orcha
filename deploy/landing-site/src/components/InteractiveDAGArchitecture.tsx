@@ -5,24 +5,24 @@ export const InteractiveDAGArchitecture: React.FC = () => {
   const [activeNode, setActiveNode] = useState<string | null>(null);
 
   return (
-    <section id="arch" className="py-16 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
+    <section id="arch" className="py-16 border-b border-white/10 bg-[var(--bg)] transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Section Header */}
         <div className="space-y-2">
-          <div className="font-mono text-xs text-[#6366f1] uppercase tracking-widest font-semibold">
+          <div className="font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--muted-dark)] font-semibold">
             Architecture
           </div>
-          <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[var(--text)]">
+          <h2 className="font-display font-bold text-2xl sm:text-3xl tracking-tight text-[var(--fg)]">
             Neutral ground between agents
           </h2>
-          <p className="text-[var(--muted)] text-xs sm:text-sm max-w-2xl leading-relaxed">
+          <p className="text-[var(--muted-dark)] text-xs sm:text-sm max-w-2xl leading-relaxed">
             Orcha is a harness, not an agent: plan → route → dispatch → verify → normalize → render. Agents stay external and independent.
           </p>
         </div>
 
         {/* Interactive Architecture SVG Diagram */}
-        <div className="bg-[var(--card-bg)] border border-[var(--line)] rounded-xl p-6 shadow-xl overflow-x-auto transition-colors">
+        <div className="bg-white/5 border border-[var(--line-dark)] rounded-xl p-6 shadow-xl overflow-x-auto transition-colors">
           <div className="min-w-[800px]">
             <svg
               viewBox="0 0 1000 300"
@@ -223,20 +223,20 @@ export const InteractiveDAGArchitecture: React.FC = () => {
           {ARCHITECTURE_SERVICES.map((svc, idx) => (
             <div
               key={idx}
-              className="bg-[var(--card-bg)] border border-[var(--line)] p-5 rounded-xl space-y-2 flex flex-col justify-between shadow-sm transition-colors"
+              className="bg-white/5 border border-[var(--line-dark)] p-5 rounded-xl space-y-2 flex flex-col justify-between shadow-sm transition-colors"
             >
               <div>
-                <span className="font-mono text-xs font-bold text-[#6366f1] block mb-1">
+                <span className="font-mono text-xs font-bold text-[var(--fg)] block mb-1">
                   {svc.port}
                 </span>
-                <h4 className="font-display font-semibold text-sm text-[var(--text)]">
+                <h4 className="font-display font-semibold text-sm text-[var(--fg)]">
                   {svc.name}
                 </h4>
-                <p className="text-xs text-[var(--muted)] mt-2 leading-relaxed">
+                <p className="text-xs text-[var(--muted-dark)] mt-2 leading-relaxed">
                   {svc.description}
                 </p>
               </div>
-              <div className="pt-3 border-t border-[var(--line)] font-mono text-[10.5px] text-[var(--faint)]">
+              <div className="pt-3 border-t border-[var(--line-dark)] font-mono text-[10.5px] text-[var(--faint)]">
                 {svc.protocol}
               </div>
             </div>

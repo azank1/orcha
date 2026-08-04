@@ -108,7 +108,7 @@ export const ROADMAP_PHASES = [
     status: 'shipping',
     title: 'Multiprotocol orchestration',
     description: 'Registry, planner, SuperAgent, Gateway. MCP, A2A, and computer use in one run. Credential vault, human in the loop interrupts, mock payments, 7 example agents, emerge SDK, versioned emerge.yaml.',
-    gate: 'fully local · PAYMENT_MODE=mock'
+    gate: 'fully local'
   },
   {
     version: 'v1.2 harness',
@@ -126,8 +126,3 @@ export const ROADMAP_PHASES = [
   }
 ];
 
-export const NON_GOALS = [
-  'No default token, staking, or on-chain settlement in the current core runtime.',
-  'No ML ranking presented as a launch capability; discovery today is vector plus gate logic.',
-  'No claim that a production decentralized network exists today. It does not. Seams do, and they ship labeled as experimental.'
-];

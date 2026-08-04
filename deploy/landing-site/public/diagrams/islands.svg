@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675"><rect width="1200" height="675" fill="#0B0B0E"/>
+    <rect x="80" y="120" width="280" height="190" rx="16" fill="#101014" stroke="#26262F" stroke-width="2"/>
+    <text x="220" y="190" font-family="JetBrains Mono" font-size="13" fill="#6366F1" text-anchor="middle" letter-spacing="2">ANTHROPIC · 10K+ SERVERS</text>
+    <text x="220" y="232" font-family="Space Grotesk" font-weight="700" font-size="30" fill="#E8E8EC" text-anchor="middle">MCP</text>
+    <text x="220" y="268" font-family="JetBrains Mono" font-size="13.5" fill="#8B8B96" text-anchor="middle">tools + resources</text>
+    <rect x="800" y="120" width="280" height="190" rx="16" fill="#101014" stroke="#26262F" stroke-width="2"/>
+    <text x="940" y="190" font-family="JetBrains Mono" font-size="13" fill="#3ECF8E" text-anchor="middle" letter-spacing="2">GOOGLE → LINUX FDN</text>
+    <text x="940" y="232" font-family="Space Grotesk" font-weight="700" font-size="30" fill="#E8E8EC" text-anchor="middle">A2A</text>
+    <text x="940" y="268" font-family="JetBrains Mono" font-size="13.5" fill="#8B8B96" text-anchor="middle">tasks + delegation</text>
+    <rect x="440" y="420" width="280" height="190" rx="16" fill="#101014" stroke="#26262F" stroke-width="2"/>
+    <text x="580" y="490" font-family="JetBrains Mono" font-size="13" fill="#E5C07B" text-anchor="middle" letter-spacing="2">THE LONG TAIL</text>
+    <text x="580" y="532" font-family="Space Grotesk" font-weight="700" font-size="30" fill="#E8E8EC" text-anchor="middle">computer-use</text>
+    <text x="580" y="568" font-family="JetBrains Mono" font-size="13.5" fill="#8B8B96" text-anchor="middle">everything without an API</text><line x1="360" y1="215" x2="800" y2="215" stroke="#5A5A66" stroke-width="2" stroke-dasharray="6 6"/>
+    <rect x="522.0" y="200.0" width="116" height="30" rx="6" fill="#0B0B0E" stroke="#E5C07B" stroke-width="1.5"/>
+    <text x="580.0" y="220.0" font-family="JetBrains Mono" font-size="14" fill="#E5C07B" text-anchor="middle">glue code</text><line x1="220" y1="310" x2="480" y2="440" stroke="#5A5A66" stroke-width="2" stroke-dasharray="6 6"/>
+    <rect x="292.0" y="360.0" width="116" height="30" rx="6" fill="#0B0B0E" stroke="#E5C07B" stroke-width="1.5"/>
+    <text x="350.0" y="380.0" font-family="JetBrains Mono" font-size="14" fill="#E5C07B" text-anchor="middle">glue code</text><line x1="940" y1="310" x2="680" y2="440" stroke="#5A5A66" stroke-width="2" stroke-dasharray="6 6"/>
+    <rect x="752.0" y="360.0" width="116" height="30" rx="6" fill="#0B0B0E" stroke="#E5C07B" stroke-width="1.5"/>
+    <text x="810.0" y="380.0" font-family="JetBrains Mono" font-size="14" fill="#E5C07B" text-anchor="middle">glue code</text><text x="600" y="70" font-family="JetBrains Mono" font-size="14" fill="#5A5A66" text-anchor="middle" letter-spacing="2">EVERY SERIOUS STACK SPEAKS ALL THREE — CONNECTED BY HAND</text></svg>

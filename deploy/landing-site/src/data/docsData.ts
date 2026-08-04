@@ -88,7 +88,7 @@ Get up and running with Orcha in under 5 minutes using \`uv\` / \`npm\` or Docke
             type: 'code',
             codeLanguage: 'bash',
             value: `# Clone the open-source repository
-git clone https://github.com/azank1/orcha.git
+git clone https://github.com/solvent-metaorcha/orcha.git
 cd orcha
 
 # Install dependencies (Python + JS via uv & npm)

@@ -15,45 +15,25 @@ const PILLARS = [
   }
 ];
 
-const VERB_CHIPS = [
-  'plans goals',
-  'routes protocols',
-  'verifies steps',
-  'renders dashboards',
-  'exports evidence'
-];
-
 export const ValuePropGrid: React.FC = () => {
   return (
-    <section id="value-props" className="py-16 border-b border-[var(--line)] bg-[var(--bg)] transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <section id="value-props" className="py-24 sm:py-32 border-b border-black/10 bg-[var(--paper)] transition-colors">
+      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
 
         {/* 3-Pillar Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {PILLARS.map((pillar) => (
             <div
               key={pillar.title}
-              className="bg-[var(--card-bg)] border border-[var(--line)] rounded-xl p-6 shadow-sm transition-colors"
+              className="bg-white border border-black/10 rounded-2xl p-8 shadow-sm transition-colors hover:border-black/40"
             >
-              <h3 className="font-display font-bold text-lg text-[var(--text)] mb-2">
+              <h3 className="font-display font-bold text-xl text-[var(--ink)] mb-3">
                 {pillar.title}
               </h3>
-              <p className="text-xs sm:text-sm text-[var(--muted)] leading-relaxed">
+              <p className="text-base text-[var(--muted-light)] leading-relaxed">
                 {pillar.body}
               </p>
             </div>
-          ))}
-        </div>
-
-        {/* Verb Chips Row */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {VERB_CHIPS.map((chip) => (
-            <span
-              key={chip}
-              className="font-mono text-[11px] text-[var(--muted)] px-3 py-1.5 rounded-md border border-[var(--line)] bg-[var(--bg)]"
-            >
-              {chip}
-            </span>
           ))}
         </div>
 

@@ -1,75 +1,65 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Github } from 'lucide-react';
+import { AsciiMoonField } from './AsciiMoonField';
+import { DiscordMark } from './DiscordMark';
+import { footer, GITHUB_URL, DISCORD_URL } from '../data/siteConfig';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-[var(--bg)] border-t border-[var(--line)] py-12 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-        
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
-          
-          {/* Brand & Mission */}
-          <div className="md:col-span-5 space-y-3">
-            <div className="flex items-center gap-2 font-display font-bold text-lg text-[var(--text)]">
-              <span className="w-2.5 h-2.5 bg-[#6366f1] rounded-[2px] inline-block"></span>
-              Orcha
+    <footer className="relative bg-[var(--bg)] text-[var(--fg)] overflow-hidden">
+      {/* Subtle ASCII backdrop */}
+      <div className="absolute inset-0 opacity-[0.18] pointer-events-none">
+        <AsciiMoonField speed={0.03} interactive={false} className="w-full h-full" />
+      </div>
+
+      <div className="relative max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-14 pt-20 pb-10">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-16">
+          <div className="md:col-span-6">
+            <div className="flex items-center gap-3 mb-6">
+              <img src="/brand/glyph-bare.svg" alt="Orcha" className="w-8 h-8 brand-white" />
+              <span className="font-display text-2xl tracking-tight">Orcha</span>
             </div>
-            <p className="text-xs text-[var(--muted)] max-w-sm leading-relaxed">
-              The open source harness for multi-protocol AI agent orchestration (MCP, A2A, computer use). Released under Apache 2.0.
+            <p className="text-xs text-[var(--muted-dark)] max-w-sm leading-relaxed">
+              The open-source harness for multi-protocol AI agent orchestration — MCP, A2A, computer-use.
+              Released under Apache 2.0. Maintained by its contributors, not a company.
             </p>
-            <div className="font-mono text-[11px] text-[var(--faint)]">
-              did:orcha:system:superagent · RFC 0001
-            </div>
+            <p className="text-[11px] text-[var(--faint)] mt-4">did:orcha:system:superagent · RFC 0001</p>
           </div>
 
-          {/* Quick Links */}
-          <div className="md:col-span-7 grid grid-cols-2 sm:grid-cols-3 gap-6 font-mono text-xs">
-            
+          <div className="md:col-span-6 grid grid-cols-2 gap-8 text-xs">
             <div className="space-y-3">
-              <span className="text-[var(--text)] font-semibold uppercase tracking-wider block">Runtime</span>
-              <ul className="space-y-2 text-[var(--muted)]">
-                <li><a href="#playground" className="hover:text-[var(--text)] transition-colors">Sandbox</a></li>
-                <li><a href="#verified-runs" className="hover:text-[var(--text)] transition-colors">Verified Runs</a></li>
-                <li><a href="#canvaskit" className="hover:text-[var(--text)] transition-colors">CanvasKit</a></li>
-                <li><a href="#sdk" className="hover:text-[var(--text)] transition-colors">Emerge SDK</a></li>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-[var(--faint)] block">Runtime</span>
+              <ul className="space-y-2 text-[var(--muted-dark)]">
+                <li><Link to="/#observation" className="hover:text-[var(--fg)] transition-colors">Sandbox</Link></li>
+                <li><Link to="/#plugins" className="hover:text-[var(--fg)] transition-colors">Plugins</Link></li>
+                <li><Link to="/plugins/canvaskit" className="hover:text-[var(--fg)] transition-colors">CanvasKit</Link></li>
+                <li><Link to="/docs" className="hover:text-[var(--fg)] transition-colors">Orcha SDK</Link></li>
               </ul>
             </div>
-
             <div className="space-y-3">
-              <span className="text-[var(--text)] font-semibold uppercase tracking-wider block">Architecture</span>
-              <ul className="space-y-2 text-[var(--muted)]">
-                <li><a href="#arch" className="hover:text-[var(--text)] transition-colors">Neutral Ground</a></li>
-                <li><a href="#sdk" className="hover:text-[var(--text)] transition-colors">emerge.yaml 1.1</a></li>
-                <li><a href="https://github.com/azank1/orcha" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text)] transition-colors">RFC 0001 Spec</a></li>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-[var(--faint)] block">Community</span>
+              <ul className="space-y-2 text-[var(--muted-dark)]">
+                <li>
+                  <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--fg)] transition-colors inline-flex items-center gap-1.5">
+                    <Github className="w-3 h-3" /> GitHub
+                  </a>
+                </li>
+                <li>
+                  <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--fg)] transition-colors inline-flex items-center gap-1.5">
+                    <DiscordMark className="w-3 h-3" /> Discord
+                  </a>
+                </li>
+                <li><Link to="/roadmap" className="hover:text-[var(--fg)] transition-colors">Roadmap</Link></li>
+                <li><Link to="/contributing" className="hover:text-[var(--fg)] transition-colors">Contributing</Link></li>
               </ul>
             </div>
-
-            <div className="space-y-3">
-              <span className="text-[var(--text)] font-semibold uppercase tracking-wider block">Community</span>
-              <ul className="space-y-2 text-[var(--muted)]">
-                <li><a href="https://github.com/azank1/orcha" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text)] transition-colors flex items-center gap-1"><Github className="w-3 h-3" /> GitHub Repo</a></li>
-                <li><a href="#roadmap" className="hover:text-[var(--text)] transition-colors">Honest Roadmap</a></li>
-                <li><a href="#contribute" className="hover:text-[var(--text)] transition-colors">Contributing</a></li>
-                <li><a href="https://discord.gg/orcha" target="_blank" rel="noopener noreferrer" className="hover:text-[var(--text)] transition-colors">Discord</a></li>
-              </ul>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Bottom Bar */}
-        <div className="pt-8 border-t border-[var(--line)] flex flex-col sm:flex-row items-center justify-between font-mono text-xs text-[var(--faint)] gap-4">
-          <div>
-            © {new Date().getFullYear()} Orcha Open Source Contributors. Licensed under Apache 2.0.
-              <br /><span className="font-mono text-[11px] text-[var(--faint)]">receipts, not traces — per-step verdicts, exportable evidence.</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-[var(--muted)]">PAYMENT_MODE=mock</span>
-            <span className="text-[var(--muted)]">v1.0.0</span>
           </div>
         </div>
 
+        <div className="border-t border-[var(--line-dark)] pt-6 text-[11px] text-[var(--faint)]">
+          <span>{footer.copyrightText}</span>
+        </div>
       </div>
     </footer>
   );
