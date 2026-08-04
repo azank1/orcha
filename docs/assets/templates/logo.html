@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orcha — Logo</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#0b0b0e; --raise:#101014; --line:#1e1e26; --text:#e8e8ec; --muted:#8b8b96; --faint:#5a5a66; --accent:#6366f1;
+    --mono:'JetBrains Mono',ui-monospace,monospace; --display:'Space Grotesk',sans-serif; }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:64px 32px 96px; }
+  .wrap{ max-width:960px; margin:0 auto; }
+  .kicker{ font-family:var(--mono); font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:14px; }
+  h1{ font-family:var(--display); font-weight:700; font-size:34px; letter-spacing:-.02em; margin-bottom:10px; }
+  .sub{ color:var(--muted); font-size:15px; max-width:600px; margin-bottom:56px; }
+  h2{ font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin:48px 0 18px; }
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .cell{ border:1px solid var(--line); border-radius:12px; background:var(--raise); padding:28px; display:flex; flex-direction:column; gap:18px; }
+  .cell .stage{ display:flex; align-items:center; justify-content:center; min-height:220px; }
+  .cell .stage.light{ background:#f4f4f6; border-radius:8px; }
+  .cell .stage.checker{ background:repeating-conic-gradient(#181820 0% 25%, #121218 0% 50%) 0 0/22px 22px; border-radius:8px; }
+  .cell svg, .cell img{ max-width:100%; height:auto; display:block; }
+  .cell .meta{ font-family:var(--mono); font-size:11.5px; color:var(--muted); line-height:1.9; }
+  .cell .meta b{ color:var(--text); font-weight:500; }
+  .sizes{ display:flex; align-items:flex-end; gap:24px; }
+  .sizes figure{ text-align:center; font-family:var(--mono); font-size:10.5px; color:var(--faint); }
+  .sizes figure img{ display:block; margin-bottom:8px; }
+  a{ color:var(--accent); text-decoration:none; }
+  .note{ margin-top:56px; border:1px solid var(--line); border-radius:12px; padding:24px 28px; font-size:13.5px; color:var(--muted); line-height:1.8; }
+  .note code{ font-family:var(--mono); font-size:12px; color:var(--text); background:var(--raise); padding:2px 7px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Orcha · brand</div>
+  <h1>Logo</h1>
+  <p class="sub">One hub, three nodes — a goal fanned out to agents across protocols. Indigo <span style="font-family:var(--mono)">#6366F1</span> on near-black, matching the runtime UI.</p>
+
+  <h2>01 — App icon (Discord / avatars)</h2>
+  <div class="grid">
+    <div class="cell">
+      <div class="stage"><svg width="220" height="220" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="116" fill="#0B0B0E" stroke="#1E1E26" stroke-width="2"/>
+  <g transform="translate(0,14)">
+    <line x1="256" y1="256" x2="256.0" y2="121.0" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="139.1" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="372.9" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <rect x="218" y="218" width="76" height="76" rx="18" fill="#6366F1"/>
+    <rect x="233.0" y="98.0" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="116.1" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="349.9" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+  </g>
+</svg></div>
+      <div class="meta"><b>icon-tile</b> — rounded dark tile, the profile-picture form.<br>
+      PNG: <a href="brand/orcha-icon-1024.png">orcha-icon-1024.png</a> · <a href="brand/orcha-icon-128.png">128px</a></div>
+    </div>
+    <div class="cell">
+      <div class="stage checker"><svg width="220" height="220" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <line x1="256" y1="256" x2="256.0" y2="121.0" stroke="#6366F1" stroke-width="11" opacity="0.65"/>
+    <line x1="256" y1="256" x2="139.1" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.65"/>
+    <line x1="256" y1="256" x2="372.9" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.65"/>
+    <rect x="218" y="218" width="76" height="76" rx="18" fill="#6366F1"/>
+    <rect x="233.0" y="98.0" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="116.1" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="349.9" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+</svg></div>
+      <div class="meta"><b>glyph-bare</b> — transparent background, for overlays and light contexts.<br>
+      PNG: <a href="brand/orcha-glyph-1024.png">orcha-glyph-1024.png</a></div>
+    </div>
+  </div>
+
+  <h2>02 — Scale check</h2>
+  <div class="cell">
+    <div class="stage" style="justify-content:flex-start; min-height:0;">
+      <div class="sizes">
+        <figure><img src="brand/orcha-icon-1024.png" width="128" alt="128">128</figure>
+        <figure><img src="brand/orcha-icon-1024.png" width="64" alt="64">64</figure>
+        <figure><img src="brand/orcha-icon-1024.png" width="32" alt="32">32</figure>
+        <figure><img src="brand/orcha-icon-1024.png" width="16" alt="16">16</figure>
+      </div>
+    </div>
+    <div class="meta">Reads down to favicon size — the hub-and-spoke silhouette survives 16px.</div>
+  </div>
+
+  <h2>03 — Horizontal lockups</h2>
+  <div class="grid">
+    <div class="cell">
+      <div class="stage"><svg width="360" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360">
+  <g transform="scale(0.703)">
+    <rect width="512" height="512" rx="116" fill="#0B0B0E" stroke="#1E1E26" stroke-width="2"/>
+    <line x1="256" y1="256" x2="256.0" y2="121.0" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="139.1" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="372.9" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <rect x="218" y="218" width="76" height="76" rx="18" fill="#6366F1"/>
+    <rect x="233.0" y="98.0" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="116.1" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="349.9" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+  </g>
+  <text x="432" y="226" font-family="Space Grotesk" font-weight="700" font-size="164" letter-spacing="-5" fill="#E8E8EC">orcha</text>
+</svg></div>
+      <div class="meta"><b>lockup-dark</b> — for dark surfaces (X header, README hero).<br>
+      PNG: <a href="brand/orcha-lockup-dark.png">orcha-lockup-dark.png</a></div>
+    </div>
+    <div class="cell">
+      <div class="stage light"><svg width="360" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360">
+  <g transform="scale(0.703)">
+    <rect width="512" height="512" rx="116" fill="#0B0B0E" stroke="#1E1E26" stroke-width="2"/>
+    <line x1="256" y1="256" x2="256.0" y2="121.0" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="139.1" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <line x1="256" y1="256" x2="372.9" y2="323.5" stroke="#6366F1" stroke-width="11" opacity="0.5"/>
+    <rect x="218" y="218" width="76" height="76" rx="18" fill="#6366F1"/>
+    <rect x="233.0" y="98.0" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="116.1" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+    <rect x="349.9" y="300.5" width="46" height="46" rx="11" fill="#E8E8EC"/>
+  </g>
+  <text x="432" y="226" font-family="Space Grotesk" font-weight="700" font-size="164" letter-spacing="-5" fill="#0B0B0E">orcha</text>
+</svg></div>
+      <div class="meta"><b>lockup-light</b> — for light surfaces (docs, slides).<br>
+      PNG: <a href="brand/orcha-lockup-light.png">orcha-lockup-light.png</a></div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b style="color:var(--text)">Usage.</b> Discord server icon → <code>orcha-icon-1024.png</code> (Discord crops to a circle; the tile is safe).
+    X avatar → same file. Repo social preview / banners → lockup-dark. Source SVGs live in <code>brand/svg/</code> — edit geometry there and re-render.
+  </div>
+</div>
+</body>
+</html>

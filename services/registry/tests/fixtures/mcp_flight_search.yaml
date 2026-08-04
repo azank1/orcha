@@ -1,0 +1,152 @@
+# mcp_flight_search.yaml
+# MCP agent for searching and comparing flights
+identity:
+  id: "did:orcha:agent:skylink-flight-search"
+  name: "SkyLink-FlightSearch"
+  version: "2.1.0"
+  description: "Searches and compares flight options across major airlines and OTAs. Returns sorted results by price, duration, or stops with real-time seat availability."
+  tags: ["travel", "flights", "booking", "aviation", "search"]
+
+protocol:
+  type: "mcp"
+  version: "2025-11-25"
+  transport:
+    type: "sse"
+    endpoint: "http://localhost:9000/agents/mcp_flight_search.yaml"
+
+health_endpoint: "http://localhost:9000/health"
+
+security:
+  transport_layer:
+    type: "tls"
+  auth_strategies:
+    - id: "strategy_api_key"
+      type: "x_api_key"
+      config:
+        header_name: "X-SkyLink-Key"
+        key_vault_ref: "SKYLINK_API_KEY"
+
+payment:
+  type: "x402"
+  config:
+    enabled: true
+    chain_id: "eip155:8453"
+    asset: "USDC"
+    token_address: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
+    recipient_address: "0xAbCd1234AbCd1234AbCd1234AbCd1234AbCd1234"
+    default_price: "0.05"
+    currency: "USD"
+    facilitator_url: "https://api.skylink.io/x402/verify"
+
+capabilities:
+  tools:
+    - name: "search_flights"
+      description: "Search for available flights between two airports on a given date. Returns a list of flight options sorted by price."
+      inputSchema:
+        type: object
+        properties:
+          origin:
+            type: string
+            description: "Origin airport IATA code (e.g., LHR, JFK)"
+          destination:
+            type: string
+            description: "Destination airport IATA code (e.g., NRT, HND)"
+          departure_date:
+            type: string
+            format: date
+            description: "Departure date in YYYY-MM-DD format"
+          return_date:
+            type: string
+            format: date
+            description: "Return date in YYYY-MM-DD format (omit for one-way)"
+          passengers:
+            type: integer
+            minimum: 1
+            maximum: 9
+            default: 1
+            description: "Number of passengers"
+          cabin_class:
+            type: string
+            enum: ["economy", "premium_economy", "business", "first"]
+            default: "economy"
+            description: "Preferred cabin class"
+        required:
+          - origin
+          - destination
+          - departure_date
+      outputSchema:
+        type: object
+        properties:
+          flights:
+            type: array
+            items:
+              type: object
+              properties:
+                flight_id:
+                  type: string
+                airline:
+                  type: string
+                flight_number:
+                  type: string
+                origin:
+                  type: string
+                destination:
+                  type: string
+                departure_time:
+                  type: string
+                  format: date-time
+                arrival_time:
+                  type: string
+                  format: date-time
+                duration_minutes:
+                  type: integer
+                stops:
+                  type: integer
+                price:
+                  type: number
+                currency:
+                  type: string
+                seats_available:
+                  type: integer
+          total_results:
+            type: integer
+          cheapest_price:
+            type: number
+          currency:
+            type: string
+
+    - name: "get_price_calendar"
+      description: "Returns a calendar of prices for a route across a date range, useful for finding the cheapest days to fly."
+      inputSchema:
+        type: object
+        properties:
+          origin:
+            type: string
+            description: "Origin airport IATA code"
+          destination:
+            type: string
+            description: "Destination airport IATA code"
+          month:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+            description: "Month to check in YYYY-MM format"
+          passengers:
+            type: integer
+            default: 1
+        required:
+          - origin
+          - destination
+          - month
+      outputSchema:
+        type: object
+        properties:
+          calendar:
+            type: object
+            additionalProperties:
+              type: number
+            description: "Map of date (YYYY-MM-DD) to lowest available price"
+          currency:
+            type: string
+
+  resources: []
+  prompts: []

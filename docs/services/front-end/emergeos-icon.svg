@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <!-- Vertical gradient: Sovereign Blue at base, Precision Cyan at peak -->
+    <linearGradient id="eg-grad" x1="0" y1="54" x2="0" y2="10" gradientUnits="userSpaceOnUse">
+      <stop offset="0%"   stop-color="#3B6EF8"/>
+      <stop offset="52%"  stop-color="#4F7CF9"/>
+      <stop offset="100%" stop-color="#00C8E8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Foundation layer — widest, deepest blue -->
+  <rect x="10" y="42" width="44" height="12" rx="6" fill="url(#eg-grad)"/>
+
+  <!-- Coordination layer — medium -->
+  <rect x="17" y="26" width="30" height="12" rx="6" fill="url(#eg-grad)"/>
+
+  <!-- Emergence peak — narrowest, brightest cyan -->
+  <rect x="24" y="10" width="16" height="12" rx="6" fill="url(#eg-grad)"/>
+</svg>

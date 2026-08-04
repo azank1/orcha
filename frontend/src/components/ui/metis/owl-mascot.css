@@ -1,0 +1,421 @@
+/* ── owl mascot: static fills/strokes ── */
+
+.owl-mascot {
+  overflow: visible;
+}
+
+.owl-mascot .owl-body-group,
+.owl-mascot .owl-head-group,
+.owl-mascot .owl-beak {
+  transform-box: fill-box;
+}
+
+.owl-mascot .owl-wing-left,
+.owl-mascot .owl-wing-right {
+  transform-box: view-box;
+}
+
+.owl-mascot .owl-eye {
+  transform-box: view-box;
+  transform-origin: center;
+  animation: none !important;
+}
+
+.owl-pupil {
+  fill: var(--owl-pupil);
+  stroke: none;
+}
+
+.owl-mascot--eye-blink .owl-eye {
+  animation: owlEyeBlink 0.55s ease-in-out forwards !important;
+}
+
+@keyframes owlEyeBlink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  42%,
+  58% {
+    transform: scaleY(0.05);
+  }
+}
+
+.owl-torso {
+  fill: var(--owl-body);
+  stroke: var(--owl-outline);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  shape-rendering: geometricPrecision;
+}
+
+.owl-wing rect {
+  stroke: none;
+  opacity: 1;
+}
+
+.owl-ear {
+  fill: var(--owl-body);
+  stroke: none;
+  opacity: 1;
+  pointer-events: none;
+  shape-rendering: geometricPrecision;
+}
+
+.owl-frown {
+  fill: none;
+  stroke: var(--owl-wing-shadow);
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.owl-beak path {
+  fill: var(--owl-beak);
+  stroke: var(--owl-beak-shadow);
+  stroke-width: 0.6;
+}
+
+.owl-foot {
+  fill: var(--owl-foot);
+}
+
+.owl-perch {
+  fill: var(--owl-perch);
+}
+
+/* ── shared keyframes ── */
+
+@keyframes owlBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.2px);
+  }
+}
+
+@keyframes owlWingIdleL {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(10deg);
+  }
+}
+
+@keyframes owlWingIdleR {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-10deg);
+  }
+}
+
+/** State-change reveal — wings raise outward, exposing the full body. */
+@keyframes owlWingRevealL {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(82deg);
+  }
+  55% {
+    transform: rotate(82deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes owlWingRevealR {
+  0% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-82deg);
+  }
+  55% {
+    transform: rotate(-82deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes owlWingRevealHoldL {
+  0% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(82deg);
+  }
+  100% {
+    transform: rotate(82deg);
+  }
+}
+
+@keyframes owlWingRevealHoldR {
+  0% {
+    transform: rotate(0deg);
+  }
+  40% {
+    transform: rotate(-82deg);
+  }
+  100% {
+    transform: rotate(-82deg);
+  }
+}
+
+/* Executing — locked stare: body leans, head cocks deliberately, eyes stay fixed. */
+
+@keyframes owlThreatLean {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(0.8px, 1px) rotate(2.5deg);
+  }
+}
+
+@keyframes owlHeadFocus {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  35% {
+    transform: rotate(-3.5deg);
+  }
+  65% {
+    transform: rotate(3.5deg);
+  }
+}
+
+/* Verified — two cute hops then rest, subtle wing flaps. */
+
+@keyframes owlVerifiedHops {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  7% {
+    transform: translateY(-5px);
+  }
+  14% {
+    transform: translateY(0);
+  }
+  21% {
+    transform: translateY(-4px);
+  }
+  28% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes owlVerifiedWingFlapL {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  7%,
+  21% {
+    transform: rotate(78deg);
+  }
+  14%,
+  28% {
+    transform: rotate(12deg);
+  }
+}
+
+@keyframes owlVerifiedWingFlapR {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  7%,
+  21% {
+    transform: rotate(-78deg);
+  }
+  14%,
+  28% {
+    transform: rotate(-12deg);
+  }
+}
+
+/* Error — wings raised, body shakes. */
+
+@keyframes owlErrorShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-2.5px);
+  }
+  40% {
+    transform: translateX(2.5px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes owlErrorWingsUpL {
+  0%,
+  100% {
+    transform: rotate(80deg);
+  }
+  50% {
+    transform: rotate(76deg);
+  }
+}
+
+@keyframes owlErrorWingsUpR {
+  0%,
+  100% {
+    transform: rotate(-80deg);
+  }
+  50% {
+    transform: rotate(-76deg);
+  }
+}
+
+/* ── default layer setup ── */
+
+.owl-mascot .owl-body-group {
+  transform-origin: 50% 94%;
+}
+
+.owl-mascot .owl-head-group {
+  transform-origin: 50% 42%;
+}
+
+.owl-mascot .owl-wing-left {
+  transform: rotate(0deg);
+  transform-origin: 25px 65px;
+}
+
+.owl-mascot .owl-wing-right {
+  transform: rotate(0deg);
+  transform-origin: 75px 65px;
+}
+
+/* One-shot reveal on every state change. */
+.owl-mascot--wing-reveal .owl-wing-left {
+  animation: owlWingRevealL 0.65s ease-out forwards;
+}
+
+.owl-mascot--wing-reveal .owl-wing-right {
+  animation: owlWingRevealR 0.65s ease-out forwards;
+}
+
+.owl-mascot--wing-reveal.owl-mascot--error .owl-wing-left {
+  animation: owlWingRevealHoldL 0.65s ease-out forwards;
+}
+
+.owl-mascot--wing-reveal.owl-mascot--error .owl-wing-right {
+  animation: owlWingRevealHoldR 0.65s ease-out forwards;
+}
+
+.owl-mascot .owl-beak {
+  transform-origin: 50% 0%;
+}
+
+/* ── idle — black eyes, calm bob, gentle wing flap ── */
+
+.owl-mascot--idle .owl-body-group {
+  animation: owlBob 4s ease-in-out infinite;
+}
+
+.owl-mascot--idle:not(.owl-mascot--wing-reveal) .owl-wing-left {
+  animation: owlWingIdleL 3.6s ease-in-out infinite;
+}
+
+.owl-mascot--idle:not(.owl-mascot--wing-reveal) .owl-wing-right {
+  animation: owlWingIdleR 3.6s ease-in-out infinite;
+  animation-delay: 0.12s;
+}
+
+.owl-mascot--idle .owl-eye {
+  animation: none;
+}
+
+/* ── executing — yellow eyes locked forward, face does the talking ── */
+
+.owl-mascot--executing {
+  --owl-eye-glow: #f59e0b;
+}
+
+.owl-mascot--executing .owl-body-group {
+  animation: owlThreatLean 3s ease-in-out infinite;
+}
+
+.owl-mascot--executing .owl-head-group {
+  animation: none;
+}
+
+.owl-mascot--executing .owl-eye {
+  animation: none;
+}
+
+.owl-mascot--executing:not(.owl-mascot--wing-reveal) .owl-wing-left,
+.owl-mascot--executing:not(.owl-mascot--wing-reveal) .owl-wing-right {
+  animation: none;
+  transform: rotate(0deg);
+}
+
+/* ── verified — green eyes, two hops + wing reveal flaps ── */
+
+.owl-mascot--verified {
+  --owl-eye-glow: #22c55e;
+}
+
+.owl-mascot--verified .owl-body-group {
+  animation: owlVerifiedHops 2.4s ease-in-out infinite;
+}
+
+.owl-mascot--verified:not(.owl-mascot--wing-reveal) .owl-wing-left {
+  animation: owlVerifiedWingFlapL 2.4s ease-in-out infinite;
+}
+
+.owl-mascot--verified:not(.owl-mascot--wing-reveal) .owl-wing-right {
+  animation: owlVerifiedWingFlapR 2.4s ease-in-out infinite;
+  animation-delay: 0.06s;
+}
+
+.owl-mascot--verified .owl-eye {
+  animation: none;
+}
+
+/* ── error — red eyes, wings up + shake ── */
+
+.owl-mascot--error {
+  --owl-eye-glow: #ef4444;
+}
+
+.owl-mascot--error .owl-body-group {
+  animation: owlErrorShake 0.35s ease-in-out infinite;
+}
+
+.owl-mascot--error:not(.owl-mascot--wing-reveal) .owl-wing-left {
+  animation: owlErrorWingsUpL 0.35s ease-in-out infinite;
+}
+
+.owl-mascot--error:not(.owl-mascot--wing-reveal) .owl-wing-right {
+  animation: owlErrorWingsUpR 0.35s ease-in-out infinite;
+}
+
+.owl-mascot--error .owl-eye {
+  animation: none;
+}

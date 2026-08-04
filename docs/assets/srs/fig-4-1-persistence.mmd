@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph pg [PostgreSQL + pgvector :5432]
+        PGA["Agents & manifests<br/>Registry"]
+        PGB["AgentEmbedding vector(768)<br/>PlanExecution — PnD"]
+        PGC["Sessions, transcripts, artifacts<br/>workflow templates, transactions — SuperAgent/Gateway"]
+    end
+
+    subgraph redis [Redis :6379]
+        RD0["DB 0: LangGraph checkpointer<br/>OAuth grants, payment reserve"]
+        RD1["DB 1: session ownership index<br/>SSE relay — Gateway"]
+    end
+
+    subgraph kafka [Kafka :9092]
+        K1["registry.agent.registered"]
+        K2["execution.step_complete<br/>validator fan-out seam"]
+    end
+
+    subgraph s3 [S3 / LocalStack :4566]
+        OBJ["Uploaded files & run artifacts"]
+    end

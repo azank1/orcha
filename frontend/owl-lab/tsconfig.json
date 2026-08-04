@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "types": ["vite/client"],
+    "paths": {
+      "@metis": ["../src/components/ui/metis/index.ts"],
+      "@metis/*": ["../src/components/ui/metis/*"]
+    }
+  },
+  "include": ["src", "../src/components/ui/metis", "../src/components/ui/cn.ts"]
+}

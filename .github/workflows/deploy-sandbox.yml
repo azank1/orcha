@@ -1,0 +1,47 @@
+name: Deploy sandbox
+
+# Deploys the public sandbox stack to the demo VM over SSH.
+# Inert until SANDBOX_DEPLOY_ENABLED=true is set as a repo variable and the
+# secrets below exist — public CI stays green before the VM is provisioned.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'services/**'
+      - 'frontend/**'
+      - 'agents/**'
+      - 'common/**'
+      - 'deploy/sandbox/**'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: vars.SANDBOX_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_KEY: ${{ secrets.SANDBOX_VM_SSH_KEY }}
+          VM_HOST: ${{ secrets.SANDBOX_VM_HOST }}
+          VM_USER: ${{ secrets.SANDBOX_VM_USER }}
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/sandbox_deploy
+          chmod 600 ~/.ssh/sandbox_deploy
+          ssh -i ~/.ssh/sandbox_deploy -o StrictHostKeyChecking=accept-new \
+            "$VM_USER@$VM_HOST" bash -s <<'REMOTE'
+          set -euo pipefail
+          cd ~/orcha
+          git fetch origin main
+          git reset --hard origin/main
+          make -f deploy/sandbox/Makefile up
+          sleep 20
+          # smoke: frontend + guest auth through nginx
+          curl -sf -o /dev/null http://localhost/ || { echo "frontend down"; exit 1; }
+          curl -sf http://localhost/api/auth/guest > /dev/null || { echo "guest auth down"; exit 1; }
+          echo "deploy + smoke OK"
+          REMOTE

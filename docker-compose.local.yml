@@ -1,0 +1,296 @@
+# Docker Compose for Orcha Local Development
+# Infra-only: postgres, redis, kafka, registry, planning-discovery, localstack (S3).
+# Run superagent and gateway locally with `make sa-dev` / `make gw-dev`.
+# After LocalStack is up: `make s3-init` (creates emerge-artifacts-local on localhost:4566).
+
+services:
+  # ============================================================================
+  # PostgreSQL Database (Supabase-compatible)
+  # ============================================================================
+  postgres:
+    image: pgvector/pgvector:pg15@sha256:a20a57d7aa5217a6af0a391ccf69f4a8512406d6c14be08132f801468cc3cc62
+    container_name: orcha-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: orcha
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orcha-network
+
+  # ============================================================================
+  # Registry Service
+  # ============================================================================
+  registry:
+    build:
+      context: .
+      dockerfile: services/registry/Dockerfile
+    container_name: orcha-registry
+    environment:
+      # Service
+      SERVICE_NAME: registry-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: development
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8000
+      RELOAD: "false"
+
+      # gRPC
+      GRPC_HOST: "[::]"
+      GRPC_PORT: 50051
+
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
+
+      # Security — internal Registry; Gateway owns user auth (matches docker-compose.dev)
+      DISABLE_AUTH: "true"
+      PAT_TOKEN_PREFIX: orcha_pat_
+      PAT_TOKEN_LENGTH: 40
+
+      # Adapter Settings
+      ADAPTER_TIMEOUT: 10
+      ADAPTER_MAX_RETRIES: 3
+      ADAPTER_BASE_DELAY: 1.0
+
+      # Health Check
+      HEALTH_CHECK_INTERVAL: 300
+      MAX_HEALTH_FAILURES: 3
+
+      # Payment
+      PAYMENT_FACILITATOR_URL: https://api.orcha.bot/verify
+
+      # MCP Protocol
+      MCP_PROTOCOL_VERSION: "2025-11-25"
+
+      # Kafka (emit registry.agent.registered on successful registration)
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+
+      # Logging
+      LOG_LEVEL: INFO
+    ports:
+      - "8000:8000"  # REST API
+      - "50051:50051"  # gRPC
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orcha-kafka:
+        condition: service_healthy
+    networks:
+      - orcha-network
+    volumes:
+      - ./services/registry/src:/app/services/registry/src
+      - ./common:/app/common
+    command: >
+      sh -c "
+        cd /app/common/database &&
+        uv run prisma migrate deploy &&
+        cd /app &&
+        python -m uvicorn services.registry.src.main:app
+          --host 0.0.0.0
+          --port 8000
+          --reload
+      "
+
+  # ============================================================================
+  # Kafka Broker (KRaft mode — no Zookeeper)
+  # Advertises localhost:9092 so host-side services can connect directly.
+  # ============================================================================
+  orcha-kafka:
+    image: bitnamilegacy/kafka:4.0.0-debian-12-r10@sha256:aa0b2aee8c5610dd1d18d48b4f1df0dbe3267b5d4c338d36c9af9cbf0529c0b0
+    container_name: orcha-kafka
+    hostname: kafka
+    environment:
+      KAFKA_CFG_NODE_ID: 0
+      KAFKA_CFG_PROCESS_ROLES: controller,broker
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@localhost:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_LOG_RETENTION_HOURS: 168
+      KAFKA_CFG_LOG_SEGMENT_BYTES: 1073741824
+      # Fixed cluster ID (base64url, 22 chars) prevents re-format mismatch on container restart
+      KAFKA_KRAFT_CLUSTER_ID: "CWwkRs5ZQk-Zv0iQRweAmw"
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - orcha-network
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics.sh --bootstrap-server localhost:9092 --list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================================
+  # Planning & Discovery Service
+  # ============================================================================
+  planning-discovery:
+    build:
+      context: .
+      dockerfile: services/planning-discovery/Dockerfile
+    container_name: orcha-planning-discovery
+    environment:
+      # Service
+      SERVICE_NAME: planning-discovery-service
+      SERVICE_VERSION: 1.0.0
+      ENVIRONMENT: development
+
+      # Server
+      HOST: 0.0.0.0
+      PORT: 8001
+
+      # Database
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/orcha?schema=public
+
+      # Kafka
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_MANIFEST_GROUP_ID: planning-manifest-processors
+
+      # LLM
+      LLM_PROVIDER: openrouter
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      LLM_DECOMPOSITION_MODEL: meta-llama/llama-3.1-8b-instruct
+      LLM_FALLBACK_MODEL: openai/gpt-4o
+      LLM_EMBEDDING_MODEL: openai/text-embedding-3-small
+      LLM_VALIDATION_MODEL: openai/gpt-4o-mini
+      LLM_CONFIDENCE_THRESHOLD: "0.75"
+
+      # Search
+      TOP_K_CANDIDATES: "5"
+      SIMILARITY_THRESHOLD: "0.75"
+
+      # Logging
+      LOG_LEVEL: INFO
+    ports:
+      - "8001:8001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orcha-kafka:
+        condition: service_healthy
+    networks:
+      - orcha-network
+    volumes:
+      - ./services/planning-discovery/src:/app/services/planning-discovery/src
+      - ./common:/app/common
+    command: >
+      sh -c "
+        python -m uvicorn services.planning-discovery.src.main:app
+          --host 0.0.0.0
+          --port 8001
+          --reload
+      "
+
+  # ============================================================================
+  # pgAdmin (Optional - Database Management UI)
+  # ============================================================================
+  pgadmin:
+    image: dpage/pgadmin4:latest@sha256:2f4ce946ddf8360680d7eff4eaba1d91859eb6b4003e6623bad5c63a322c2f4d
+    container_name: orcha-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@orcha.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - orcha-network
+    profiles:
+      - tools
+
+  # ============================================================================
+  # Redis Stack (SuperAgent session state & RediSearch checkpointing)
+  # ============================================================================
+  redis:
+    image: redis/redis-stack-server:latest@sha256:798ab84d9f266936b034ab11c4d04a2b8e4b441884c5aa7d17ac951eefdf742a
+    container_name: orcha-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - orcha-network
+
+  # ============================================================================
+  # LocalStack (S3 — host apps use http://localhost:4566; run `make s3-init`)
+  # ============================================================================
+  localstack:
+    image: localstack/localstack:3.8@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7
+    container_name: orcha-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: s3
+      DEFAULT_REGION: us-east-1
+      PERSISTENCE: "0"
+    volumes:
+      - localstack_data:/var/lib/localstack
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "awslocal s3 ls 2>/dev/null || curl -sf http://localhost:4566/_localstack/health | grep -q '\"s3\"'",
+        ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks:
+      - orcha-network
+
+  # ============================================================================
+  # Ollama (Local embeddings for Planning & Discovery)
+  # ============================================================================
+  ollama:
+    image: ollama/ollama:latest@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131
+    container_name: orcha-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    networks:
+      - orcha-network
+
+volumes:
+  postgres_data:
+    driver: local
+  kafka_data:
+    driver: local
+  redis_data:
+    driver: local
+  localstack_data:
+    driver: local
+  ollama_data:
+    driver: local
+
+networks:
+  orcha-network:
+    driver: bridge

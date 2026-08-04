@@ -1,0 +1,31 @@
+[project]
+name = "google-workspace-orchestrator-agent"
+version = "0.2.0"
+description = "A2A Google Workspace orchestrator — ADK + LiteLLM (OpenRouter), workspace-mcp HTTP bridge, OAuth callback"
+requires-python = ">=3.12"
+dependencies = [
+    "google-adk>=1.26.0",
+    "litellm>=1.83.0",
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    "pyyaml>=6.0.0",
+    "structlog>=24.1.0",
+    "mangum>=0.17.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+]

@@ -1,0 +1,162 @@
+syntax = "proto3";
+
+package emerge.registry.v1;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+// ============================================================================
+// SERVICE DEFINITION
+// ============================================================================
+
+service RegistryService {
+  // Internal: Called by health monitoring cron job
+  rpc UpdateAgentHealth(UpdateHealthRequest) returns (UpdateHealthResponse);
+
+  // Internal: Called by Planning service to query agent details
+  rpc GetAgentManifest(GetManifestRequest) returns (UniversalManifest);
+
+  // Internal: Batch endpoint for Planning service
+  rpc GetMultipleManifests(GetMultipleManifestsRequest) returns (GetMultipleManifestsResponse);
+}
+
+// ============================================================================
+// UPDATE HEALTH
+// ============================================================================
+
+message UpdateHealthRequest {
+  string agent_id = 1;
+  HealthStatus status = 2;
+  string last_error = 3;  // Optional error message
+  google.protobuf.Timestamp checked_at = 4;
+}
+
+message UpdateHealthResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+enum HealthStatus {
+  HEALTH_STATUS_UNSPECIFIED = 0;
+  HEALTH_STATUS_HEALTHY = 1;
+  HEALTH_STATUS_UNHEALTHY = 2;
+  HEALTH_STATUS_UNKNOWN = 3;
+}
+
+// ============================================================================
+// GET MANIFEST
+// ============================================================================
+
+message GetManifestRequest {
+  string agent_id = 1;
+  string version = 2;  // Optional: if empty, returns latest
+}
+
+message GetMultipleManifestsRequest {
+  repeated string agent_ids = 1;
+}
+
+message GetMultipleManifestsResponse {
+  repeated UniversalManifest manifests = 1;
+}
+
+// ============================================================================
+// UNIVERSAL AGENT MANIFEST (Core Data Structure)
+// ============================================================================
+
+message UniversalManifest {
+  IdentityInfo identity = 1;
+  MetadataInfo metadata = 2;
+  ProtocolInfo protocol = 3;
+  SecurityInfo security = 4;
+  PaymentInfo payment = 5;
+  repeated Capability capabilities = 6;
+}
+
+message IdentityInfo {
+  string id = 1;  // DID format
+  string name = 2;
+  string version = 3;
+  string provider = 4;
+  string owner_contact = 5;
+  string description = 6;
+  repeated string tags = 7;
+}
+
+message MetadataInfo {
+  google.protobuf.Timestamp indexed_at = 1;
+  HealthStatus health_status = 2;
+  string health_endpoint = 3;
+}
+
+message ProtocolInfo {
+  string type = 1;  // "mcp" or "a2a"
+  string version = 2;
+  TransportInfo transport = 3;
+}
+
+message TransportInfo {
+  string type = 1;  // "sse", "stdio", "http"
+  string endpoint = 2;  // For sse/http
+  string command = 3;   // For stdio
+  repeated string args = 4;  // For stdio
+}
+
+message SecurityInfo {
+  TransportLayerSecurity transport_layer = 1;
+  repeated AuthStrategy auth_strategies = 2;
+}
+
+message TransportLayerSecurity {
+  string type = 1;  // "tls", "mtls", "none"
+  MTLSConfig mtls_config = 2;  // Only if type="mtls"
+}
+
+message MTLSConfig {
+  string cert_vault_key = 1;
+  string key_vault_key = 2;
+  string ca_vault_key = 3;
+}
+
+message AuthStrategy {
+  string id = 1;
+  string type = 2;  // "x_api_key", "http_bearer", "oauth2", "oauth2_dcr"
+  google.protobuf.Struct config = 3;  // Flexible JSON structure
+}
+
+message PaymentInfo {
+  string type = 1;  // "x402" or "none"
+  PaymentConfig config = 2;
+}
+
+message PaymentConfig {
+  bool enabled = 1;
+  string chain_id = 2;
+  string recipient_address = 3;
+  string asset = 4;
+  string token_address = 5;
+  string default_price = 6;
+  string currency = 7;
+  string facilitator_url = 8;
+}
+
+message Capability {
+  string type = 1;  // "tool", "resource", "prompt"
+  string id = 2;
+  string name = 3;
+  string description = 4;
+
+  // Type-specific fields (only populated if relevant)
+  google.protobuf.Struct input_schema = 5;   // For tools
+  google.protobuf.Struct output_schema = 6;  // For tools
+  string uri_template = 7;                   // For resources
+  string mime_type = 8;                      // For resources
+  google.protobuf.Struct arguments = 9;      // For prompts
+
+  // Payment overrides
+  string x402_price = 10;
+  string x402_asset = 11;
+
+  // A2A: Per-capability auth
+  repeated AuthStrategy auth_strategies = 12;
+}

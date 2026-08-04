@@ -1,0 +1,161 @@
+identity:
+  id: "did:orcha:agent:google-workspace-orchestrator"
+  name: "Google Workspace Orchestrator"
+  version: "0.2.0"
+  description: "Multi-step Google Workspace orchestration via workspace-mcp (12 services: Gmail, Drive, Calendar, Docs, Sheets, Slides, Forms, Chat, Apps Script, Tasks, Contacts, Custom Search) with ADK + LiteLLM (OpenRouter) and DAG planning."
+  tags: ["google", "workspace", "a2a", "mcp", "orchestration", "oauth", "openrouter"]
+
+protocol:
+  type: "a2a"
+  version: "1.0"
+  transport:
+    type: "http"
+    endpoint: "http://localhost:3011"
+
+health_endpoint: "http://localhost:3011/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies:
+    - id: "strategy_google_workspace"
+      type: "oauth2"
+      capability_ids:
+        - workspace_orchestrator
+        - workspace_drive
+        - workspace_gmail
+        - workspace_calendar
+        - workspace_docs
+        - workspace_sheets
+        - workspace_slides
+        - workspace_forms
+        - workspace_tasks
+        - workspace_contacts
+        - workspace_chat
+        - workspace_search
+        - workspace_apps_script
+      config:
+        flow: "authorization_code"
+        oidc_discovery_url: "https://accounts.google.com/.well-known/openid-configuration"
+        authorization_url: "https://accounts.google.com/o/oauth2/auth"
+        token_url: "https://oauth2.googleapis.com/token"
+        scopes:
+          - "openid"
+          - "https://www.googleapis.com/auth/userinfo.email"
+          - "https://www.googleapis.com/auth/calendar"
+          - "https://www.googleapis.com/auth/drive"
+          - "https://www.googleapis.com/auth/gmail.modify"
+          - "https://www.googleapis.com/auth/gmail.compose"
+          - "https://www.googleapis.com/auth/gmail.insert"
+          - "https://www.googleapis.com/auth/gmail.send"
+          - "https://www.googleapis.com/auth/gmail.addons.current.action.compose"
+          - "https://www.googleapis.com/auth/documents"
+          - "https://www.googleapis.com/auth/docs"
+          - "https://www.googleapis.com/auth/spreadsheets"
+          - "https://www.googleapis.com/auth/presentations"
+          - "https://www.googleapis.com/auth/forms"
+          - "https://www.googleapis.com/auth/tasks"
+          - "https://www.googleapis.com/auth/contacts"
+          - "https://www.googleapis.com/auth/chat.messages"
+          - "https://www.googleapis.com/auth/chat.spaces"
+          - "https://www.googleapis.com/auth/script.projects"
+          - "https://www.googleapis.com/auth/cse"
+        client_id: "154461586131-v3n1dt2ffiia1itobhvh4u1pp0mgf04n.apps.googleusercontent.com"
+        redirect_uri: "http://localhost:3011/auth/callback"
+        provider_hint: "google"
+
+payment:
+  enabled: true
+  base_fee: "0.002"  # $0.002 per invocation — complex multi-step workspace orchestration
+
+skills:
+  - id: "workspace_orchestrator"
+    name: "Workspace orchestration"
+    description: "Full DAG across all workspace-mcp services from one natural-language goal."
+    tags: ["google", "workspace", "orchestration"]
+    examples:
+      - "Find the Q3 report in Drive, summarize it, draft a Chat update, and add a Calendar follow-up"
+
+  - id: "workspace_drive"
+    name: "Drive"
+    description: "Search, read, create, share, and manage Drive files and permissions (workspace-mcp drive tools)."
+    tags: ["google", "drive"]
+    examples:
+      - "Search my Drive for PDFs about onboarding"
+
+  - id: "workspace_gmail"
+    name: "Gmail"
+    description: "Search, read, label, draft, and send mail (workspace-mcp gmail tools)."
+    tags: ["google", "gmail"]
+    examples:
+      - "List unread messages about invoices from this week"
+
+  - id: "workspace_calendar"
+    name: "Calendar"
+    description: "Calendars, events, free/busy, OOO, focus time (workspace-mcp calendar tools)."
+    tags: ["google", "calendar"]
+    examples:
+      - "What meetings do I have tomorrow morning?"
+
+  - id: "workspace_docs"
+    name: "Google Docs"
+    description: "Read, edit, export, and comment on Google Docs (workspace-mcp docs tools)."
+    tags: ["google", "docs"]
+    examples:
+      - "Summarize the content of my project spec doc"
+
+  - id: "workspace_sheets"
+    name: "Google Sheets"
+    description: "Read/write ranges, tables, formatting, and comments on Sheets (workspace-mcp sheets tools)."
+    tags: ["google", "sheets"]
+    examples:
+      - "Append a row to my expenses table and format the header row"
+
+  - id: "workspace_slides"
+    name: "Google Slides"
+    description: "Presentations, pages, thumbnails, and comments (workspace-mcp slides tools)."
+    tags: ["google", "slides"]
+    examples:
+      - "Create a presentation with a title slide for the roadmap review"
+
+  - id: "workspace_forms"
+    name: "Google Forms"
+    description: "Create forms, list responses, publish settings, batch updates (workspace-mcp forms tools)."
+    tags: ["google", "forms"]
+    examples:
+      - "List responses for my feedback form"
+
+  - id: "workspace_tasks"
+    name: "Google Tasks"
+    description: "Task lists and tasks CRUD (workspace-mcp tasks tools)."
+    tags: ["google", "tasks"]
+    examples:
+      - "Add a task to my Today list due Friday"
+
+  - id: "workspace_contacts"
+    name: "Google Contacts"
+    description: "People search, groups, batch operations (workspace-mcp contacts tools)."
+    tags: ["google", "contacts", "people"]
+    examples:
+      - "Search contacts with domain acme.com"
+
+  - id: "workspace_chat"
+    name: "Google Chat"
+    description: "Spaces, messages, search, reactions, attachments (workspace-mcp chat tools)."
+    tags: ["google", "chat"]
+    examples:
+      - "Send a message to the engineering space with the standup summary"
+
+  - id: "workspace_search"
+    name: "Programmable Search"
+    description: "Custom Search Engine queries (workspace-mcp search_custom, get_search_engine_info)."
+    tags: ["google", "search", "cse"]
+    examples:
+      - "Search the web for Orcha A2A documentation"
+
+  - id: "workspace_apps_script"
+    name: "Apps Script"
+    description: "Projects, files, deployments, executions (workspace-mcp apps script tools)."
+    tags: ["google", "apps-script", "automation"]
+    examples:
+      - "List my Apps Script projects and run a function in project X"

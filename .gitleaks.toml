@@ -1,0 +1,36 @@
+# Gitleaks configuration — Orcha.
+#
+# Extends the upstream default ruleset. Every entry in an allowlist below must
+# be a PUBLIC test fixture or mock value, never a real credential. Keep this
+# list tight and document why each item is safe.
+#
+# Pattern adopted from traycerai/traycer (Apache 2.0) — same rationale: run
+# the gitleaks CLI directly in CI rather than a paid action, and keep secret
+# scanning mechanical instead of relying on review alone (see OSS hard rule #3
+# in .cursor/rules/orcha-always.mdc: no secrets in files).
+
+title = "Orcha gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Sandbox and CI fixtures — mock JWT/service keys used only in tests and .env.sandbox.example / .env.example templates, never real credentials."
+paths = [
+  '''.*\.env\.example$''',
+  '''.*\.env\.sandbox\.example$''',
+  '''.*/tests/.*''',
+  '''.*/test_.*\.py$''',
+]
+
+[[allowlists]]
+description = "Public documentation example values — widely used Ethereum example address in docs, not a credential."
+regexes = [
+  '''0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913''',
+]
+
+[[allowlists]]
+description = "Registry technical-spec docs — placeholder PAT tokens and env-var references in examples, not real credentials."
+paths = [
+  '''docs/services/registry/techical-spec\.md''',
+]

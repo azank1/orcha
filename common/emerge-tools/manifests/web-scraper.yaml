@@ -1,0 +1,219 @@
+identity:
+  id: "did:orcha:system:web-scraper"
+  name: "Web Scraper"
+  version: "1.0.0"
+  description: "Firecrawl MCP — scrape, map, crawl, search, extract, and agentic research via Firecrawl cloud API. See https://docs.firecrawl.dev/mcp-server"
+  tags: ["scraping", "web", "firecrawl", "research", "system"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "stdio"
+    command: "npx"
+    args: ["-y", "firecrawl-mcp"]
+
+health_endpoint: "http://localhost:0/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies:
+    - id: "strategy_firecrawl_platform"
+      type: "platform_env"
+      capability_ids: []
+      config:
+        env_key: "FIRECRAWL_API_KEY"
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "firecrawl_scrape"
+      description: "Scrape a single URL into clean structured content (markdown, HTML, links, etc.)."
+      inputSchema:
+        type: object
+        properties:
+          url:
+            type: string
+            description: "Page URL to scrape"
+          formats:
+            type: array
+            items: { type: string }
+            description: "Output formats e.g. markdown, html"
+          onlyMainContent:
+            type: boolean
+            description: "Strip nav/ads when true"
+          waitFor:
+            type: integer
+            description: "Ms to wait before scrape"
+          mobile:
+            type: boolean
+          includeTags:
+            type: array
+            items: { type: string }
+          excludeTags:
+            type: array
+            items: { type: string }
+          skipTlsVerification:
+            type: boolean
+        required: ["url"]
+
+    - name: "firecrawl_map"
+      description: "Discover URLs on a site (sitemap-aware). Use before crawl/scrape to plan coverage."
+      inputSchema:
+        type: object
+        properties:
+          url: { type: string }
+          search: { type: string, description: "Filter URLs by substring" }
+          sitemap:
+            type: string
+            enum: ["include", "skip", "only"]
+          includeSubdomains: { type: boolean }
+          limit: { type: integer }
+          ignoreQueryParameters: { type: boolean }
+        required: ["url"]
+
+    - name: "firecrawl_search"
+      description: "Web search with optional scraping of result pages."
+      inputSchema:
+        type: object
+        properties:
+          query: { type: string }
+          limit: { type: integer }
+          location: { type: string }
+          tbs: { type: string, description: "Time filter e.g. qdr:d, qdr:w, qdr:m" }
+          filter: { type: string }
+          sources:
+            type: array
+            items: { type: string, enum: ["web", "images", "news"] }
+          scrapeOptions:
+            type: object
+            description: "Formats / onlyMainContent for result pages"
+          enterprise:
+            type: array
+            items: { type: string }
+        required: ["query"]
+
+    - name: "firecrawl_crawl"
+      description: "Start an async multi-page crawl from a root URL."
+      inputSchema:
+        type: object
+        properties:
+          url: { type: string }
+          maxDiscoveryDepth: { type: integer }
+          limit: { type: integer }
+          allowExternalLinks: { type: boolean }
+          deduplicateSimilarURLs: { type: boolean }
+        required: ["url"]
+
+    - name: "firecrawl_check_crawl_status"
+      description: "Poll status and results for a crawl job started with firecrawl_crawl."
+      inputSchema:
+        type: object
+        properties:
+          id:
+            type: string
+            description: "Crawl job UUID"
+        required: ["id"]
+
+    - name: "firecrawl_extract"
+      description: "LLM-assisted structured extraction from one or more URLs using a prompt and JSON schema."
+      inputSchema:
+        type: object
+        properties:
+          urls:
+            type: array
+            items: { type: string }
+          prompt: { type: string }
+          schema:
+            type: object
+            description: "JSON Schema for output shape"
+          allowExternalLinks: { type: boolean }
+          enableWebSearch: { type: boolean }
+          includeSubdomains: { type: boolean }
+        required: ["urls", "prompt"]
+
+    - name: "firecrawl_agent"
+      description: "Autonomous research agent; returns a job id — poll firecrawl_agent_status every 15–30s."
+      inputSchema:
+        type: object
+        properties:
+          prompt:
+            type: string
+            description: "Research goal (max ~10k chars)"
+          urls:
+            type: array
+            items: { type: string }
+            description: "Optional focus URLs"
+          schema:
+            type: object
+        required: ["prompt"]
+
+    - name: "firecrawl_agent_status"
+      description: "Poll agent job status (processing | completed | failed) and retrieve results."
+      inputSchema:
+        type: object
+        properties:
+          id: { type: string, description: "Agent job id from firecrawl_agent" }
+        required: ["id"]
+
+    - name: "firecrawl_browser_create"
+      description: "Create a persistent browser session (CDP) for scripted automation."
+      inputSchema:
+        type: object
+        properties:
+          ttl: { type: integer, description: "Session lifetime seconds (30–3600)" }
+          activityTtl: { type: integer, description: "Idle timeout seconds (10–3600)" }
+
+    - name: "firecrawl_browser_execute"
+      description: "Run bash, Python, or Node in an active browser session."
+      inputSchema:
+        type: object
+        properties:
+          sessionId: { type: string }
+          code: { type: string }
+          language:
+            type: string
+            enum: ["bash", "python", "node"]
+        required: ["sessionId", "code"]
+
+    - name: "firecrawl_browser_delete"
+      description: "Destroy a browser session."
+      inputSchema:
+        type: object
+        properties:
+          sessionId: { type: string }
+        required: ["sessionId"]
+
+    - name: "firecrawl_browser_list"
+      description: "List browser sessions, optionally filtered by status."
+      inputSchema:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: ["active", "destroyed"]
+
+    - name: "firecrawl_interact"
+      description: "After firecrawl_scrape, drive the page (clicks/forms) via scrapeId + prompt or code."
+      inputSchema:
+        type: object
+        properties:
+          scrapeId: { type: string }
+          prompt: { type: string }
+          code: { type: string }
+          language:
+            type: string
+            enum: ["bash", "python", "node"]
+          timeout: { type: integer, description: "1–300 seconds" }
+        required: ["scrapeId"]
+
+    - name: "firecrawl_interact_stop"
+      description: "Stop an interact session tied to a scrapeId."
+      inputSchema:
+        type: object
+        properties:
+          scrapeId: { type: string }
+        required: ["scrapeId"]

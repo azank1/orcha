@@ -1,0 +1,39 @@
+# Universal document → Markdown conversion via MCP — https://github.com/microsoft/markitdown/tree/main/packages/markitdown-mcp
+# pip/uvx: markitdown-mcp (Python ≥3.10). Requires `uvx` on the SuperAgent host.
+# Supports: Word, Excel, PowerPoint, HTML, CSV, JSON, XML, ZIP, audio, images, and more.
+identity:
+  id: "did:orcha:system:convert-to-markdown"
+  name: "MarkItDown"
+  version: "1.0.0"
+  description: "Convert any document to Markdown using Microsoft MarkItDown MCP. Accepts http:, https:, file:, or data: URIs. Handles Word (.docx), Excel (.xlsx), PowerPoint (.pptx), HTML, CSV, JSON, XML, ZIP archives, images, audio, and more. For session uploads: stage_artifact to get a local path, then pass as file:///tmp/{session_id}/filename."
+  tags: ["documents", "markdown", "conversion", "docx", "xlsx", "pptx", "html", "csv", "system"]
+
+protocol:
+  type: "mcp"
+  version: "2024-11-05"
+  transport:
+    type: "stdio"
+    command: "uvx"
+    args: ["markitdown-mcp"]
+
+health_endpoint: "http://localhost:0/health"
+
+security:
+  transport_layer:
+    type: "none"
+  auth_strategies: []
+
+payment:
+  enabled: false
+
+capabilities:
+  tools:
+    - name: "convert_to_markdown"
+      description: "Convert a document at a given URI to Markdown text. Supports file: (local paths — use file:///tmp/{session_id}/upload.docx after stage_artifact), http:/https: (remote URLs), and data: URIs. Works with Word, Excel, PowerPoint, HTML, CSV, JSON, XML, images, and more."
+      inputSchema:
+        type: object
+        properties:
+          uri:
+            type: string
+            description: "URI of the resource to convert. Schemes: file:///absolute/path, https://example.com/doc.docx, data:<mime>;base64,<data>"
+        required: ["uri"]

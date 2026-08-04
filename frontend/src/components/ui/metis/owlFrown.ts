@@ -1,0 +1,1 @@
+export const FROWN_PATH = 'M35.8,19.2 Q42,26 50,27 Q58,26 64.2,19.2'
