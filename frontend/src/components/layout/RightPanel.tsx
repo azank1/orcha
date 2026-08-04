@@ -2,11 +2,13 @@ import { useState } from 'react'
 import type { Artifact } from '../../types'
 import { files, getAccessToken } from '../../api/client'
 import { useSessionStore } from '../../store/session'
+import { useSettingsStore } from '../../store/settings'
 import { AgentCard } from '../agents/AgentCard'
 import { ChecklistRow } from '../agents/ChecklistRow'
 import { MetaStatsGrid } from '../ui/MetaStatsGrid'
 import { Button } from '../ui/Button'
 import { cn } from '../ui/cn'
+import { Workbench } from './Workbench'
 
 type Tab = 'Agents' | 'Tasks' | 'Logs' | 'Meta' | 'Artifacts'
 const TABS: Tab[] = ['Agents', 'Tasks', 'Logs', 'Meta', 'Artifacts']
@@ -14,6 +16,7 @@ const TABS: Tab[] = ['Agents', 'Tasks', 'Logs', 'Meta', 'Artifacts']
 export function RightPanel() {
   const [activeTab, setActiveTab] = useState<Tab>('Agents')
 
+  const isDevMode = useSettingsStore((s) => s.isDevMode)
   const agents = useSessionStore((s) => s.agents)
   const checklist = useSessionStore((s) => s.checklist)
   const artifacts = useSessionStore((s) => s.artifacts)
@@ -34,18 +37,24 @@ export function RightPanel() {
   return (
     <aside
       className="flex flex-col w-80 bg-surface-base border-l border-surface-border h-full"
-      aria-label="Session details"
+      aria-label={isDevMode ? 'Developer workbench' : 'Session details'}
     >
       {/* Panel header */}
       <div className="h-14 px-4 flex items-center bg-surface-elevated border-b border-surface-border shrink-0">
-        <span className="text-label font-semibold text-text-heading">Session Details</span>
-        {interrupts.length > 0 && (
+        <span className="text-label font-semibold text-text-heading">
+          {isDevMode ? 'Workbench' : 'Session Details'}
+        </span>
+        {!isDevMode && interrupts.length > 0 && (
           <span className="ml-2 size-4 rounded-full bg-semantic-warning text-[9px] text-text-inverse flex items-center justify-center font-bold">
             {interrupts.length}
           </span>
         )}
       </div>
 
+      {isDevMode ? (
+        <Workbench />
+      ) : (
+        <>
       {/* Tab bar */}
       <div className="flex items-center gap-1 px-2 py-1.5 bg-surface-elevated border-b border-surface-border shrink-0">
         {TABS.map((tab) => (
@@ -177,6 +186,8 @@ export function RightPanel() {
             💾 Save as Workflow
           </Button>
         </div>
+      )}
+        </>
       )}
     </aside>
   )

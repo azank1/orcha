@@ -47,6 +47,20 @@
   --color-purple: #A78BFA;
   --color-purple-dim: #1A0A3D;
 
+  /* Metis (owl mascot) — locked palette; animations in components/ui/metis/owl-mascot.css */
+  --owl-outline: #6b7280;
+  --owl-body: #f4f5f7;
+  --owl-body-highlight: #e2e5ea;
+  --owl-wing: #9aa3ae;
+  --owl-wing-shadow: #6b7380;
+  --owl-eye-white: #ffffff;
+  --owl-eye-glow: #1a1a1a;
+  --owl-pupil: #111318;
+  --owl-beak: #e8953a;
+  --owl-beak-shadow: #b86a1a;
+  --owl-foot: #a0a7b2;
+  --owl-perch: var(--color-text-secondary);
+
   /* Typography */
   --color-text-heading: #EEEEF2;
   --color-text-body: #C4C4D4;
@@ -71,6 +85,175 @@
   --shadow-cyan: 0 0 12px rgba(0,200,232,0.2);
 }
 
+/* ── Dual-mode theme (User = soft light, Developer = dark workbench) ──────────
+   Consumed through tailwind.config.ts color tokens, which all point at these
+   CSS custom properties. Flipping `data-mode` on the root element re-themes
+   the whole app without touching components. */
+:root,
+[data-mode='user'] {
+  /* Surfaces — warm neutral light (hex + rgb channels for Tailwind alpha) */
+  --surface-canvas: #FAFAF9;
+  --surface-canvas-rgb: 250 250 249;
+  --surface-base: #F5F5F3;
+  --surface-base-rgb: 245 245 243;
+  --surface-elevated: #FFFFFF;
+  --surface-elevated-rgb: 255 255 255;
+  --surface-overlay: #F0F0ED;
+  --surface-overlay-rgb: 240 240 237;
+  --surface-border: #E7E5E0;
+  --surface-border-rgb: 231 229 224;
+  --surface-border-light: #DBD9D4;
+  --surface-border-light-rgb: 219 217 212;
+  --surface-muted: #D6D3CE;
+  --surface-muted-rgb: 214 211 206;
+  --surface-subtle: #A8A29E;
+  --surface-subtle-rgb: 168 162 158;
+
+  /* Text */
+  --text-heading: #1C1917;
+  --text-heading-rgb: 28 25 23;
+  --text-body: #44403C;
+  --text-body-rgb: 68 64 60;
+  --text-secondary: #78716C;
+  --text-secondary-rgb: 120 113 108;
+  --text-disabled: #A8A29E;
+  --text-disabled-rgb: 168 162 158;
+  --text-inverse: #FAFAF9;
+  --text-inverse-rgb: 250 250 249;
+  --text-brand: #5B5BD6;
+  --text-brand-rgb: 91 91 214;
+  --text-accent: #5B5BD6;
+  --text-accent-rgb: 91 91 214;
+
+  /* Brand — one restrained muted indigo accent */
+  --brand-primary: #5B5BD6;
+  --brand-primary-rgb: 91 91 214;
+  --brand-primary-light: #4A4AB8; /* accent text on light bg */
+  --brand-primary-light-rgb: 74 74 184;
+  --brand-primary-dim: #ECECFA;
+  --brand-primary-dim-rgb: 236 236 250;
+  --brand-primary-deep: #DCDCF6;
+  --brand-primary-deep-rgb: 220 220 246;
+  --brand-primary-hover: #4A4AB8;
+  --brand-primary-hover-rgb: 74 74 184;
+  --brand-secondary: #8E8E9A;
+  --brand-secondary-rgb: 142 142 154;
+  --brand-secondary-dim: #ECECFA;
+  --brand-secondary-dim-rgb: 236 236 250;
+  --brand-secondary-hover: #71717A;
+  --brand-secondary-hover-rgb: 113 113 122;
+
+  /* Semantic */
+  --semantic-success: #15803D;
+  --semantic-success-rgb: 21 128 61;
+  --semantic-success-dim: #E5F4EA;
+  --semantic-success-dim-rgb: 229 244 234;
+  --semantic-warning: #B45309;
+  --semantic-warning-rgb: 180 83 9;
+  --semantic-warning-dim: #FAF0DF;
+  --semantic-warning-dim-rgb: 250 240 223;
+  --semantic-error: #DC2626;
+  --semantic-error-rgb: 220 38 38;
+  --semantic-error-dim: #FAE8E8;
+  --semantic-error-dim-rgb: 250 232 232;
+  --semantic-info: #5B5BD6;
+  --semantic-info-rgb: 91 91 214;
+  --semantic-info-dim: #ECECFA;
+  --semantic-info-dim-rgb: 236 236 250;
+  --semantic-purple: #7C3AED;
+  --semantic-purple-rgb: 124 58 237;
+  --semantic-purple-dim: #F1EAFB;
+  --semantic-purple-dim-rgb: 241 234 251;
+
+  /* Accent borders */
+  --accent-border: rgba(91, 91, 214, 0.35);
+  --success-border: #B7DFC4;
+  --warning-border: #E8D5B0;
+  --error-border: #EBC3C3;
+}
+
+[data-mode='developer'] {
+  /* Surfaces — zinc-950 workbench */
+  --surface-canvas: #09090B;
+  --surface-canvas-rgb: 9 9 11;
+  --surface-base: #121214;
+  --surface-base-rgb: 18 18 20;
+  --surface-elevated: #18181B;
+  --surface-elevated-rgb: 24 24 27;
+  --surface-overlay: #1F1F23;
+  --surface-overlay-rgb: 31 31 35;
+  --surface-border: #27272A;
+  --surface-border-rgb: 39 39 42;
+  --surface-border-light: #3F3F46;
+  --surface-border-light-rgb: 63 63 70;
+  --surface-muted: #52525B;
+  --surface-muted-rgb: 82 82 91;
+  --surface-subtle: #71717A;
+  --surface-subtle-rgb: 113 113 122;
+
+  /* Text — zinc-100-ish */
+  --text-heading: #EEEEF2;
+  --text-heading-rgb: 238 238 242;
+  --text-body: #C4C4D4;
+  --text-body-rgb: 196 196 212;
+  --text-secondary: #9CA3AF;
+  --text-secondary-rgb: 156 163 175;
+  --text-disabled: #52525B;
+  --text-disabled-rgb: 82 82 91;
+  --text-inverse: #09090B;
+  --text-inverse-rgb: 9 9 11;
+  --text-brand: #6366F1;
+  --text-brand-rgb: 99 102 241;
+  --text-accent: #A5A8FF;
+  --text-accent-rgb: 165 168 255;
+
+  /* Brand — same muted indigo accent */
+  --brand-primary: #6366F1;
+  --brand-primary-rgb: 99 102 241;
+  --brand-primary-light: #818CF8;
+  --brand-primary-light-rgb: 129 140 248;
+  --brand-primary-dim: #1E1B3A;
+  --brand-primary-dim-rgb: 30 27 58;
+  --brand-primary-deep: #12102E;
+  --brand-primary-deep-rgb: 18 16 46;
+  --brand-primary-hover: #4F52C8;
+  --brand-primary-hover-rgb: 79 82 200;
+  --brand-secondary: #8B8B96;
+  --brand-secondary-rgb: 139 139 150;
+  --brand-secondary-dim: #16161D;
+  --brand-secondary-dim-rgb: 22 22 29;
+  --brand-secondary-hover: #A1A1AA;
+  --brand-secondary-hover-rgb: 161 161 170;
+
+  /* Semantic */
+  --semantic-success: #22C55E;
+  --semantic-success-rgb: 34 197 94;
+  --semantic-success-dim: #052E16;
+  --semantic-success-dim-rgb: 5 46 22;
+  --semantic-warning: #F59E0B;
+  --semantic-warning-rgb: 245 158 11;
+  --semantic-warning-dim: #1C1400;
+  --semantic-warning-dim-rgb: 28 20 0;
+  --semantic-error: #EF4444;
+  --semantic-error-rgb: 239 68 68;
+  --semantic-error-dim: #2D0A0A;
+  --semantic-error-dim-rgb: 45 10 10;
+  --semantic-info: #6366F1;
+  --semantic-info-rgb: 99 102 241;
+  --semantic-info-dim: #1E1B3A;
+  --semantic-info-dim-rgb: 30 27 58;
+  --semantic-purple: #A78BFA;
+  --semantic-purple-rgb: 167 139 250;
+  --semantic-purple-dim: #1A0A3D;
+  --semantic-purple-dim-rgb: 26 10 61;
+
+  /* Accent borders */
+  --accent-border: rgba(99, 102, 241, 0.35);
+  --success-border: #0A4A26;
+  --warning-border: #2D2000;
+  --error-border: #3D1212;
+}
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;
@@ -83,8 +266,8 @@
   }
 
   body {
-    background-color: #09090B;
-    color: #C4C4D4;
+    background-color: var(--surface-canvas);
+    color: var(--text-body);
     font-family: 'Inter', ui-sans-serif, system-ui;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -103,7 +286,7 @@
 @layer utilities {
   .scrollbar-thin {
     scrollbar-width: thin;
-    scrollbar-color: #27272A transparent;
+    scrollbar-color: var(--surface-border) transparent;
   }
 
   .scrollbar-thin::-webkit-scrollbar {
@@ -115,7 +298,7 @@
   }
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: #27272A;
+    background: var(--surface-border);
     border-radius: 9999px;
   }
 
@@ -174,4 +357,37 @@
 
 .animate-tool-enter {
   animation: toolCardEnter 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ── Motion (only when the user has no reduced-motion preference) ─────────── */
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body {
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Chat messages fade/slide in */
+  .animate-message-in {
+    animation: messageIn 250ms ease-out both;
+  }
+
+  /* Mode switch sliding thumb */
+  .mode-thumb {
+    transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Computer-use viewport "waiting for frames" pulse */
+  .cu-waiting-pulse {
+    animation: pulseDot 1.2s ease-in-out infinite;
+  }
 }

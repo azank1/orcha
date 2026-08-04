@@ -1,6 +1,6 @@
 """Pydantic models for emerge.yaml configuration."""
 
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
@@ -99,6 +99,84 @@ class PaymentConfig(BaseModel):
     base_fee: str | None = None
 
 
+class PrincipalConfig(BaseModel):
+    """Legal entity accountable for the agent (emerge/1.2, RFC 0002)."""
+
+    legal_name: str = Field(..., min_length=1)
+    identifier_type: Literal["CIN", "GST", "Aadhaar", "CNPJ", "UEN", "LEI"] = Field(
+        ...,
+        description="Typed legal identifier scheme.",
+    )
+    identifier_value: str = Field(..., min_length=1)
+    regulator_license: str | None = Field(
+        default=None,
+        description="Optional regulator-issued licence reference.",
+    )
+
+
+class DelegationConfig(BaseModel):
+    """Sub-agent charter delegation limits (emerge/1.2, RFC 0002)."""
+
+    allowed: bool = False
+    max_depth: int = Field(
+        default=0,
+        ge=0,
+        description="Maximum delegation hops permitted below this charter.",
+    )
+
+
+class ValidityConfig(BaseModel):
+    """Charter validity window, RFC 3339 datetimes (emerge/1.2, RFC 0002)."""
+
+    not_before: str | None = None
+    not_after: str | None = None
+
+
+class AuthorizedScopeConfig(BaseModel):
+    """Declared authorised-scope limits (emerge/1.1, RFC 0001; extended in 1.2, RFC 0002).
+
+    Optional supervisory limits consumed by verifiers (e.g. the KY-A
+    supervisory harness). Absence means "unspecified", not "unrestricted".
+    """
+
+    allowed_capabilities: list[str] = Field(
+        default_factory=list,
+        description="Capability/skill names the agent may invoke.",
+    )
+    spend_cap_usd: str | None = Field(
+        default=None,
+        description="Maximum M2M payment volume in scope, USD decimal as string.",
+    )
+    allowed_counterparties: list[str] = Field(
+        default_factory=list,
+        description="Allowed payee / counterparty identifiers.",
+    )
+    jurisdictions: list[str] = Field(
+        default_factory=list,
+        description="Authorised operating jurisdictions.",
+    )
+    principal: PrincipalConfig | None = Field(
+        default=None,
+        description="Legal entity accountable for the agent (AAC charter).",
+    )
+    rails: list[str] = Field(
+        default_factory=list,
+        description="DPI rails the authorisation covers, e.g. UPI, AccountAggregator, ULI.",
+    )
+    delegation: DelegationConfig | None = Field(
+        default=None,
+        description="Sub-agent charter delegation limits.",
+    )
+    human_approval_required_above: str | None = Field(
+        default=None,
+        description="Transaction value above which a named human must approve, decimal as string.",
+    )
+    validity: ValidityConfig | None = Field(
+        default=None,
+        description="Charter validity window, RFC 3339 datetimes.",
+    )
+
+
 class EmergeConfig(BaseModel):
     """
     Complete emerge.yaml configuration structure.
@@ -119,6 +197,7 @@ class EmergeConfig(BaseModel):
     health_endpoint: str
     security: SecurityConfig
     payment: PaymentConfig | None = None
+    authorized_scope: AuthorizedScopeConfig | None = None
 
     def validate_did_format(self) -> bool:
         """Validate that ID follows the Orcha DID format (user or platform)."""

@@ -3,15 +3,28 @@
 from __future__ import annotations
 
 import logging
+from typing import Any
 
 import httpx
 
 from ..config import settings
-from .models import PnDCandidateRequest, PnDCandidateResponse
+from .models import PlanResponse, PnDCandidateRequest, PnDCandidateResponse
 
 logger = logging.getLogger(__name__)
 
 _TIMEOUT = httpx.Timeout(30.0)
+
+
+class PlanUnavailableError(Exception):
+    """Raised when the PnD /plan endpoint cannot produce a usable plan.
+
+    Callers fall back to the ReAct path — this is never user-facing as-is.
+    """
+
+    def __init__(self, reason: str, status_code: int | None = None) -> None:
+        super().__init__(reason)
+        self.reason = reason
+        self.status_code = status_code
 
 
 class PnDClient:
@@ -98,4 +111,46 @@ class PnDClient:
                 len(c.capabilities),
             )
 
+        return result
+
+    async def get_plan(
+        self, query: str, context: dict[str, Any] | None = None
+    ) -> PlanResponse:
+        """Call POST /api/v1/plan and return the parsed workflow plan.
+
+        Raises PlanUnavailableError on HTTP errors, success=False, or
+        unparseable payloads — callers fall back to the ReAct path.
+        """
+        assert self._client is not None, "PnDClient not started — call start() first"
+
+        logger.info("PnD → POST /api/v1/plan | query='%.80s'", query)
+        try:
+            resp = await self._client.post(
+                "/api/v1/plan",
+                json={"query": query, "context": context},
+            )
+        except httpx.HTTPError as exc:
+            raise PlanUnavailableError(f"plan request failed: {exc}") from exc
+
+        logger.info(
+            "PnD ← %d %s | url=%s", resp.status_code, resp.reason_phrase, resp.url
+        )
+        if resp.status_code != 200:
+            raise PlanUnavailableError(
+                f"plan endpoint returned {resp.status_code}",
+                status_code=resp.status_code,
+            )
+
+        try:
+            result = PlanResponse.model_validate(resp.json())
+        except Exception as exc:
+            raise PlanUnavailableError(f"plan payload unparseable: {exc}") from exc
+        if not result.success:
+            raise PlanUnavailableError(result.message or "planner reported failure")
+        logger.info(
+            "PnD plan ok plan_id=%s nodes=%d edges=%d",
+            result.workflow.id,
+            len(result.workflow.nodes),
+            len(result.workflow.edges),
+        )
         return result

@@ -1,0 +1,161 @@
+/* Metis owl lab — self-contained styles, no Tailwind */
+
+:root {
+  --lab-bg: #0d0d14;
+  --lab-surface: #13131e;
+  --lab-border: #252535;
+  --lab-text: #c4c4d4;
+  --lab-muted: #8888aa;
+
+  --owl-outline: #6b7280;
+  --owl-body: #f4f5f7;
+  --owl-body-highlight: #e2e5ea;
+  --owl-wing: #9aa3ae;
+  --owl-wing-shadow: #6b7380;
+  --owl-eye-white: #ffffff;
+  --owl-pupil: #111318;
+  --owl-beak: #e8953a;
+  --owl-beak-shadow: #b86a1a;
+  --owl-foot: #a0a7b2;
+  --owl-perch: #8888aa;
+
+  /* idle — dark/black stare (production will add mouse tracking) */
+  --owl-eye-glow: #1a1a1a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: var(--lab-bg);
+  color: var(--lab-text);
+}
+
+.lab {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.lab-header {
+  text-align: center;
+}
+
+.lab-header h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #eeeef2;
+}
+
+.lab-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--lab-muted);
+}
+
+.lab-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  padding: 2.5rem 3rem;
+  border: 1px solid var(--lab-border);
+  border-radius: 12px;
+  background: var(--lab-surface);
+}
+
+.lab-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.lab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--lab-border);
+  border-radius: 8px;
+  background: var(--lab-surface);
+  color: var(--lab-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.lab-btn:hover {
+  border-color: #3b6ef8;
+}
+
+.lab-btn--active {
+  background: #3b6ef8;
+  border-color: #3b6ef8;
+  color: #fff;
+}
+
+.lab-btn-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.lab-sliders {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--lab-muted);
+}
+
+.lab-sliders label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lab-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.5rem;
+  font-size: 0.8rem;
+  color: var(--lab-muted);
+}
+
+.lab-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.lab-footer {
+  max-width: 28rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--lab-muted);
+  line-height: 1.5;
+}
+
+.lab-footer code {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 0.75rem;
+  color: #00c8e8;
+}

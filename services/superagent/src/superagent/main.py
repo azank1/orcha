@@ -137,6 +137,21 @@ async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     _scheduler = WorkflowScheduler()
     await _scheduler.start()
 
+    # 5. Audit ledger observer (KY-A, WS7) — opt-in via AUDIT_LEDGER_ENABLED.
+    # Stock OSS keeps the NoOpObserver; the ledger observer fails closed and
+    # never affects the user-facing execution path.
+    if settings.audit_ledger_enabled:
+        from .middleware.audit_ledger import LedgerObserver
+        from .middleware.observers import set_observer
+
+        set_observer(LedgerObserver())
+        logger.info("Audit ledger observer installed (AUDIT_LEDGER_ENABLED=true)")
+
+    if settings.cdv_verification_enabled:
+        from .verification.cdv_integration import install_cdv_observer
+
+        install_cdv_observer()
+
     logger.info("SuperAgent ready on port %d", settings.port)
 
     yield  # ── app is running ──

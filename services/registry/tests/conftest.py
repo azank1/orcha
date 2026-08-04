@@ -1,9 +1,18 @@
 """Pytest configuration and fixtures."""
 
+import sys
+from pathlib import Path
+
+# Make workspace packages (``common.*``) importable regardless of pytest
+# rootdir — mirrors the pattern in ``common/llm/tests/conftest.py`` for runs
+# from the repo root (``uv run pytest services/registry/tests/``).
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 import asyncio
 from collections.abc import AsyncGenerator
 from datetime import UTC
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest

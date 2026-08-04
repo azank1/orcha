@@ -1,4 +1,4 @@
-"""Signed manifest envelopes for agent-network gossip (Ed25519)."""
+"""Signed manifest envelopes (Ed25519)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from cryptography.exceptions import InvalidSignature
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import (
+    Ed25519PrivateKey,
+    Ed25519PublicKey,
+)
 from cryptography.hazmat.primitives.serialization import Encoding, PublicFormat
 
 
@@ -54,14 +57,22 @@ class SignedManifestEnvelope:
 def generate_keypair() -> tuple[Ed25519PrivateKey, str]:
     """Return (private_key, public_key_b64)."""
     private_key = Ed25519PrivateKey.generate()
-    public_bytes = private_key.public_key().public_bytes(
-        Encoding.Raw, PublicFormat.Raw
-    )
+    public_bytes = private_key.public_key().public_bytes(Encoding.Raw, PublicFormat.Raw)
     return private_key, base64.b64encode(public_bytes).decode("ascii")
 
 
 def _canonical_manifest_bytes(manifest: dict[str, Any]) -> bytes:
     return json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode()
+
+
+def canonical_json_bytes(payload: dict[str, Any]) -> bytes:
+    """Canonical JSON bytes (sorted keys, compact separators).
+
+    Public alias of the envelope canonicalisation, shared with AAC charter
+    signing (common/charter) so signed envelopes and signed charters use one
+    canonical form.
+    """
+    return _canonical_manifest_bytes(payload)
 
 
 def sign_manifest(
@@ -83,13 +94,25 @@ def sign_manifest(
     )
 
 
-def verify_envelope(envelope: SignedManifestEnvelope) -> bool:
+def verify_bytes(message: bytes, signature_b64: str, public_key_b64: str) -> bool:
+    """Verify a raw Ed25519 signature over arbitrary bytes.
+
+    Shared with the KY-A attestation signer (services/validator) so signed
+    attestations and manifest envelopes use one crypto implementation.
+    """
     try:
         public_key = Ed25519PublicKey.from_public_bytes(
-            base64.b64decode(envelope.public_key_b64)
+            base64.b64decode(public_key_b64)
         )
-        signature = base64.b64decode(envelope.signature_b64)
-        public_key.verify(signature, _canonical_manifest_bytes(envelope.manifest))
+        public_key.verify(base64.b64decode(signature_b64), message)
         return True
     except (InvalidSignature, ValueError):
         return False
+
+
+def verify_envelope(envelope: SignedManifestEnvelope) -> bool:
+    return verify_bytes(
+        _canonical_manifest_bytes(envelope.manifest),
+        envelope.signature_b64,
+        envelope.public_key_b64,
+    )

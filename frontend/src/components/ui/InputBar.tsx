@@ -86,7 +86,7 @@ export function InputBar({
 
       <div
         className={cn(
-          'relative flex items-end bg-surface-elevated border border-surface-borderLight rounded-lg',
+          'relative flex items-end bg-surface-elevated border border-surface-border rounded-2xl',
           'focus-within:border-brand-primary focus-within:shadow-blue transition-all duration-150',
           size === 'home' ? 'min-h-14 px-4 py-2' : 'min-h-[52px] px-4 py-1.5',
         )}

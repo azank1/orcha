@@ -107,3 +107,19 @@ ctx/
 # Local-only docs — internal moat/strategy/pricing notes, PDFs, recordings.
 # Populated by scripts/mirror-local-docs.sh; never meant to leave this machine.
 docs-local/
+
+# DAN / vision / network material — kept locally, not in the public repo
+INCEPTION.md
+VISION.md
+docs/dev_docs/dan/
+docs/dev_docs/EmergeOS-DAN.pdf
+node/src/emerge_node/gossip.py
+node/src/emerge_node/cli.py
+node/tests/test_gossip_spike.py
+.cdv-runs/
+.wrangler/
+kimi files/
+.superpowers/
+
+# Landing site lives in solvent-metaorcha/orcha-landing; local checkout kept here for convenience.
+deploy/landing-site/

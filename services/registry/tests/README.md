@@ -139,6 +139,7 @@ See `conftest.py` for fixture definitions.
 import pytest
 from services.registry.src.my_module import MyClass
 
+
 class TestMyFeature:
     def test_something(self):
         # Test implementation
@@ -160,9 +161,11 @@ def test_with_database(db, test_user_id):
 def test_unit_logic():
     pass
 
+
 @pytest.mark.integration
 async def test_integration():
     pass
+
 
 @pytest.mark.slow
 def test_slow_operation():

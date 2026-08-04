@@ -492,6 +492,15 @@ class RegistrationService:
                 "health_endpoint": config.health_endpoint,
                 "health_status": health_status,
                 "last_health_check": datetime.now(UTC),
+                **(
+                    {
+                        "authorized_scope": PrismaJson(
+                            config.authorized_scope.model_dump()
+                        )
+                    }
+                    if config.authorized_scope
+                    else {}
+                ),
             }
         )
 
@@ -663,6 +672,11 @@ class RegistrationService:
                 "description": config.identity.description,
                 "tags": config.identity.tags,
                 "health_endpoint": config.health_endpoint,
+                "authorized_scope": (
+                    PrismaJson(config.authorized_scope.model_dump())
+                    if config.authorized_scope
+                    else None
+                ),
             },
         )
         await self.db.capability.delete_many(where={"agent_id": agent.id})

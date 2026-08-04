@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 
 _MAX_DAILY = int(os.getenv("SANDBOX_MAX_DAILY_MESSAGES", "500"))
 _GUEST_MAX = int(os.getenv("SANDBOX_GUEST_MAX_MESSAGES", "1"))
+# Guests who bring their own model key (session-scoped __llm__ creds) cost us
+# no LLM spend — they get a higher cap.
+_GUEST_BYOK_MAX = int(os.getenv("SANDBOX_GUEST_BYOK_MAX_MESSAGES", "10"))
 
 _CAP_BODY = {
     "detail": "Sandbox daily limit reached. The demo resets at midnight UTC. "
@@ -37,8 +40,8 @@ _CAP_BODY = {
 }
 
 _GUEST_CAP_BODY = {
-    "detail": "Guest demo allows one message. Sign up or run locally for unlimited access: "
-    "https://github.com/azank1/orcha",
+    "detail": "Guest limit reached. Bring your own model key for a higher limit, "
+    "sign up, or run locally for unlimited access: https://github.com/azank1/orcha",
     "code": "SANDBOX_GUEST_LIMIT",
 }
 
@@ -73,12 +76,23 @@ class SandboxGuardMiddleware(BaseHTTPMiddleware):
             try:
                 payload = decode_access_token(token)
                 if payload.is_guest:
+                    session_id = request.url.path.strip("/").split("/")[3]
+                    guest_cap = _GUEST_MAX
+                    try:
+                        byok_key = f"gateway:creds:session:{session_id}:__llm__:api_key"
+                        if await redis.get(byok_key):
+                            guest_cap = _GUEST_BYOK_MAX
+                    except Exception:
+                        logger.debug(
+                            "SandboxGuard: BYOK check failed — default cap",
+                            exc_info=True,
+                        )
                     guest_key = f"sandbox:guest:{payload.user_id}:messages"
                     try:
                         guest_count = await redis.incr(guest_key)
                         if guest_count == 1:
                             await redis.expire(guest_key, 86400)
-                        if guest_count > _GUEST_MAX:
+                        if guest_count > guest_cap:
                             return JSONResponse(
                                 status_code=429, content=_GUEST_CAP_BODY
                             )

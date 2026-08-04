@@ -1,7 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '../ui/Button'
 import { Logo } from '../ui/Logo'
+import { ModeSwitch } from './ModeSwitch'
 import { useAuthStore } from '../../store/auth'
+import { ORCHA_VERSION, SANDBOX_BETA } from '../../version'
 
 const SANDBOX_MODE = import.meta.env.VITE_SANDBOX_MODE === 'true'
 
@@ -20,10 +22,17 @@ export function NavBar() {
       >
         <Logo size={24} />
         Orcha
+        {SANDBOX_BETA && (
+          <span className="text-[10px] px-1.5 py-0.5 rounded border border-surface-border text-text-disabled">
+            Beta
+          </span>
+        )}
+        <span className="text-[10px] font-normal text-text-disabled">v{ORCHA_VERSION}</span>
         <span className="size-1.5 rounded-full bg-brand-secondary inline-block" aria-hidden="true" />
       </button>
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-3">
+        <ModeSwitch />
         <Button
           variant="ghost"
           size="sm"

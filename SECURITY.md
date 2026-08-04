@@ -7,9 +7,8 @@ discussions, or pull requests.**
 
 Instead, report them privately so we can fix the issue before it is disclosed:
 
-- Email **security@orcha.ai** <!-- PLACEHOLDER: swap for real security mailbox before launch -->
-- Or use GitHub's [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/guidance-on-reporting-and-writing-information-about-vulnerabilities/privately-reporting-a-security-vulnerability)
-  on this repository.
+- Use GitHub's [private vulnerability reporting](https://github.com/solvent-metaorcha/orcha/security/advisories/new)
+  ("Report a vulnerability" via the repository's Security Advisories page).
 
 Please include:
 

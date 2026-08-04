@@ -58,7 +58,7 @@ class MCPHandler(AgentHandler):
     """
     Handles MCP protocol agent calls.
 
-    Session lifecycle per call: initialize → call_tool → (optional sampling) → result.
+    Session lifecycle per call: initialize → call_tool → result.
     Transport: SSE (HTTP endpoint) or STDIO (command + args).
     """
 

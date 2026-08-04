@@ -14,6 +14,17 @@ Standalone AI agents that can be registered with Orcha. Each agent declares its 
 | [google-workspace-orchestrator](./google-workspace-orchestrator/) | A2A (HTTP) | Gmail, Calendar, Drive, and Sheets automation |
 | [ecommerce-automation](./ecommerce-automation/) | A2A (HTTP) | Shopify management and social publishing |
 
+### KY-A supervisory fleet (hackathon layer)
+
+Fleet agents for the KY-A Supervisor (see `docs/hackathon-cambridge/dev-srs.md`).
+Start with `KYA_FLEET=true ./scripts/run-all.sh`; verify with `scripts/kya-gates-live.sh`.
+
+| Agent | Protocol | Description |
+|-------|----------|-------------|
+| [rulebook-rag-agent](./rulebook-rag-agent/) | MCP (SSE), :3012 | Rulebook document store (pgvector) + Q&A with mandatory citations |
+| [kya-verification-agent](./kya-verification-agent/) | MCP (SSE), :3013 | Agent identity (DID + Ed25519) and `authorized_scope` compliance verification; renders the CanvasKit case file |
+| [payment-anomaly-agent](./payment-anomaly-agent/) | MCP (SSE), :3014 | Rules-based anomaly scan of synthetic M2M payment transactions |
+
 ## How Agents Work
 
 Each agent is an independent service. At startup it exposes either:

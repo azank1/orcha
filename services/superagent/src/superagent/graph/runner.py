@@ -190,6 +190,35 @@ def _merge_messages_for_transcript(
     return list(a)
 
 
+async def _pending_interrupt_event(
+    graph: Any, config: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Read the checkpoint for a pending interrupt and shape it as an SSE event.
+
+    With this LangGraph version, node-level ``interrupt()`` suspends the graph
+    and records the payload in ``snapshot.tasks[*].interrupts``; it is not
+    raised out of ``astream``. Emitting it here keeps SSE consumers (frontend,
+    gate scripts) in sync with the checkpoint-driven ``get_status`` path.
+    """
+    try:
+        snapshot = await graph.aget_state(config)
+    except Exception:
+        logger.exception("pending_interrupt: aget_state failed")
+        return None
+    if not snapshot or not getattr(snapshot, "tasks", None):
+        return None
+    for task in snapshot.tasks:
+        for intr in getattr(task, "interrupts", None) or []:
+            val = getattr(intr, "value", None)
+            if isinstance(val, dict):
+                try:
+                    return InterruptEvent.model_validate(val).model_dump(mode="json")
+                except Exception:
+                    logger.exception("pending_interrupt: invalid payload %r", val)
+                    return val
+    return None
+
+
 async def _yield_multistream_events(
     graph: Any,
     stream_input: Any,
@@ -495,6 +524,28 @@ class SessionRunner:
         # Keep session credentials visible in both configurable and state paths.
         state_update["_session_credentials"] = session_credentials or {}
 
+        # Permanent BYOK fallback: if the caller supplied no session-scoped
+        # __llm__ override, hydrate one from the vault (keys written via
+        # POST /api/v1/credentials scope=permanent). Session creds win.
+        if "__llm__" not in state_update["_session_credentials"]:
+            try:
+                from ..vault.client import VaultClient
+
+                vault = VaultClient()
+                byok: dict[str, str] = {}
+                for var in ("api_key", "base_url", "model"):
+                    value = await vault.get_agent_env(user_id, "__llm__", var)
+                    if value:
+                        byok[var] = value
+                if byok.get("api_key"):
+                    state_update["_session_credentials"]["__llm__"] = byok
+                    logger.info(
+                        "run_turn: hydrated permanent BYOK __llm__ creds for user %s",
+                        user_id,
+                    )
+            except Exception:
+                logger.debug("run_turn: BYOK vault hydration failed", exc_info=True)
+
         await register_run(session_id)
         values_messages_sink: dict[str, Any] = {}
         current_task = asyncio.current_task()
@@ -533,6 +584,16 @@ class SessionRunner:
                 )
 
         _cleanup_session_tmp(session_id)
+
+        # If the graph suspended on an interrupt (HITL etc.), surface it on the
+        # stream. With this LangGraph version, node-level interrupt() is recorded
+        # in the checkpoint rather than raised out of astream, so read it back.
+        pending = await _pending_interrupt_event(
+            self._graph, {"configurable": {"thread_id": session_id}}
+        )
+        if pending is not None:
+            yield pending
+
         yield {"type": "done", "session_id": session_id}
 
     async def resume_from_interrupt(

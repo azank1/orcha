@@ -10,6 +10,7 @@ from .api_responses import (
     UpdateAgentResponse,
 )
 from .emerge_config import (
+    AuthorizedScopeConfig,
     AuthStrategyConfig,
     EmergeConfig,
     IdentityConfig,
@@ -37,6 +38,7 @@ __all__ = [
     "SecurityConfig",
     "AuthStrategyConfig",
     "PaymentConfig",
+    "AuthorizedScopeConfig",
     # Universal manifest models
     "UniversalManifest",
     "IdentityInfo",

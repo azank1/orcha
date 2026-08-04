@@ -61,6 +61,40 @@ class Settings(BaseSettings):
     # transient error before the result is committed. 0 disables retries.
     verify_max_retries: int = 2
 
+    # Max completion tokens per orchestrator LLM call. 1024 is the stock OSS
+    # default; multi-step playbooks (e.g. KY-A supervision) need headroom so a
+    # completion is not truncated before its tool call.
+    orchestrator_max_tokens: int = 1024
+
+    # Audit ledger (KY-A, WS7) — when enabled, a LedgerObserver is installed at
+    # boot and every completed step is appended to the hash-chained audit_ledger
+    # table. Default off keeps stock OSS behaviour (NoOpObserver).
+    audit_ledger_enabled: bool = False
+
+    # KY-A supervisor cyber guardrails (WS10, FR-10.1) — when enabled, the run
+    # is scope-limited to the allowlisted agent DIDs below plus an explicit set
+    # of system tools (see kya_policy.py). Default off keeps stock OSS behaviour.
+    kya_mode_enabled: bool = False
+    kya_allowed_agents: str = (
+        "did:orcha:agent:kya-verification,"
+        "did:orcha:agent:rulebook-rag,"
+        "did:orcha:agent:payment-anomaly"
+    )
+
+    # DAG planner routing (Slice 1) — when enabled, complex goals are routed to
+    # the PnD 5-stage DAG planner (/api/v1/plan) and executed as a planned
+    # workflow; simple goals stay on the ReAct loop. Default off keeps stock
+    # OSS behaviour (pure ReAct).
+    dag_planner_enabled: bool = False
+    dag_route_high: float = 0.75  # Channel A score >= high → DAG
+    dag_route_low: float = 0.35  # Channel A score <= low → ReAct; between → Channel B
+    dag_route_model: str | None = None  # Channel B arbiter; None → small_model
+
+    # CDV verification (Slice 1) — per-step Channel-A scoring observer +
+    # AdaptiveStopper loop backstop. Default off keeps stock OSS behaviour.
+    cdv_verification_enabled: bool = False
+    cdv_store_dir: str = ".cdv-runs"  # per-run SQLite: {dir}/{session_id}.db
+
     # Bound a single agent step's text output before it re-enters the
     # orchestrator context. Protects rate-limited tiers (per-minute token
     # ceilings) from unbounded scrape/crawl outputs. 0 disables truncation.

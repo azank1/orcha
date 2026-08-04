@@ -27,12 +27,12 @@ export function MessageBubble({ message }: Readonly<MessageBubbleProps>) {
   const isUser = message.role === 'user'
 
   return (
-    <div className={cn('flex', isUser ? 'justify-end' : 'justify-start')}>
+    <div className={cn('flex flex-col', isUser ? 'items-end' : 'items-start')}>
       <div
         className={cn(
-          'max-w-[560px] rounded-lg px-4 py-3.5 text-body-md',
+          'max-w-[560px] rounded-lg px-4 py-3.5 text-body-md leading-6',
           isUser
-            ? 'border border-[rgba(59,110,248,0.25)] bg-brand-primary-dim text-brand-primary-light'
+            ? 'border border-[var(--accent-border)] bg-brand-primary-dim text-brand-primary-light'
             : 'bg-surface-elevated text-text-body',
         )}
         aria-label={isUser ? 'Your message' : 'Assistant message'}
@@ -65,6 +65,17 @@ export function MessageBubble({ message }: Readonly<MessageBubbleProps>) {
           />
         )}
       </div>
+      <span
+        className={cn(
+          'mt-1 px-1 text-[10px] text-text-disabled select-none',
+          isUser ? 'text-right' : 'text-left',
+        )}
+      >
+        {new Date(message.timestamp).toLocaleTimeString(undefined, {
+          hour: '2-digit',
+          minute: '2-digit',
+        })}
+      </span>
     </div>
   )
 }

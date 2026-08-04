@@ -85,6 +85,29 @@ class HitlApprovalMetadata(BaseModel):
     capability_name: str
     """Name of the tool/capability being invoked."""
 
+    # ── KY-A enforcement gating (WS6, additive optional) ──────────────────────
+    # Populated by the supervisor-side propose_enforcement system tool. The
+    # authoriser_* / decision fields are filled in at resume time from the
+    # authenticated Gateway user identity (never free-text client input alone)
+    # and persisted into the audit ledger.
+    proposal_id: str | None = None
+    """Unique ID of the enforcement proposal being approved/denied."""
+
+    enforcement_action: str | None = None
+    """The enforcement action proposed, e.g. 'suspend_agent', 'revoke_scope'."""
+
+    authoriser_user_id: str | None = None
+    """Authenticated user ID of the named human who decided (set at resume)."""
+
+    authoriser_display_name: str | None = None
+    """Display name of the named human who decided (set at resume)."""
+
+    decision: str | None = None
+    """The recorded decision: 'approved' | 'denied' (set at resume)."""
+
+    decided_at: str | None = None
+    """ISO-8601 timestamp of the decision (set at resume)."""
+
 
 class HitlClarificationMetadata(BaseModel):
     """Metadata for HITL_CLARIFICATION interrupts."""

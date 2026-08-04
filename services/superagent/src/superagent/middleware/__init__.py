@@ -1,5 +1,6 @@
 """Execution middleware pipeline."""
 
+from .audit_ledger import LedgerObserver
 from .observers import (
     ExecutionObserver,
     NoOpObserver,
@@ -12,6 +13,7 @@ from .observers import (
 __all__ = [
     "ExecutionMiddleware",
     "ExecutionObserver",
+    "LedgerObserver",
     "NoOpObserver",
     "StepResult",
     "emit_step_complete",

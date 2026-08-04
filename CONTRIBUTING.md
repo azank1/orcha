@@ -5,7 +5,8 @@ infrastructure.
 
 This is not a model benchmark
 repo — it's about **routing, executing, observing, and distributing** agents
-across MCP, A2A, and ACP.
+across MCP, A2A, and COMPUTER_USE (ACP manifests are accepted as a
+compatibility alias and routed through the A2A handler).
 
 Contributions we **eagerly welcome** without prior discussion:
 

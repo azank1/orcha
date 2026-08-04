@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     jwt_access_token_expire_days: int = 7
     jwt_refresh_token_expire_days: int = 30
 
-    # Downstream services — ports must match deploy/supervisord.conf in orcha-core:
+    # Downstream services — ports must match the deployment supervisor config:
     # superagent :8001, planning-discovery :8002, registry :8003, gateway :8000
     superagent_url: str = "http://127.0.0.1:8001"
     registry_url: str = "http://127.0.0.1:8003"

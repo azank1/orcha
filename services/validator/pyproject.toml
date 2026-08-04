@@ -3,7 +3,16 @@ name = "validator-service"
 version = "0.1.0"
 description = "Validator attestation reference implementation"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+  "cryptography>=42",
+  "httpx>=0.27",
+  "common-database",
+  "emerge-node",
+]
+
+[tool.uv.sources]
+common-database = {workspace = true}
+emerge-node = {workspace = true}
 
 [build-system]
 requires = ["hatchling"]
@@ -14,4 +23,4 @@ packages = ["src/validator"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src", "../../superagent/src"]
+pythonpath = ["src", "../../superagent/src", "../../node/src"]

@@ -2,7 +2,7 @@
 
 The developer SDK + `emerge` CLI for [Orcha](https://github.com/azank1/orcha) —
 an orchestration runtime that plans, routes, and executes one goal across agents
-speaking MCP, A2A, and ACP.
+speaking MCP, A2A, and COMPUTER_USE (ACP is accepted as an A2A-routed alias).
 
 Register an agent in three lines:
 

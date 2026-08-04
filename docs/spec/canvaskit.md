@@ -219,6 +219,22 @@ The manifest is interleaved into the chat timeline at its SSE arrival position �
 
 ---
 
+## Developer earning model *(roadmap — not active in v0.1)*
+
+> **Status: roadmap.** The billing infrastructure does not exist yet. Components today earn reputation and adoption; the fee layer activates when a paid app runtime ships.
+
+Every component in the CanvasKit ecosystem is designed to earn when it renders in a deployed app:
+
+| Contribution | Earning | Split |
+|--------------|---------|-------|
+| Core component (MetricCard, LineChart, etc.) | Per-render fee | 80% dev / 20% platform |
+| Domain-specific component (e.g., CandlestickChart) | Per-render fee | 80% dev / 20% platform |
+| Theme/variant | Per-render fee | 80% dev / 20% platform |
+
+A `MetricCard` that renders 10,000 times/day in deployed apps would earn its author automatically — no marketplace listing required, no sales, just usage. This is the design target; the mechanism ships with the app-builder runtime.
+
+---
+
 ## Open questions → RFC issues
 
 - [ ] **Animation:** Should components support entrance animations? (e.g., count-up for MetricCard values) Risk: perceived jank vs. genuine delight.

@@ -89,7 +89,9 @@ async def test_canvas_envelope_passthrough_unchanged():
             ],
         },
     }
-    result = await OutputNormalizer.normalize(envelope, "A2A", agent_name="Finance Agent")
+    result = await OutputNormalizer.normalize(
+        envelope, "A2A", agent_name="Finance Agent"
+    )
     assert result["ui_manifest"] == envelope["manifest"]
     assert result["content"] == "Portfolio dashboard rendered."
 

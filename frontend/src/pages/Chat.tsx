@@ -7,6 +7,7 @@ import { RightPanel } from '../components/layout/RightPanel'
 import { ToolTimelineRow } from '../components/chat/ExecutionTimeline'
 import { MessageBubble } from '../components/chat/MessageBubble'
 import { StreamingDots } from '../components/chat/StreamingDots'
+import { ModelChip } from '../components/chat/ModelChip'
 import { InputBar } from '../components/ui/InputBar'
 import { CredentialsModal } from '../components/modals/CredentialsModal'
 import { SaveWorkflowModal } from '../components/modals/SaveWorkflowModal'
@@ -16,11 +17,13 @@ import { useSessionStore } from '../store/session'
 import { useSessionSidebarStore } from '../store/sessionSidebar'
 import { useAuthStore } from '../store/auth'
 import { useSettingsStore } from '../store/settings'
+import { useByokStore } from '../store/byok'
 import { sessions, files } from '../api/client'
 import { useSSE } from '../hooks/useSSE'
 import { useSessionStatusSync } from '../hooks/useSessionStatusSync'
 import { cn } from '../components/ui/cn'
 import { buildChatTimeline } from '../lib/buildChatTimeline'
+import { downloadRunAudit } from '../lib/downloadAudit'
 import { CanvasRenderer } from '../components/canvas'
 import { queryClient } from '../lib/queryClient'
 import type {
@@ -62,10 +65,19 @@ export function Chat() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated)
   const sessionSidebarOpen = useSessionSidebarStore((s) => s.isOpen)
   const defaultModel = useSettingsStore((s) => s.defaultModel)
+  const byokMode = useByokStore((s) => s.mode)
 
   const store = useSessionStore()
   const { streamResponse, abort } = useSSE()
   const { refetchSessionDetails } = useSessionStatusSync()
+
+  // Push BYOK '__llm__' credentials onto the active session (no-op when hosted
+  // or already applied to this session).
+  useEffect(() => {
+    if (!store.sessionId) return
+    if (useSessionStore.getState().byokSessionId === store.sessionId) return
+    void useByokStore.getState().applyToSession(store.sessionId)
+  }, [store.sessionId, byokMode])
 
   const chatTimeline = useMemo(
     () => buildChatTimeline(store.messages, store.toolTrace, store.canvases),
@@ -175,8 +187,13 @@ export function Chat() {
     setInput('')
     setPendingArtifacts([])
     try {
+      const byok = useByokStore.getState()
       const res = await sessions.sendMessage(store.sessionId, message, artifactIds, {
-        model: defaultModel,
+        model:
+          byok.mode === 'byok' && byok.model.trim()
+            ? byok.model.trim()
+            : defaultModel,
+        customInstructions: byok.systemPrompt.trim() || undefined,
       })
       if (res.ok) {
         await streamResponse(res)
@@ -222,16 +239,7 @@ export function Chat() {
   const handleDownloadAudit = async () => {
     if (!store.sessionId) return
     try {
-      const audit = await sessions.getAudit(store.sessionId)
-      const blob = new Blob([JSON.stringify(audit, null, 2)], {
-        type: 'application/json',
-      })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `orcha-run-audit-${store.sessionId}.json`
-      a.click()
-      URL.revokeObjectURL(url)
+      await downloadRunAudit(store.sessionId)
     } catch {
       store.addMessage({
         id: crypto.randomUUID(),
@@ -280,7 +288,7 @@ export function Chat() {
             {sessionTitle}
           </h1>
           <div
-            className="ml-3 flex items-center h-6 px-2.5 rounded-sm bg-brand-primary-dim border border-[rgba(59,110,248,0.3)] shrink-0"
+            className="ml-3 flex items-center h-6 px-2.5 rounded-sm bg-brand-primary-dim border border-[var(--accent-border)] shrink-0"
           >
             <span className={cn('text-[11px] font-medium', statusInfo.color)}>
               {statusInfo.label}
@@ -369,7 +377,7 @@ export function Chat() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto scrollbar-thin px-5 py-5">
-          <div className="flex flex-col gap-3 max-w-[calc(100%-8px)]">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-3">
             <ul
               className="m-0 flex list-none flex-col gap-3 p-0"
               aria-label="Conversation and execution timeline"
@@ -382,11 +390,11 @@ export function Chat() {
                   // Also hide streaming/thinking messages — they're internal reasoning.
                   item.msg.role === 'agent' && (item.msg.streaming || item.msg.streamedAsThinking) ? null :
                   item.msg.role === 'user' ? (
-                    <li key={item.msg.id} className="list-none">
+                    <li key={item.msg.id} className="list-none animate-message-in">
                       <MessageBubble message={item.msg} />
                     </li>
                   ) : (
-                    <li key={item.msg.id} className="list-none">
+                    <li key={item.msg.id} className="list-none animate-message-in">
                       <MessageBubble message={item.msg} />
                     </li>
                   )
@@ -427,6 +435,7 @@ export function Chat() {
 
         {/* Input bar */}
         <div className="px-5 py-4 border-t border-surface-border shrink-0">
+          <div className="mx-auto w-full max-w-3xl">
           {store.messages.length === 0 && store.status !== 'running' && (
             <div className="flex flex-wrap items-center gap-2 mb-3">
               <span className="text-[12px] text-text-secondary">Try:</span>
@@ -470,6 +479,10 @@ export function Chat() {
             isRunning={store.status === 'running'}
             size="chat"
           />
+          <div className="mt-2 flex items-center">
+            <ModelChip />
+          </div>
+          </div>
         </div>
       </div>
 
@@ -620,7 +633,7 @@ function InlineInterruptCard({
       : 'Input Required'
 
   return (
-    <div className="mx-0 px-4 py-3 rounded-md bg-semantic-warningDim border border-[#2D2000]">
+    <div className="mx-0 px-4 py-3 rounded-md bg-semantic-warningDim border border-[var(--warning-border)]">
       <p className="text-label font-medium text-semantic-warning mb-2">⚠ {title}</p>
       {children}
     </div>

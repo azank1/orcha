@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import type { UserSettings } from '../types'
+import { settingsApi } from '../api/client'
+import { useAuthStore } from './auth'
 
 interface SettingsState {
   userSettings: UserSettings | null
@@ -35,7 +37,15 @@ export const useSettingsStore = create<SettingsState>((set) => ({
   defaultModel: DEFAULT_MODEL,
 
   setUserSettings: (s) => set({ userSettings: s, isDevMode: s.is_dev_mode }),
-  setDevMode: (v) => set({ isDevMode: v }),
+  setDevMode: (v) => {
+    // Local state + localStorage flip immediately so data-mode re-themes now.
+    localStorage.setItem('pref_devMode', v ? 'true' : 'false')
+    set({ isDevMode: v })
+    // Best-effort server sync — guests have no persistent settings.
+    if (useAuthStore.getState().isAuthenticated) {
+      settingsApi.update({ is_dev_mode: v }).catch(() => {})
+    }
+  },
 
   setAppearance: (v) => {
     localStorage.setItem('pref_appearance', v)
@@ -59,9 +69,10 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const language = localStorage.getItem('pref_language') ?? 'en'
     const timezone = localStorage.getItem('pref_timezone') ?? Intl.DateTimeFormat().resolvedOptions().timeZone
     const storedModel = localStorage.getItem('pref_defaultModel')
+    const isDevMode = localStorage.getItem('pref_devMode') === 'true'
     // Drop stale prefs for models the sandbox no longer serves.
     const defaultModel =
       storedModel && AVAILABLE_MODELS.includes(storedModel) ? storedModel : DEFAULT_MODEL
-    set({ appearance, language, timezone, defaultModel })
+    set({ appearance, language, timezone, defaultModel, isDevMode })
   },
 }))

@@ -38,7 +38,7 @@ class Settings(BaseSettings):
 
     # ── Service identity ──────────────────────────────────────────────────────
     service_name: str = "planning-discovery-service"
-    service_version: str = "1.0.0"
+    service_version: str = "0.1.0"
     environment: str = "development"
 
     # ── Server ────────────────────────────────────────────────────────────────

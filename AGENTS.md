@@ -3,16 +3,42 @@
 Instructions for AI coding agents (Cursor, Claude Code, Codex, aider, etc.)
 working in this repository. Human contributors: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-- The default branch is `main`. Branch naming: `<type>/<description>`
-  (e.g. `feat/sandbox-deploy`, `fix/registry-timeout`). Never push to
+- The default branch is `main`. Branch naming: `az/<type>/<description>`
+  (e.g. `az/feat/sandbox-deploy`, `az/feat/kya-supervisor`). Never push to
   `main` directly without review.
+
+## Two-repo topology (since 2026-07-25)
+
+- **`solvent-metaorcha/orcha-internal`** (private, this repo) — the working repo. All
+  branches, full history, `docs-local/`, strategy docs. (KY-A/hackathon work
+  moved to the standalone `kya-supervisor` repo on 2026-07-31.)
+- **`solvent-metaorcha/orcha`** (public) — the OSS face. Two refs only:
+  - `main` — single orphan ref, sanitized downstream export of this repo's
+    `main` + selected core deltas. No KY-A, no `docs/dev_docs/`, no internal
+    codenames, no history.
+  - `design` — planning, RFCs, roadmap notes, and launch/design docs; minimal,
+    additive, no source code, no internal codenames, no KY-A.
+  Public-only files (e.g. `dependabot.yml`) are being moved into this internal
+  repo so the public repo stays a pure downstream export.
+- Export flow: internal `main` → sanitize (brand sweep, exclude internal
+  paths, gitleaks) → force-update public orphan `main` per release. The
+  export remote in the export worktree is named `public`; **never push any
+  ref other than the sanitized orphan `main` or the `design` branch to it.**
+  KY-A content (now in the `kya-supervisor` repo) must never cross into the
+  public repo — it is hackathon/product work, private by design.
 
 ## Project Overview
 
 Orcha is an open-source multi-protocol AI agent orchestration runtime. Users
-submit a free-text goal; Orcha decomposes it into a DAG of agent calls across
-MCP, A2A, ACP, and COMPUTER_USE protocols, executes them, and renders results
-as a live dashboard via CanvasKit — not a text reply. The full stack runs with
+submit a free-text goal; Orcha plans and routes it across MCP, A2A, and
+COMPUTER_USE protocols (ACP manifests are accepted as a compatibility alias
+routed through the A2A handler), executes it in a ReAct orchestration loop,
+and renders results as a live dashboard via CanvasKit — not a text reply.
+(The 5-stage DAG planner in `services/planning-discovery/` is wired in behind
+`DAG_PLANNER_ENABLED` (default off): complex goals route to `/plan` via a
+hybrid heuristic+semantic gate and execute as a planned workflow; simple goals
+stay on the ReAct loop. CDV step verification is available behind
+`CDV_VERIFICATION_ENABLED`.) The full stack runs with
 `PAYMENT_MODE=mock` and no closed-service dependency (see OSS Hard Rules below).
 
 Everything in this repo — planner, verifier, protocol handlers, CanvasKit,
@@ -31,8 +57,14 @@ no planned open-core split.
 | `sdk/` | `emerge` SDK | — | Agent registration decorator, CLI, A2A server |
 | `agents/finance-dashboard-agent/` | Reference agent | 3010 | Canonical CanvasKit-emitting agent, started separately |
 | `agents/search-agent/` | Search agent | 3007 | |
-| `node/` | `emerge-node` package | — | Experimental: Ed25519 signed-envelope + gossip spike for agent networks |
-| `services/validator/` | Validator | — | Experimental: `FulfillmentRecorder` observer (attestation reference implementation) |
+| `node/` | `emerge-node` package | — | Ed25519 signed-envelope helpers used by charter + attestation |
+| `services/validator/` | Validator | — | `FulfillmentRecorder` observer (attestation reference implementation) |
+
+> **KY-A was extracted (2026-07-31).** The KY-A Supervisor (registry service,
+> fleet agents, fixtures, specs, hackathon docs) now lives in the standalone
+> private `kya-supervisor` repo. What remains here: charter/AAC crypto
+> (`node/`, `common/charter/`, RFCs 0001-0002) and the SuperAgent's
+> default-off `KYA_MODE_ENABLED` policy + attestation/enforcement tools.
 
 ## Common Commands
 
@@ -45,11 +77,19 @@ make check                  # lint + format + tests, run before every PR
 ./scripts/poc-e2e.sh        # end-to-end proof: register → run → verify → settle
 ```
 
+> Port note: the `deploy/sandbox/` Docker stack binds host 8000
+> (`sandbox-registry`) and will silently shadow a local Registry — stop it
+> before running the stack locally.
+
 ## Milestone Context
 
 - **M0 — OSS Launch Gate**: merged on `main`
 - **M1 — Hosted Sandbox**: built (`deploy/sandbox/`)
 - **M2 — Demo + Launch**: in progress
+- **KY-A Supervisor**: extracted 2026-07-31 to the standalone private
+  `kya-supervisor` repo — no KY-A code, docs, or fixtures remain here beyond
+  the shared charter crypto and the SuperAgent's default-off KYA mode (see
+  the service-map note above). Do not re-add KY-A content to this repo.
 
 If a request touches CanvasKit billing, token/staking, or any product name
 not in the README, add it to `ROADMAP.md` and stop rather than implementing it.
@@ -99,7 +139,7 @@ identity:
 # id: "did:orcha:system:my-tool"        # platform/system tools
 ```
 
-Never any other prefix, and never a bare name. The schema
+Never `did:emerge:`, `did:metaorcha:`, or a bare name. The schema
 (`docs/spec/emerge-yaml.schema.json`) is versioned; breaking changes need an
 RFC in `docs/spec/governance.md` — additive optional fields are fine without one.
 
@@ -107,8 +147,8 @@ RFC in `docs/spec/governance.md` — additive optional fields are fine without o
 
 1. **Mock-first**: full stack runs with `PAYMENT_MODE=mock`, no hard dependency
    on a paid/closed/hosted service. Provide a mock fallback for anything external.
-2. **Public brand = Orcha only** — never an internal codename or working
-   title in any committed file.
+2. **Public brand = Orcha only** — never "MetaOrcha" or any internal name in
+   any committed file.
 3. **No secrets in files** — no API keys, credentials, tokens, or service
    account files. `.env.*` is gitignored except `.env.example` /
    `.env.sandbox.example`. CI runs gitleaks on every PR (`.gitleaks.toml`).

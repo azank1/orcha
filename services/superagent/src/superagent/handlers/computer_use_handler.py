@@ -1,12 +1,10 @@
 """ComputerUseHandler — open bridge interface for computer-use protocol agents.
 
-Ships with a zero-dependency mock backend by default. External backends (e.g.
-GodHands or any screenshot/action provider) plug in behind the ComputerUseBackend
-ABC — set COMPUTER_USE_BACKEND to the fully-qualified class path to swap them in.
+Ships with a zero-dependency mock backend by default. External backends (any
+screenshot/action provider) plug in behind the ComputerUseBackend ABC — set
+COMPUTER_USE_BACKEND to the fully-qualified class path to swap them in.
 The built-in real backend is selected with COMPUTER_USE_BACKEND=playwright
 (see computer_use_playwright.py — headless Chromium + screenshot artifacts).
-
-See docs/bridges.md for the contributor guide on building a production backend.
 """
 
 from __future__ import annotations
@@ -92,7 +90,7 @@ def _load_backend() -> ComputerUseBackend:
     """Instantiate the configured backend (default: MockComputerUseBackend).
 
     Set COMPUTER_USE_BACKEND to a fully-qualified class path to swap backends:
-        COMPUTER_USE_BACKEND=mypackage.backends.GodHandsBackend
+        COMPUTER_USE_BACKEND=mypackage.backends.MyBackend
     The shorthand "playwright" selects the built-in PlaywrightBackend.
     """
     backend_path = os.getenv("COMPUTER_USE_BACKEND", "").strip()
@@ -139,7 +137,7 @@ class ComputerUseHandler(AgentHandler):
 
     Routes computer-use actions through a pluggable ComputerUseBackend.
     The open mock backend runs by default; set COMPUTER_USE_BACKEND to
-    plug in any external provider (see docs/bridges.md).
+    plug in any external provider.
 
     Expected args shape:
         action  — str  e.g. "screenshot", "click", "type", "navigate"

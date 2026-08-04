@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class AgentEvent:
-    event_type: str  # "progress" | "result" | "clarify" | "sampling" | "error"
+    event_type: str  # "progress" | "result" | "clarify" | "error"
     content: str = ""
     metadata: dict[str, Any] = field(default_factory=dict)
 
@@ -29,17 +29,6 @@ class ClarifyEvent(AgentEvent):
 
     def __post_init__(self) -> None:
         self.event_type = "clarify"
-
-
-@dataclass
-class SamplingInterruptEvent(AgentEvent):
-    """MCP sampling request requires user approval."""
-
-    sampling_message: str = ""
-    is_destructive: bool = False
-
-    def __post_init__(self) -> None:
-        self.event_type = "sampling"
 
 
 class AgentHandler(ABC):  # noqa: B024

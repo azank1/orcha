@@ -1,15 +1,12 @@
 [project]
 name = "emerge-node"
 version = "0.1.0"
-description = "emerge-node — experimental gossip sidecar for agent networks (spike transport)"
+description = "emerge-node — Ed25519 signed-envelope helpers (charter + attestation crypto)"
 requires-python = ">=3.12"
 dependencies = [
   "cryptography>=42",
   "pyyaml>=6",
 ]
-
-[project.scripts]
-emerge-node = "emerge_node.cli:main"
 
 [build-system]
 requires = ["hatchling"]

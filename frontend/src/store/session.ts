@@ -25,6 +25,16 @@ interface TokenUsage {
 
 export type RunPhase = 'planning' | 'executing' | null
 
+/** One entry in the developer Trace tab — event type + arrival time. */
+export interface TraceEvent {
+  id: string
+  type: string
+  timestamp: number
+}
+
+/** Ring-buffer size for the Trace tab (developer mode). */
+const TRACE_BUFFER_MAX = 100
+
 interface SessionState {
   sessionId: string | null
   sessionName: string | null
@@ -48,6 +58,8 @@ interface SessionState {
   integrationsModalOpen: boolean
   toolTrace: ToolInvocationTrace[]
   canvases: CanvasEntry[]
+  /** Last ~100 SSE event types + timestamps (developer Trace tab). */
+  traceBuffer: TraceEvent[]
   /** Increments for each timeline-visible row (messages + tools) */
   timelineSeq: number
 
@@ -73,6 +85,7 @@ interface SessionState {
   openCredentialsModal: () => void
   closeCredentialsModal: () => void
   setByokActive: (sessionId: string) => void
+  clearByokActive: () => void
   openSaveWorkflowModal: () => void
   closeSaveWorkflowModal: () => void
   openCrmModal: () => void
@@ -110,6 +123,8 @@ interface SessionState {
   }) => void
   clearToolTrace: () => void
   addCanvas: (entry: CanvasEntry) => void
+  /** Append an SSE event to the developer trace ring buffer. */
+  recordTraceEvent: (type: string) => void
   reset: () => void
 }
 
@@ -135,6 +150,7 @@ const initialState = {
   integrationsModalOpen: false,
   toolTrace: [] as ToolInvocationTrace[],
   canvases: [] as CanvasEntry[],
+  traceBuffer: [] as TraceEvent[],
   timelineSeq: 0,
 }
 
@@ -278,6 +294,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   openCredentialsModal: () => set({ credentialsModalOpen: true }),
   closeCredentialsModal: () => set({ credentialsModalOpen: false }),
   setByokActive: (sessionId) => set({ byokSessionId: sessionId }),
+  clearByokActive: () => set({ byokSessionId: null }),
   openSaveWorkflowModal: () => set({ saveWorkflowModalOpen: true }),
   closeSaveWorkflowModal: () => set({ saveWorkflowModalOpen: false }),
   openCrmModal: () => set({ crmModalOpen: true }),
@@ -369,7 +386,15 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       }
     }),
 
-  clearToolTrace: () => set({ toolTrace: [] }),
+  clearToolTrace: () => set({ toolTrace: [], traceBuffer: [] }),
+
+  recordTraceEvent: (type) =>
+    set((s) => ({
+      traceBuffer: [
+        ...s.traceBuffer.slice(-(TRACE_BUFFER_MAX - 1)),
+        { id: crypto.randomUUID(), type, timestamp: Date.now() },
+      ],
+    })),
 
   addCanvas: (entry) =>
     set((s) => ({
@@ -483,6 +508,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
               : 'tool'
           const totalCostRaw = rawMeta.total_cost_usd
           const baseFeeRaw = rawMeta.base_fee
+          const protocolRaw = rawMeta.protocol
           toolTrace.push({
             call_id: e.tool_call_id || `hist-${e.sequence_num}`,
             tool_name: displayToolName,
@@ -491,6 +517,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
             inputs,
             progressLines: [],
             content_preview: e.content.slice(0, 500),
+            protocol: typeof protocolRaw === 'string' ? protocolRaw : undefined,
             sortIndex: e.sequence_num,
             startedAt: timestamp,
             total_cost_usd: typeof totalCostRaw === 'string' ? totalCostRaw : undefined,

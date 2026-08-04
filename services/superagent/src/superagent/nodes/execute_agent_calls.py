@@ -16,6 +16,7 @@ from langgraph.errors import GraphInterrupt
 from langgraph.types import interrupt
 
 from ..graph.state import ArtifactRef
+from ..kya_policy import agent_allowed, system_tool_allowed
 from ..middleware.manifest_cache import MANIFEST_CACHE
 from ..middleware.oauth_grants import (
     capability_grant_key as _redis_cap_key,
@@ -205,6 +206,60 @@ def _result_status(content: str) -> str:
     return "success"
 
 
+async def _reject_disallowed_tool_call(
+    config: RunnableConfig,
+    pending_events: list[dict[str, Any]],
+    tool_messages: list[ToolMessage],
+    result_store: dict[str, Any],
+    *,
+    tool_name: str,
+    call_id: str,
+    args: dict[str, Any],
+    agent_id: str,
+    reason: str,
+) -> None:
+    """Reject a tool call blocked by the KY-A allowlist (FR-10.1) — never executes."""
+    err_content = f"Error: {reason}"
+    await _emit_invocation(
+        config,
+        {
+            "type": "invocation_start",
+            "call_id": call_id,
+            "tool_name": tool_name,
+            "agent_id": agent_id,
+            "inputs": args,
+        },
+        pending_events,
+    )
+    tool_messages.append(
+        ToolMessage(
+            content=err_content,
+            tool_call_id=call_id,
+            name=tool_name or "disallowed tool",
+            additional_kwargs={
+                TRANSCRIPT_TOOL_META_KEY: _tool_transcript_meta(
+                    agent_id=agent_id,
+                    internal_tool_name=tool_name,
+                    invocation_args=args,
+                )
+            },
+        )
+    )
+    result_store[call_id] = err_content
+    await _emit_invocation(
+        config,
+        {
+            "type": "invocation_result",
+            "call_id": call_id,
+            "tool_name": tool_name,
+            "agent_id": agent_id,
+            "status": "error",
+            "content_preview": err_content[:300],
+        },
+        pending_events,
+    )
+
+
 async def _execute_with_retry(
     middleware: Any,
     *,
@@ -365,6 +420,27 @@ async def execute_agent_calls_node(
 
         # Try system tool first
         if SYSTEM_TOOL_REGISTRY.has(tool_name):
+            # KY-A mode (FR-10.1): reject system tools outside the allowlist.
+            if not system_tool_allowed(tool_name):
+                logger.warning(
+                    "execute_agent_calls: KY-A allowlist rejected system tool %r",
+                    tool_name,
+                )
+                await _reject_disallowed_tool_call(
+                    config,
+                    pending_events,
+                    tool_messages,
+                    result_store,
+                    tool_name=tool_name,
+                    call_id=call_id,
+                    args=args,
+                    agent_id="_system",
+                    reason=(
+                        f"system tool {tool_name!r} is not on the KY-A "
+                        "supervisor allowlist (FR-10.1)"
+                    ),
+                )
+                continue
             system_tool_called = True
             await _emit_invocation(
                 config,
@@ -412,6 +488,11 @@ async def execute_agent_calls_node(
                             pending_events,
                         )
                 content = json.dumps(result) if not isinstance(result, str) else result
+            except GraphInterrupt:
+                # System tools like propose_enforcement suspend the graph via
+                # langgraph interrupt() — it must propagate, never be swallowed
+                # into an error ToolMessage.
+                raise
             except Exception as exc:
                 logger.exception("System tool %r failed", tool_name)
                 content = f"Error: {exc}"
@@ -493,6 +574,29 @@ async def execute_agent_calls_node(
 
         agent_id, capability_id, protocol = resolved
 
+        # KY-A mode (FR-10.1): reject external agents outside the allowlisted DIDs.
+        if not agent_allowed(agent_id):
+            logger.warning(
+                "execute_agent_calls: KY-A allowlist rejected agent %s (tool %r)",
+                agent_id,
+                tool_name,
+            )
+            await _reject_disallowed_tool_call(
+                config,
+                pending_events,
+                tool_messages,
+                result_store,
+                tool_name=tool_name,
+                call_id=call_id,
+                args=args,
+                agent_id=agent_id,
+                reason=(
+                    f"agent {agent_id!r} is not on the KY-A supervisor "
+                    "allowlist (FR-10.1)"
+                ),
+            )
+            continue
+
         display_name = _external_tool_display_name(
             agent_id=agent_id,
             internal_tool_name=tool_name,
@@ -531,7 +635,9 @@ async def execute_agent_calls_node(
         try:
             from ..config import settings as _sa_settings
 
-            _verify_max_retries = max(0, int(getattr(_sa_settings, "verify_max_retries", 2)))
+            _verify_max_retries = max(
+                0, int(getattr(_sa_settings, "verify_max_retries", 2))
+            )
             middleware = ExecutionMiddleware(state=state)
             result = await _execute_with_retry(
                 middleware,

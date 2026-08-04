@@ -283,6 +283,7 @@ async def get_agent_manifest(
                 "enabled": agent.payment.enabled if agent.payment else False,
                 "base_fee": agent.payment.base_fee if agent.payment else None,
             },
+            "authorized_scope": agent.authorized_scope,
             "capabilities": [
                 {
                     "type": cap.type.lower(),

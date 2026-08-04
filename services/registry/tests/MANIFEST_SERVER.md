@@ -238,6 +238,7 @@ class DynamicManifestProvider(ManifestProvider):
             }
         }
 
+
 # In manifest_server.py startup:
 registry.register(DynamicManifestProvider())
 ```
@@ -256,9 +257,7 @@ class DatabaseManifestProvider(ManifestProvider):
         return f"db:{self.manifest_id}"
 
     async def get_manifest(self) -> Dict[str, Any]:
-        manifest = await self.db.manifest.find_unique(
-            where={"id": self.manifest_id}
-        )
+        manifest = await self.db.manifest.find_unique(where={"id": self.manifest_id})
         return manifest.data if manifest else {}
 ```
 

@@ -87,8 +87,10 @@ def _render_receipt(audit: RunAuditResponse) -> str:
     summary = audit.summary
     lines += [
         "",
-        f"Summary: {summary.total_steps} steps — "
-        f"{summary.steps_verified} verified, {summary.steps_failed} failed",
+        (
+            f"Summary: {summary.total_steps} steps — "
+            f"{summary.steps_verified} verified, {summary.steps_failed} failed"
+        ),
         f"Total cost: ${summary.total_cost_usd}",
     ]
     if summary.duration_ms is not None:

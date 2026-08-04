@@ -854,7 +854,7 @@ payment:
     "message": "Invalid emerge.yaml configuration",
     "details": {
       "field": "identity.id",
-      "reason": "Must start with 'did:orcha:agent:'"
+      "reason": "Must start with 'did:orcha:agent:' or 'did:orcha:system:'"
     }
   }
 }

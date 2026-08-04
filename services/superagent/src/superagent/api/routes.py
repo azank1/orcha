@@ -233,11 +233,18 @@ async def resume_session(
 ) -> StreamingResponse:
     runner = _get_runner(request)
 
+    # Named-human attribution (KY-A, WS6): stamp the resume payload with the
+    # authenticated user identity forwarded by the Gateway (JWT-verified), so
+    # HITL decisions are attributed server-side rather than by free-text
+    # client fields alone.
+    value = dict(body.value)
+    value.setdefault("authoriser_user_id", body.user_id)
+
     async def gen() -> AsyncIterator[str]:
         try:
             async for event in runner.resume_from_interrupt(
                 session_id=session_id,
-                value=body.value,
+                value=value,
                 session_credentials=body.session_credentials,
             ):
                 yield f"data: {json.dumps(event)}\n\n"

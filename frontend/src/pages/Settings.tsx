@@ -201,10 +201,7 @@ export function Settings() {
                 <div className="flex items-center px-5 h-20 rounded-md bg-surface-elevated border border-surface-border">
                   <Toggle
                     checked={store.isDevMode}
-                    onChange={(v) => {
-                      store.setDevMode(v)
-                      patchMut.mutate({ is_dev_mode: v })
-                    }}
+                    onChange={(v) => store.setDevMode(v)}
                     label="Developer Mode"
                     description="Register and host agents on Orcha"
                     id="dev-mode"
@@ -212,7 +209,7 @@ export function Settings() {
                 </div>
 
                 {store.isDevMode && (
-                  <div className="mt-2 flex items-center gap-2 h-[34px] px-3 rounded-sm bg-semantic-warningDim border border-[#2D2000]">
+                  <div className="mt-2 flex items-center gap-2 h-[34px] px-3 rounded-sm bg-semantic-warningDim border border-[var(--warning-border)]">
                     <span className="text-[12px] text-semantic-warning">
                       ⚠ Developer mode grants access to agent registration and hosting.
                     </span>

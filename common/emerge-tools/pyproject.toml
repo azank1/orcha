@@ -1,6 +1,6 @@
 [project]
 name = "emerge-tools"
-version = "1.0.0"
+version = "0.1.0"
 description = "EmergeOS platform system MCP tool manifests and vendored servers"
 requires-python = ">=3.12"
 dependencies = [

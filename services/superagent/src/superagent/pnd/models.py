@@ -96,3 +96,45 @@ class PnDCandidateResponse(BaseModel):
     def to_openai_tool_schemas(self) -> list[dict[str, Any]]:
         """Convert candidates to OpenAI function-calling tool schemas."""
         return candidates_to_openai_tool_schemas(self.candidates)
+
+
+class PlanNode(BaseModel):
+    """Superagent-side mirror of a WorkflowManifest node (loose upstream schema)."""
+
+    model_config = {"extra": "allow"}
+
+    id: str
+    type: str = "standard"
+    agent_id: str | None = None
+    description: str = ""
+    dependencies: list[str] = Field(default_factory=list)
+    config: dict[str, Any] = Field(default_factory=dict)
+    capability: dict[str, Any] | None = None
+    task: dict[str, Any] | None = None
+    unresolved_inputs: list[str] = Field(default_factory=list)
+
+
+class PlanEdge(BaseModel):
+    source: str
+    target: str
+    condition: str | None = None
+
+
+class WorkflowPlan(BaseModel):
+    model_config = {"extra": "allow"}
+
+    id: str
+    nodes: list[PlanNode]
+    edges: list[PlanEdge]
+    entry_node_id: str
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    validated: bool = False
+    confidence_score: float = 0.0
+
+
+class PlanResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+    success: bool = True
+    workflow: WorkflowPlan
+    message: str = ""

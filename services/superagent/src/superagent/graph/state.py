@@ -138,6 +138,9 @@ class AgentState(dict):  # type: ignore[type-arg]
     # Actual completion_tokens from the orchestrator LLM call that produced this turn's tool calls.
     # Written by orchestrator_llm_node; consumed by ExecutionMiddleware for PLATFORM_TOKEN_RATE billing.
     _last_turn_tokens: int
+    # Active DAG plan (Slice 1) — plain JSON-safe dict built by
+    # nodes/dag_plan.new_active_plan. None on the stock ReAct path.
+    active_plan: dict[str, Any] | None
 
 
 def default_state(session_id: str, user_id: str) -> dict[str, Any]:
@@ -161,4 +164,5 @@ def default_state(session_id: str, user_id: str) -> dict[str, Any]:
         "_pending_events": [],
         "_agent_oauth_grants": {},
         "_last_turn_tokens": 0,
+        "active_plan": None,
     }

@@ -1,6 +1,6 @@
 [project]
 name = "planning-discovery-service"
-version = "1.0.0"
+version = "0.1.0"
 description = "Planning & Discovery Service — query planning and agent manifest processing"
 requires-python = ">=3.12"
 

@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import { cn } from '../ui/cn'
 import { Logo } from '../ui/Logo'
+import { ModeSwitch } from './ModeSwitch'
 
 interface NavItem {
   to: string
@@ -50,7 +51,7 @@ export function Sidebar() {
               cn(
                 'size-10 flex items-center justify-center rounded-md text-lg transition-colors duration-150',
                 isActive
-                  ? 'bg-brand-primary-dim border border-[rgba(59,110,248,0.3)] text-brand-primary shadow-blue'
+                  ? 'bg-brand-primary-dim border border-[var(--accent-border)] text-brand-primary shadow-blue'
                   : 'text-text-secondary hover:bg-surface-overlay hover:text-text-body',
               )
             }
@@ -59,6 +60,11 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+
+      {/* Mode switch — visible on every page via the icon rail */}
+      <div className="flex shrink-0 items-center justify-center pb-4">
+        <ModeSwitch direction="vertical" />
+      </div>
     </aside>
   )
 }

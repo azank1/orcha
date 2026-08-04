@@ -28,3 +28,9 @@ description = "Public documentation example values — widely used Ethereum exam
 regexes = [
   '''0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913''',
 ]
+
+[[allowlists]]
+description = "Registry technical-spec docs — placeholder PAT tokens and env-var references in examples, not real credentials."
+paths = [
+  '''docs/services/registry/techical-spec\.md''',
+]

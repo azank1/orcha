@@ -9,7 +9,7 @@
   "properties": {
     "schema_version": {
       "type": "string",
-      "description": "Version of this manifest schema. Defaults to \"1.0\" when absent.",
+      "description": "Version of this manifest schema. Defaults to \"1.0\" when absent. \"1.1\" adds the optional authorized_scope block (RFC 0001). \"1.2\" adds optional AAC charter sub-fields to authorized_scope (RFC 0002).",
       "pattern": "^[0-9]+\\.[0-9]+$",
       "default": "1.0"
     },
@@ -157,6 +157,83 @@
           "description": { "type": "string" },
           "tags": { "type": "array", "items": { "type": "string" } },
           "examples": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "authorized_scope": {
+      "type": "object",
+      "description": "Optional declared limits on the agent's authorised behaviour (emerge/1.1, RFC 0001; extended with optional AAC charter sub-fields in emerge/1.2, RFC 0002). Consumed by supervisors/verifiers; absence means 'unspecified', not 'unrestricted'.",
+      "additionalProperties": false,
+      "properties": {
+        "allowed_capabilities": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Capability/skill names the agent may invoke."
+        },
+        "spend_cap_usd": {
+          "type": "string",
+          "description": "Maximum machine-to-machine payment volume in scope, USD decimal as string, e.g. \"5000.00\"."
+        },
+        "allowed_counterparties": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed payee / counterparty identifiers."
+        },
+        "jurisdictions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Authorised operating jurisdictions (ISO 3166-1 alpha-2 or regime codes)."
+        },
+        "principal": {
+          "type": "object",
+          "description": "Legal entity accountable for the agent (emerge/1.2, RFC 0002).",
+          "additionalProperties": false,
+          "required": ["legal_name", "identifier_type", "identifier_value"],
+          "properties": {
+            "legal_name": { "type": "string", "minLength": 1 },
+            "identifier_type": {
+              "type": "string",
+              "enum": ["CIN", "GST", "Aadhaar", "CNPJ", "UEN", "LEI"],
+              "description": "Typed legal identifier scheme (India CIN/GST/Aadhaar, Brazil CNPJ, Singapore UEN, global LEI)."
+            },
+            "identifier_value": { "type": "string", "minLength": 1 },
+            "regulator_license": {
+              "type": "string",
+              "description": "Optional regulator-issued licence reference."
+            }
+          }
+        },
+        "rails": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "DPI rails the authorisation covers, e.g. UPI, AccountAggregator, ULI (emerge/1.2, RFC 0002)."
+        },
+        "delegation": {
+          "type": "object",
+          "description": "Whether the agent may issue sub-agent charters, and to what depth (emerge/1.2, RFC 0002).",
+          "additionalProperties": false,
+          "properties": {
+            "allowed": { "type": "boolean", "default": false },
+            "max_depth": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Maximum delegation hops permitted below this charter."
+            }
+          }
+        },
+        "human_approval_required_above": {
+          "type": "string",
+          "description": "Transaction value above which a named human must approve, decimal as string (emerge/1.2, RFC 0002)."
+        },
+        "validity": {
+          "type": "object",
+          "description": "Charter validity window, RFC 3339 datetimes (emerge/1.2, RFC 0002).",
+          "additionalProperties": false,
+          "properties": {
+            "not_before": { "type": "string", "format": "date-time" },
+            "not_after": { "type": "string", "format": "date-time" }
+          }
         }
       }
     }

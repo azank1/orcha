@@ -618,3 +618,58 @@ model RegistryStats {
 
   @@map("registry_stats")
 }
+
+// ============================================================================
+// AUDIT — append-only hash-chained execution ledger (KY-A / WS7)
+// ============================================================================
+
+model AuditLedgerEntry {
+  id            String   @id @default(cuid())
+  // step_complete | hitl_decision | attestation
+  entry_type    String   @default("step_complete")
+  call_id       String   @default("")
+  agent_id      String   @default("")
+  capability_id String   @default("")
+  protocol      String   @default("")
+  success       Boolean  @default(false)
+  verdict       Json?
+  latency_ms    Int      @default(0)
+  session_id    String   @default("")
+  completed_at  DateTime @default(now())
+  // Entry-type-specific extras (e.g. named-human HITL attribution). Never credentials.
+  payload       Json?
+  // sha256:<hex> over canonical JSON of the row content + prev_hash.
+  content_hash  String
+  prev_hash     String   @default("")
+  created_at    DateTime @default(now())
+
+  @@index([session_id])
+  @@index([call_id])
+  @@map("audit_ledger")
+}
+
+// ============================================================================
+// ATTESTATIONS — Ed25519-signed case attestations (KY-A / WS9)
+// ============================================================================
+
+model Attestation {
+  id          String    @id @default(cuid())
+  session_id  String
+  // sha256 hex digest of the canonical case payload that was signed.
+  case_hash   String
+  payload     Json
+  // base64 Ed25519 signature over case_hash, and the base64 raw public key.
+  signature   String
+  public_key  String
+  // pending | anchored | skipped
+  status      String    @default("pending")
+  // Populated by the anchor adapter when status → anchored. Independent of the
+  // payment Transaction table (FR-9.2).
+  chain_id    String?
+  tx_hash     String?
+  created_at  DateTime  @default(now())
+  anchored_at DateTime?
+
+  @@index([session_id])
+  @@map("attestations")
+}

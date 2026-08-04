@@ -29,6 +29,8 @@ export function useSSE() {
   const handleEvent = useCallback(
     (event: SSEEvent) => {
       const s = useSessionStore.getState()
+      // Developer Trace tab: record every event from this single stream.
+      s.recordTraceEvent(event.type)
       switch (event.type) {
         case 'token': {
           if (!s.streamingMessageId) {

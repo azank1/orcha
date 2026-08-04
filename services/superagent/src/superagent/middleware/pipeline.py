@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from datetime import UTC, datetime
 from decimal import Decimal
 from typing import Any
 
+from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 
 from ..config import settings
@@ -19,12 +21,37 @@ from .preflight import PreFlightManager
 logger = logging.getLogger(__name__)
 
 
-def _structural_verify(content: str, has_canvas: bool) -> tuple[bool, str]:
+_CITATION_REQUIRED_FIELDS = ("chunk_id", "source_title", "excerpt")
+
+
+def _has_valid_citations(content: str) -> bool:
+    """True when *content* is JSON with a non-empty, well-formed citations list."""
+    try:
+        payload = json.loads(content)
+    except (json.JSONDecodeError, TypeError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    citations = payload.get("citations")
+    if not isinstance(citations, list) or not citations:
+        return False
+    return all(
+        isinstance(c, dict) and all(c.get(field) for field in _CITATION_REQUIRED_FIELDS)
+        for c in citations
+    )
+
+
+def _structural_verify(
+    content: str, has_canvas: bool, agent_id: str = ""
+) -> tuple[bool, str]:
     """Structural check on agent output. Returns (verified, verdict_reason)."""
     if not content:
         return False, "empty output"
     if content.startswith(("Error:", "Input error:", "Unsupported protocol:")):
         return False, content[:120]
+    # FR-4.3 citation-presence rule: rulebook RAG output must carry citations.
+    if "rulebook-rag" in agent_id and not _has_valid_citations(content):
+        return False, "missing citations"
     if has_canvas:
         return True, "canvas output verified"
     return True, "ok"
@@ -163,7 +190,7 @@ class ExecutionMiddleware:
 
         # Step 5.5: StructuralVerifier
         has_canvas = normalised.get("ui_manifest") is not None
-        verified, verdict_reason = _structural_verify(content_str, has_canvas)
+        verified, verdict_reason = _structural_verify(content_str, has_canvas, agent_id)
         normalised["verified"] = verified
         normalised["verdict_reason"] = verdict_reason
 
@@ -193,6 +220,7 @@ class ExecutionMiddleware:
                 latency_ms=_latency_ms,
                 base_fee=str(base_fee),
                 verdict={"verified": verified, "reason": verdict_reason},
+                metadata={"goal": self._session_goal()},
             )
         )
 
@@ -322,6 +350,18 @@ class ExecutionMiddleware:
                 state=self._state,
             )
         return f"Unsupported protocol: {protocol}"
+
+    def _session_goal(self) -> str:
+        """Session goal: checklist goal when present, else first HumanMessage."""
+        checklist = self._state.get("task_checklist")
+        if checklist is not None:
+            goal = getattr(checklist, "goal", "")
+            if goal:
+                return goal
+        for msg in self._state.get("messages", []):
+            if isinstance(msg, HumanMessage):
+                return str(msg.content or "")
+        return ""
 
     def _auto_update_checklist(
         self, tool_name: str, call_id: str, result_summary: str, success: bool

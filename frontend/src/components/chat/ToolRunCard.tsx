@@ -53,7 +53,7 @@ function RetryBadge({ attempt, max }: { attempt?: number; max?: number }) {
   )
 }
 
-function ProtocolBadge({ protocol }: { protocol?: string }) {
+export function ProtocolBadge({ protocol }: { protocol?: string }) {
   if (!protocol) return null
   const p = PROTOCOL_BADGE[protocol.toLowerCase()]
   if (!p) return null

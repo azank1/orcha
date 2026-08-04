@@ -61,7 +61,9 @@ SYSTEM_TOOL_REGISTRY = SystemToolRegistry()
 def register_all_system_tools() -> None:
     """Register all built-in system tools into SYSTEM_TOOL_REGISTRY."""
     from .artifacts import register_artifact_tools
+    from .attestation import register_attestation_tools
     from .checklist import register_checklist_tools
+    from .enforcement import register_enforcement_tools
     from .mailer import register_mailer_tools
     from .memory import register_memory_tools
     from .utils import register_util_tools
@@ -72,4 +74,6 @@ def register_all_system_tools() -> None:
     register_workflow_tools(SYSTEM_TOOL_REGISTRY)
     register_memory_tools(SYSTEM_TOOL_REGISTRY)
     register_util_tools(SYSTEM_TOOL_REGISTRY)
+    register_enforcement_tools(SYSTEM_TOOL_REGISTRY)
+    register_attestation_tools(SYSTEM_TOOL_REGISTRY)
     register_mailer_tools(SYSTEM_TOOL_REGISTRY)  # gated on SANDBOX_MAILER=true

@@ -1,4 +1,4 @@
-"""ACPHandler — stub mirroring A2AHandler interface for ACP protocol agents."""
+"""ACPHandler — ACP compatibility alias, routed through the A2A handler."""
 
 from __future__ import annotations
 
@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 
 class ACPHandler(A2AHandler):
     """
-    ACP protocol handler.
+    ACP compatibility handler.
 
-    ACP (Agent Communication Protocol) shares the same task-based lifecycle
-    as A2A.  This stub delegates to A2AHandler; protocol-specific divergences
-    can be added here as the ACP spec matures.
+    ACP manifests are accepted at the API/schema layer for compatibility and
+    routed through the A2A handler at runtime — IBM's ACP merged into A2A
+    upstream (August 2025), so ACP is not an independently maintained protocol
+    here. This subclass exists so dispatch and logging can label ACP traffic.
     """
 
     async def send_task(

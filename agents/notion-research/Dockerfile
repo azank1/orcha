@@ -1,4 +1,4 @@
-FROM python:3.12-slim as builder
+FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de as builder
 
 # Install uv for fast dependency resolution
 RUN pip install uv
@@ -13,7 +13,7 @@ RUN uv pip compile pyproject.toml -o requirements.txt && \
     uv pip install --target=/install -r requirements.txt
 
 # Runtime stage
-FROM python:3.12-slim
+FROM python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee568157882804b1124b4dd04266317710de
 
 # Create non-root user
 RUN useradd -m -u 1000 appuser

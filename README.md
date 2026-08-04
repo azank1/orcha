@@ -4,41 +4,47 @@
 
 **One goal. Many agents. Any protocol.**
 
-*The open source agent harness. One goal planned, routed, and verified across agents that speak different protocols.*
+*The open-source runtime for multi-protocol AI agent orchestration.*
 
-[![Build](https://github.com/azank1/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/azank1/orcha/actions)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/azank1/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/azank1/orcha)
+[![Build](https://github.com/solvent-metaorcha/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/solvent-metaorcha/orcha/actions)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/solvent-metaorcha/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/solvent-metaorcha/orcha)
+[![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
-[![Discord](https://img.shields.io/badge/community-Discord-5865F2)](https://discord.gg/orcha)
 
 </div>
 
 ---
 
-![Orcha demo: one goal, CanvasKit dashboard](docs/assets/demo-hero.gif)
-
 ## The problem
 
-AI agents today are islands. MCP servers live here. A2A agents live there. Legacy software with no API gets driven through computer use.
+AI agents today are islands. MCP servers live here. A2A agents live there. Glue code everywhere.
 
-MCP and A2A standardize how a message gets from A to B. They say nothing about how a dozen independently running agents get planned into one goal, called in the right order, authenticated, verified, and rendered. That missing layer is an **agent harness**, and that is what Orcha is. MCP and A2A are just the first two bridges.
+Today's "loop engineering" tools handle one agent looping on one task. The harder problem — composing agents that speak **different protocols** into a single verified run with structured output — has no open-source solution.
 
-Calling Orcha "an orchestrator of MCP and A2A agents" is like calling Kubernetes a Docker runner. Technically true, categorically wrong.
+**This is not a model problem. It's an orchestration, observability, and distribution problem.**
 
-## What a run looks like
+Orcha is the runtime that fixes it: one natural-language goal gets planned, routed, and executed across agents speaking **different** protocols in the same run — with a credential vault, auth cascade, output normalization, and per-call payments (mock mode by default, no wallet needed).
 
-Type a goal. The planner decomposes it into a DAG. Discovery matches each step to a registered agent through vector search. The SuperAgent dispatches every call through its protocol handler: MCP, A2A, ACP (accepted and routed as A2A), or COMPUTER_USE.
+## See it work
 
-Every call passes a 7 step execution pipeline: input validation, payment guard, preflight, protocol dispatch, output normalization, checklist update, settlement. Each step gets a verdict, and any run can be downloaded as a JSON evidence package (**Verified Runs**): per step agent, protocol, verdict, cost, and timing.
+Type a goal → Orcha discovers agents → composes MCP, A2A, and COMPUTER_USE in one run → renders a **CanvasKit dashboard**, not a chat reply.
 
-**Hero goal, 3 protocols in one run:** *"Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the dashboard"* → finance MCP + web scraper A2A + mock computer use. Verified live, 5/5 runs, best wall clock 13s.
+Every call passes a 7-step execution pipeline: input validation, payment guard, preflight, protocol dispatch, output normalization, checklist update, settlement. Each step gets a verdict, and any run can be downloaded as a JSON evidence package (**Verified Runs**): per-step agent, protocol, verdict, cost, and timing.
 
 Output is not a chat bubble. Agents return a declarative **[CanvasKit](docs/spec/canvaskit.md) manifest** and the runtime renders metric cards, charts, tables, and alert feeds as a live dashboard. Structured output persists, and structured output can be checked.
 
+| Chat reply (before) | CanvasKit dashboard (Orcha) |
+|---------------------|----------------------------|
+| Prose summary you scroll past | Metric cards, charts, tables, alerts — live UI |
+
+**Try it:** run the [hosted sandbox](deploy/sandbox/README.md) locally (`make -f deploy/sandbox/Makefile up`) or clone and `./scripts/run-all.sh`. Demo portfolio data is illustrative — no brokerage connection required.
+
+**Hero goal (3-protocol demo):** *"Show me my portfolio performance, use your web scraper agent to summarize https://en.wikipedia.org/wiki/Nvidia, and screenshot the Alpaca dashboard"* → finance MCP + web-scraper A2A + mock computer-use in one run. Verified live, 5/5 runs, best wall clock 13s.
+
 ## Register an agent in 4 lines
 
-> Orcha ships the **`emerge` SDK** for agent registration. `emerge init` scaffolds your agent manifest, `emerge run` serves it and registers it with the runtime. No clone required: `uvx emerge init my-agent`.
+> Orcha ships the **`emerge` SDK** for agent registration — `emerge init` scaffolds your agent manifest, `emerge register` publishes it to the runtime. No clone required: `uvx emerge init my-agent`.
 
 ```python
 import emerge
@@ -52,8 +58,6 @@ def handle(task: str) -> str:
 emerge run     # serve locally and register with the runtime
 ```
 
-Agents are described by a versioned, JSON Schema validated `emerge.yaml` manifest, governed through RFCs. Version 1.1 (RFC 0001) adds `authorized_scope`: agents declare what they are *allowed* to do, not just what they can do.
-
 ## Quickstart
 
 Just building an agent? Zero clone:
@@ -62,18 +66,18 @@ Just building an agent? Zero clone:
 uvx emerge init my-agent && cd my-agent && uvx emerge run
 ```
 
-Running the full harness (registry, planner, orchestrator, dashboard):
+Running the full runtime (registry, planner, orchestrator, dashboard):
 
 ```bash
-git clone https://github.com/azank1/orcha && cd orcha
+git clone https://github.com/solvent-metaorcha/orcha && cd orcha
 ./scripts/run-all.sh        # infra + all services + seed agents
 ```
 
-Bring any OpenAI compatible LLM key (Gemini and Groq free tiers work) or run models locally through Ollama. Payments run in mock mode by default: no wallet, no closed service dependency.
+Per-service details live in [docs/services/](docs/services/).
 
-Full setup: [docs/quickstart.md](docs/quickstart.md) · [docs/join.md](docs/join.md)
+Bring any OpenAI-compatible LLM key (Gemini and Groq free tiers work) or run models locally through Ollama. Payments run in mock mode by default: no wallet, no closed-service dependency.
 
-**Prove it yourself:** `./scripts/poc-e2e.sh` registers a paid agent via the SDK, runs a goal across protocols, and asserts verification, retry, and settlement end to end. Details: [docs/poc.md](docs/poc.md)
+**Prove it yourself:** `./scripts/poc-e2e.sh` — one script registers a paid agent via the `emerge` SDK, runs a multi-protocol goal, and asserts verification, retry, and settlement end-to-end.
 
 ## Architecture
 
@@ -85,6 +89,11 @@ Goal
                          ▼                     ▼                     ▼
                    MCP handler           A2A handler          COMPUTER_USE handler
 ```
+
+(`protocol.type: "acp"` is still accepted in `emerge.yaml` and routes through
+the A2A handler — a compatibility alias, not a fourth independently-bridged
+protocol. The `emerge.yaml` schema and its governance rules live in
+[docs/spec/](docs/spec/).)
 
 <details>
 <summary>Service map</summary>
@@ -105,16 +114,16 @@ The harness stays neutral ground between agents. Agents remain external, indepen
 
 | What | Where | Why it matters |
 |------|-------|----------------|
-| **New bridge** | `templates/your-first-bridge/` | Adds a protocol. Highest leverage contribution |
-| **New agent** | `agents/` | Grows the fleet, stress tests the harness |
+| **New bridge** | `templates/your-first-bridge/` | Adds a protocol — highest leverage contribution |
+| **New agent** | `agents/` | Grows the fleet, stress-tests the runtime |
 | **CanvasKit component** | `frontend/src/components/canvas/` | New dashboard primitives for agent output |
 
-→ [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](docs/bridges.md) · [Open a RFC](https://github.com/azank1/orcha/issues/new?labels=rfc)
+→ [CONTRIBUTING.md](CONTRIBUTING.md) · [Write a bridge](templates/your-first-bridge/) · [Open a RFC](https://github.com/solvent-metaorcha/orcha/issues/new?labels=rfc)
 
 ## What's next
 
-**Harness reliability (v1.2):** DAG executor for parallel and dependent steps, output verification with semantic judging, retry and fallback policies, context management for long running tasks. Full trajectory in [ROADMAP.md](ROADMAP.md).
+**Sandbox hardening + UIUX (v0.2.0)** — full trajectory in [ROADMAP.md](ROADMAP.md).
 
 ---
 
-<div align="center">Apache 2.0 · <a href="https://discord.gg/orcha">Discord</a> · <a href="ROADMAP.md">Roadmap</a></div>
+<div align="center">Apache 2.0 · <a href="ROADMAP.md">Roadmap</a></div>

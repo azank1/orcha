@@ -1,0 +1,34 @@
+flowchart TB
+    User(["User / Browser"]) --> FE["Frontend :3000"]
+    FE --> GW["Gateway :8080<br/>BFF / Auth / SSE relay"]
+    GW --> SA["SuperAgent :8002<br/>LangGraph runtime"]
+    GW --> REG["Registry :8000<br/>dev agent proxy"]
+    SA --> PND["Planning & Discovery :8001"]
+    SA --> REG
+    SA --> AGENTS["External agents<br/>MCP / A2A / ACP / COMPUTER_USE"]
+
+    subgraph infra [Shared infrastructure]
+        PG[("PostgreSQL + pgvector :5432")]
+        RD[("Redis :6379")]
+        KAFKA[("Kafka :9092")]
+        S3[("S3 / LocalStack :4566")]
+    end
+
+    subgraph llm [Model / embedding providers]
+        OR["OpenRouter"]
+        OLLAMA["Ollama :11434"]
+    end
+
+    GW --> PG
+    GW --> RD
+    GW --> S3
+    SA --> PG
+    SA --> RD
+    SA --> S3
+    SA --> OR
+    REG --> PG
+    REG --> KAFKA
+    PND --> PG
+    PND --> KAFKA
+    PND --> OR
+    PND --> OLLAMA

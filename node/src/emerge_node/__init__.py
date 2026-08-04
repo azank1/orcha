@@ -1,14 +1,19 @@
-"""emerge-node — experimental gossip sidecar for agent networks (spike)."""
+"""emerge-node — Ed25519 signed-envelope helpers (charter + attestation crypto)."""
 
-from .envelope import SignedManifestEnvelope, generate_keypair, sign_manifest, verify_envelope
-from .gossip import GossipHub, publish_envelope, subscribe_once
+from .envelope import (
+    SignedManifestEnvelope,
+    canonical_json_bytes,
+    generate_keypair,
+    sign_manifest,
+    verify_bytes,
+    verify_envelope,
+)
 
 __all__ = [
     "SignedManifestEnvelope",
+    "canonical_json_bytes",
     "generate_keypair",
     "sign_manifest",
+    "verify_bytes",
     "verify_envelope",
-    "GossipHub",
-    "publish_envelope",
-    "subscribe_once",
 ]

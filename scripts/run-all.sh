@@ -230,6 +230,7 @@ wait_for lead-gen     http://localhost:4567/health 30 || warn "lead-gen not heal
 wait_for gws-orch     http://localhost:3011/health 30 || warn "google-workspace-orchestrator not healthy (non-fatal)"
 wait_for ecomm-auto   http://localhost:3009/health 30 || warn "ecommerce-automation not healthy (non-fatal)"
 
+
 # ═══════════ PHASE 4: Seed Agents ═══════════
 if [[ "$SKIP_SEED" == "false" ]]; then
   step "Phase 4: Agent Registration & Embeddings"

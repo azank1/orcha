@@ -4,6 +4,7 @@ import { NavBar } from '../components/layout/NavBar'
 import { Sidebar } from '../components/layout/Sidebar'
 import { SessionListPanel } from '../components/layout/SessionListPanel'
 import { InputBar } from '../components/ui/InputBar'
+import { ModelChip } from '../components/chat/ModelChip'
 import { Logo } from '../components/ui/Logo'
 import { cn } from '../components/ui/cn'
 import { sessions } from '../api/client'
@@ -11,6 +12,7 @@ import { useSessionStore } from '../store/session'
 import { useSessionSidebarStore } from '../store/sessionSidebar'
 import { useAuthStore } from '../store/auth'
 import { useSettingsStore } from '../store/settings'
+import { useByokStore } from '../store/byok'
 import { useSSE } from '../hooks/useSSE'
 import { sessionTitleFromMessage } from '../lib/sessionTitle'
 import { queryClient } from '../lib/queryClient'
@@ -88,6 +90,8 @@ export function Home() {
       reset()
       const title = sessionTitleFromMessage(message)
       const { session_id } = await sessions.create({ title })
+      // Apply BYOK '__llm__' credentials to the new session (no-op when hosted).
+      void useByokStore.getState().applyToSession(session_id)
       setSessionId(session_id)
       addMessage({
         id: crypto.randomUUID(),
@@ -96,9 +100,14 @@ export function Home() {
         timestamp: Date.now(),
       })
       navigate(`/chat/${session_id}`)
+      const byok = useByokStore.getState()
       const res = await sessions.sendMessage(session_id, message, [], {
-        model: defaultModel,
-        customInstructions: customInstructions.trim() || undefined,
+        model:
+          byok.mode === 'byok' && byok.model.trim()
+            ? byok.model.trim()
+            : defaultModel,
+        customInstructions:
+          byok.systemPrompt.trim() || customInstructions.trim() || undefined,
       })
       if (res.ok) await streamResponse(res)
       void queryClient.invalidateQueries({ queryKey: ['sessions'] })
@@ -158,6 +167,9 @@ export function Home() {
 
         {/* Prompt input */}
         <div className="w-full max-w-[680px] mb-4">
+          <div className="mb-2 flex">
+            <ModelChip />
+          </div>
           <InputBar
             value={input}
             onChange={setInput}
@@ -212,8 +224,8 @@ export function Home() {
 
         {SANDBOX_MODE && (
           <p className="mt-4 text-[12px] text-text-disabled text-center max-w-[560px]">
-            Sandbox uses pre-seeded demo agents. Portfolio numbers are illustrative — not connected
-            to your accounts.
+            Sandbox (Beta) uses pre-seeded demo agents. Portfolio numbers are illustrative — not
+            connected to your accounts. Beta — you may hit session errors; we're actively hardening it.
           </p>
         )}
 

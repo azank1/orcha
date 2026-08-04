@@ -45,6 +45,7 @@ from internal_commons.interrupts import (
 from langchain_core.runnables import RunnableConfig
 from langgraph.types import interrupt
 
+from .a2a_hooks import get_a2a_hook
 from .base import AgentHandler
 
 logger = logging.getLogger(__name__)
@@ -227,44 +228,6 @@ def _resume_value_to_text(resume_value: Any) -> str:
     return str(resume_value)
 
 
-def _build_lead_gen_a2a_parts(task: str, state: dict[str, Any]) -> list[dict[str, Any]]:
-    """Compose A2A message parts: mandatory text plus optional structured opts for Lead Gen."""
-    parts: list[dict[str, Any]] = [{"kind": "text", "text": task}]
-    opts_src = dict(state.get("lead_gen_options") or {})
-    inferred = _infer_crm_choice_from_task(task)
-    if inferred and "crm_type" not in opts_src:
-        opts_src["crm_type"] = inferred
-    allow = (
-        "crm_type",
-        "write_to_crm",
-        "send_outreach_email",
-        "max_leads",
-        "tenant_id",
-    )
-    blob = {k: opts_src[k] for k in allow if k in opts_src}
-    if blob:
-        parts.append({"kind": "data", "data": blob})
-    return parts
-
-
-def _infer_crm_choice_from_task(task: str) -> str | None:
-    """Infer preferred CRM from user task text for CRM_SETUP auto-resume."""
-    text = (task or "").lower()
-    if any(
-        k in text for k in ("excel", "xlsx", "spreadsheet in excel", "export to excel")
-    ):
-        return "excel"
-    if any(
-        k in text for k in ("google sheet", "google sheets", "gsheet", "spreadsheet")
-    ):
-        return "gsheets"
-    if "notion" in text:
-        return "notion"
-    if "hubspot" in text:
-        return "hubspot"
-    return None
-
-
 async def _fetch_auth_url_from_agent(
     transport_endpoint: str,
     cfg: dict[str, Any],
@@ -415,7 +378,6 @@ class A2AHandler(AgentHandler):
         endpoint = transport.get("endpoint", "").rstrip("/")
         message_id = str(uuid.uuid4())
         session_id = str(state.get("session_id", ""))
-        preferred_crm = _infer_crm_choice_from_task(task)
 
         logger.info(
             "a2a_handler: → send_task agent=%s call_id=%s endpoint=%s task_preview=%s",
@@ -430,12 +392,13 @@ class A2AHandler(AgentHandler):
         ) as client:
             # Pass session_id in params.metadata so the downstream A2A agent can
             # look up the OAuth token it stored after the callback (keyed by session_id).
-            # Optional data part: crm prefs + flags (see Lead Gen Agent main._handle_message_send).
+            # Optional data parts supplied by the registered A2A capability
+            # hook (see handlers/a2a_hooks.py).
             params: dict[str, Any] = {
                 "message": {
                     "messageId": message_id,
                     "role": "user",
-                    "parts": _build_lead_gen_a2a_parts(task, state),
+                    "parts": get_a2a_hook().enrich_request_parts(task, state),
                 },
             }
             if session_id:
@@ -536,21 +499,17 @@ class A2AHandler(AgentHandler):
                     # task_id when the interrupt escaped from a failed task.
                     resume_task_id = task_state.get("_escaped_task_id") or task_id
 
-                    # Auto-resume CRM setup when user intent already names a CRM.
-                    # This removes an unnecessary confirmation turn ("select Excel")
-                    # while still allowing downstream OAuth/auth interrupts as needed.
-                    if interrupt_type == InterruptType.CRM_SETUP and preferred_crm in {
-                        "hubspot",
-                        "gsheets",
-                        "notion",
-                        "excel",
-                    }:
-                        auto_answer = json.dumps({"crm_type": preferred_crm})
+                    # Domain hook may auto-resume (e.g. lead-gen CRM_SETUP when
+                    # user intent already names a CRM) — else escalate to user.
+                    auto_answer = get_a2a_hook().auto_answer_interrupt(
+                        interrupt_type, task, state
+                    )
+                    if auto_answer is not None:
                         logger.info(
-                            "a2a_handler: auto-resume CRM setup agent=%s task=%s crm=%s",
+                            "a2a_handler: hook auto-resume agent=%s task=%s type=%s",
                             agent_id,
                             resume_task_id,
-                            preferred_crm,
+                            interrupt_type,
                         )
                         await self._send_clarification(
                             client,

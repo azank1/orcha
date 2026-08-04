@@ -5,7 +5,7 @@ services:
   # PostgreSQL Database with pgvector support
   # ============================================================================
   postgres:
-    image: pgvector/pgvector:pg15
+    image: pgvector/pgvector:pg15@sha256:a20a57d7aa5217a6af0a391ccf69f4a8512406d6c14be08132f801468cc3cc62
     container_name: orcha-postgres
     environment:
       POSTGRES_USER: postgres
@@ -28,7 +28,7 @@ services:
   # Redis (SuperAgent checkpointing on DB 0, Gateway session/auth on DB 1)
   # ============================================================================
   redis:
-    image: redis/redis-stack-server:latest
+    image: redis/redis-stack-server:latest@sha256:798ab84d9f266936b034ab11c4d04a2b8e4b441884c5aa7d17ac951eefdf742a
     container_name: orcha-redis
     ports:
       - "6379:6379"
@@ -46,7 +46,7 @@ services:
   # Kafka Broker (KRaft mode — no Zookeeper)
   # ============================================================================
   orcha-kafka:
-    image: bitnamilegacy/kafka:4.0.0-debian-12-r10
+    image: bitnamilegacy/kafka:4.0.0-debian-12-r10@sha256:aa0b2aee8c5610dd1d18d48b4f1df0dbe3267b5d4c338d36c9af9cbf0529c0b0
     container_name: orcha-kafka
     hostname: kafka
     environment:
@@ -79,7 +79,7 @@ services:
   # LocalStack (S3 mock for local artifact storage)
   # ============================================================================
   localstack:
-    image: localstack/localstack:3.8
+    image: localstack/localstack:3.8@sha256:b279c01f4cfb8f985a482e4014cabc1e2697b9d7a6c8c8db2e40f4d9f93687c7
     container_name: orcha-localstack
     ports:
       - "4566:4566"
@@ -356,7 +356,7 @@ services:
   # pgAdmin (Optional - Database Management UI)
   # ============================================================================
   pgadmin:
-    image: dpage/pgadmin4:latest
+    image: dpage/pgadmin4:latest@sha256:2f4ce946ddf8360680d7eff4eaba1d91859eb6b4003e6623bad5c63a322c2f4d
     container_name: orcha-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@orcha.local
@@ -375,7 +375,7 @@ services:
   # Ollama (Local embeddings for Planning & Discovery)
   # ============================================================================
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:latest@sha256:4dea9fb511947e24a84237bb636b0203abcb2ff0d3fbc7b4ff865deb91362131
     container_name: orcha-ollama
     ports:
       - "11434:11434"
