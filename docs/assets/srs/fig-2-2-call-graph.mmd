@@ -1,8 +1,0 @@
-flowchart LR
-    FE["Frontend"] -->|"REST + SSE"| GW["Gateway"]
-    GW -->|"REST + SSE relay, injects user_id"| SA["SuperAgent"]
-    GW -->|"dev agent proxy"| REG["Registry"]
-    SA -->|"POST /candidates per gated turn"| PND["PnD"]
-    SA -->|"GET manifest / boot seeding"| REG
-    REG -.->|"Kafka: registry.agent.registered"| PND
-    REG -.->|"shared PostgreSQL"| PND

@@ -1,7 +1,7 @@
 # validator (experimental)
 
 > **Status: experimental spike.** Not part of the supported runtime. See
-> [ROADMAP.md](../ROADMAP.md) — network-layer capabilities graduate only
+> [ROADMAP.md](../docs/ROADMAP.md) — network-layer capabilities graduate only
 > after real adoption of the core runtime.
 
 The validator is the reference implementation of an `ExecutionObserver`:

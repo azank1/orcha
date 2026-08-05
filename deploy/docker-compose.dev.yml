@@ -142,7 +142,7 @@ services:
       PAYMENT_FACILITATOR_URL: https://api.orcha.bot/verify
 
       # MCP Protocol
-      MCP_PROTOCOL_VERSION: 2025-11-25
+      MCP_PROTOCOL_VERSION: "2025-11-25"
 
       # Kafka (emit registry.agent.registered on successful registration)
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092

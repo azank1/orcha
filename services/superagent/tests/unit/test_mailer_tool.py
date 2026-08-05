@@ -132,7 +132,9 @@ def test_render_receipt_includes_goal_steps_and_summary():
     assert "Summary: 2 steps — 1 verified, 1 failed" in body
     assert "Total cost: $0.03" in body
     assert "Duration: 5000 ms" in body
-    assert body.rstrip().endswith("Run it yourself: https://github.com/azank1/orcha")
+    assert body.rstrip().endswith(
+        "Run it yourself: https://github.com/solvent-labs-org/orcha"
+    )
 
 
 def test_render_receipt_truncates_goal_and_omits_missing_cost():

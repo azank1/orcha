@@ -15,8 +15,8 @@ the LLM boundary).
 ## 2. Deploy
 
 ```bash
-git clone https://github.com/azank1/orcha && cd orcha
-cp .env.sandbox.example .env.sandbox   # fill: POSTGRES_PASSWORD, OPENROUTER_API_KEY, JWT_SECRET_KEY, VAULT_KEY
+git clone https://github.com/solvent-labs-org/orcha && cd orcha
+cp deploy/sandbox/.env.sandbox.example deploy/sandbox/.env.sandbox   # fill: POSTGRES_PASSWORD, OPENROUTER_API_KEY, JWT_SECRET_KEY, VAULT_KEY
 make -f deploy/sandbox/Makefile up     # ~10-15 min first build
 make -f deploy/sandbox/Makefile seed   # DB schema + 9 agents
 ```
