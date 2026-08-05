@@ -4,6 +4,16 @@ All notable changes to Orcha are documented here. Format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project uses
 [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] — 2026-08-05
+
+Docs-only release. No functional changes.
+
+### Changed
+
+- README reoriented around the missing-layer thesis: new problem framing,
+  a terminology table (harness, handler, verdict, verified run, CanvasKit),
+  and a site-hosted diagram. Quickstart, SDK, and contribution paths unchanged.
+
 ## [0.1.2] — 2026-08-05
 
 Repo hygiene release. No functional changes.
