@@ -1,10 +1,10 @@
-COMPOSE = docker compose -f deploy/sandbox/docker-compose.sandbox.yml --env-file .env.sandbox
+COMPOSE = docker compose -f deploy/sandbox/docker-compose.sandbox.yml --env-file deploy/sandbox/.env.sandbox
 ROOT    = $(shell git rev-parse --show-toplevel)
 
 .PHONY: up down logs status seed check-env pull-models init-db
 
 check-env:
-	@test -f $(ROOT)/.env.sandbox || (echo "ERROR: .env.sandbox not found. Copy .env.sandbox.example and fill in secrets." && exit 1)
+	@test -f $(ROOT)/deploy/sandbox/.env.sandbox || (echo "ERROR: deploy/sandbox/.env.sandbox not found. Copy deploy/sandbox/.env.sandbox.example and fill in secrets." && exit 1)
 
 pull-models:
 	@echo "Pulling nomic-embed-text model into Ollama (first pull may take a few minutes)..."

@@ -8,7 +8,7 @@
 
 [![Build](https://github.com/solvent-labs-org/orcha/actions/workflows/ci.yml/badge.svg)](https://github.com/solvent-labs-org/orcha/actions)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/solvent-labs-org/orcha/badge)](https://securityscorecards.dev/viewer/?uri=github.com/solvent-labs-org/orcha)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-0.1.2-blue)](CHANGELOG.md)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://python.org)
 
@@ -73,7 +73,7 @@ git clone https://github.com/solvent-labs-org/orcha && cd orcha
 ./scripts/run-all.sh        # infra + all services + seed agents
 ```
 
-Per-service details live in [docs/services/](docs/services/).
+Per-service details live in the [docs](https://metaorcha.ai/docs).
 
 Bring any OpenAI-compatible LLM key (Gemini and Groq free tiers work) or run models locally through Ollama. Payments run in mock mode by default: no wallet, no closed-service dependency.
 
@@ -122,8 +122,8 @@ The harness stays neutral ground between agents. Agents remain external, indepen
 
 ## What's next
 
-**Sandbox hardening + UIUX (v0.2.0)** — full trajectory in [ROADMAP.md](ROADMAP.md).
+**Sandbox hardening + UIUX (v0.2.0)** — full trajectory in the [roadmap](https://metaorcha.ai/roadmap).
 
 ---
 
-<div align="center">Apache 2.0 · <a href="ROADMAP.md">Roadmap</a></div>
+<div align="center">Apache 2.0 · <a href="https://metaorcha.ai/roadmap">Roadmap</a></div>

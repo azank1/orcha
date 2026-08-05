@@ -90,7 +90,7 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
 
   # --- Core infra (postgres, redis, kafka) — must succeed ---
   info "Starting postgres, redis, kafka..."
-  docker compose -f docker-compose.local.yml up -d postgres redis orcha-kafka >/dev/null 2>&1
+  docker compose -f deploy/docker-compose.local.yml up -d postgres redis orcha-kafka >/dev/null 2>&1
   success "Core Docker containers started"
 
   # --- Ollama — best-effort; native install on host takes precedence ---
@@ -100,7 +100,7 @@ if [[ "$SKIP_INFRA" == "false" ]]; then
     success "Ollama already running on host (native install)"
   else
     info "Starting Ollama Docker container..."
-    if docker compose -f docker-compose.local.yml up -d ollama >/dev/null 2>&1; then
+    if docker compose -f deploy/docker-compose.local.yml up -d ollama >/dev/null 2>&1; then
       success "Ollama Docker container started"
       OLLAMA_SOURCE="docker"
     else

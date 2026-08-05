@@ -14,12 +14,12 @@ Contributions we **eagerly welcome** without prior discussion:
   that speak something we don't support yet (n8n, LangGraph, OpenAPI, …). This
   is the contribution we most want. Start from
   [`templates/your-first-bridge/`](templates/your-first-bridge/) and read
-  [`docs/bridges.md`](docs/bridges.md).
+  the [bridges guide](https://metaorcha.ai/docs).
 - **Agents** — a new example agent that registers against the local registry.
   Start from [`templates/your-first-agent/`](templates/your-first-agent/) and
-  [`docs/quickstart.md`](docs/quickstart.md).
+  the [quickstart](https://metaorcha.ai/docs).
 - **Observer / attestation experiments** — the `ExecutionObserver` seam and the
-  validator reference code (`services/validator/`). See [`ROADMAP.md`](ROADMAP.md).
+  validator reference code (`services/validator/`). See the [roadmap](https://metaorcha.ai/roadmap).
 
 > **Core engine changes** (the SuperAgent execution pipeline, the registry
 > contract, the planner) need an issue **first**. Open one describing the
@@ -41,7 +41,7 @@ Contributions we **eagerly welcome** without prior discussion:
 ## Development setup
 
 ```bash
-git clone git@github.com:azank1/orcha.git
+git clone git@github.com:solvent-labs-org/orcha.git
 cd orcha
 make install            # install Python + JS deps via uv / npm
 make prisma-generate
@@ -49,8 +49,8 @@ make grpc-generate
 ./scripts/run-all.sh    # bring the local stack up
 ```
 
-See [`docs/quickstart.md`](docs/quickstart.md) for the 5-minute path, or
-[`docs/setup.md`](docs/setup.md) for manual service-by-service setup.
+See the [quickstart](https://metaorcha.ai/docs) for the 5-minute path, or
+the [setup guide](https://metaorcha.ai/docs) for manual service-by-service setup.
 
 ## Commit messages
 
@@ -106,7 +106,7 @@ Steps:
 4. Add a registry adapter so `protocol.type: YOUR_PROTOCOL` is valid in `emerge.yaml`
 5. Ship an example agent and a smoke test in `tests/integration/`
 
-See [`docs/bridges.md`](docs/bridges.md) for the full contract, the "Wanted Bridges" wishlist, and the PR checklist.
+See the [bridges guide](https://metaorcha.ai/docs) for the full contract, the "Wanted Bridges" wishlist, and the PR checklist.
 
 ## Reporting bugs / requesting bridges
 

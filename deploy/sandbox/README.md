@@ -5,7 +5,7 @@ Public demo stack for Orcha.
 ## Quick start
 
 ```bash
-cp .env.sandbox.example .env.sandbox   # fill secrets — never commit
+cp deploy/sandbox/.env.sandbox.example deploy/sandbox/.env.sandbox   # fill secrets — never commit
 make -f deploy/sandbox/Makefile up
 make -f deploy/sandbox/Makefile seed   # register agents
 ```

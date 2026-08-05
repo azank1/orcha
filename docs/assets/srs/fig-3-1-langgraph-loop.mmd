@@ -1,6 +1,0 @@
-flowchart LR
-    START(["turn start"]) --> ORCH["orchestrator_llm"]
-    ORCH -->|"tool_calls?"| EXEC["execute_agent_calls"]
-    EXEC --> ORCH
-    ORCH -->|"no tools"| RESP["respond"]
-    RESP --> ENDNODE(["END"])

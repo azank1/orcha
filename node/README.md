@@ -1,7 +1,7 @@
 # emerge-node (experimental)
 
 > **Status: experimental spike.** Not part of the supported runtime. See
-> [ROADMAP.md](../ROADMAP.md) — network-layer capabilities graduate only
+> [ROADMAP.md](../docs/ROADMAP.md) — network-layer capabilities graduate only
 > after real adoption of the core runtime.
 
 `emerge-node` is an early prototype of a gossip sidecar for agent networks:

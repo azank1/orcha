@@ -1,9 +1,0 @@
-flowchart TB
-    IN(["tool call"]) --> S1["1. Input guard<br/>JSON-Schema validation"]
-    S1 --> S2["2. Payment guard<br/>pricing / soft-reserve"]
-    S2 --> S3["3. Preflight<br/>manifest + health + auth"]
-    S3 --> S4["4. Handler dispatch<br/>MCP / A2A / ACP / COMPUTER_USE"]
-    S4 --> S5["5. Output normalize<br/>text / artifact / canvas envelope"]
-    S5 --> S6["6. Checklist update"]
-    S6 --> S7["7. Settlement<br/>skipped in mock mode"]
-    S7 --> OUT(["StepResult"])

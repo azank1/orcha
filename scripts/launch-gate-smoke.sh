@@ -24,7 +24,7 @@ DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:5432/orch
 
 if [[ "${1:-}" == "--full" ]]; then
   echo "[4/4] Full launch gate (requires postgres on :5432)"
-  docker compose -f docker-compose.local.yml up -d postgres >/dev/null 2>&1 || true
+  docker compose -f deploy/docker-compose.local.yml up -d postgres >/dev/null 2>&1 || true
   ./scripts/launch-gate-ci.sh
 else
   echo "[4/4] Skipped full stack (pass --full to run ./scripts/launch-gate-ci.sh)"

@@ -15,10 +15,10 @@ SERVICE_PATH = services/$(s)
 p ?= 8000
 
 # Compose file selection:
-#   make docker-up          → docker-compose.local.yml (infra + registry + pnd; services run on host)
-#   make docker-dev-up      → docker-compose.dev.yml   (full stack including superagent + gateway)
-DC_LOCAL := docker compose -f docker-compose.local.yml
-DC_DEV   := docker compose -f docker-compose.dev.yml
+#   make docker-up          → deploy/docker-compose.local.yml (infra + registry + pnd; services run on host)
+#   make docker-dev-up      → deploy/docker-compose.dev.yml   (full stack including superagent + gateway)
+DC_LOCAL := docker compose -f deploy/docker-compose.local.yml
+DC_DEV   := docker compose -f deploy/docker-compose.dev.yml
 
 help: ## Show this help message
 	@printf '$(BLUE)Orcha Development Commands$(RESET)\n\n'

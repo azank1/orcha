@@ -1,6 +1,6 @@
 # orcha-sdk
 
-The developer SDK + `emerge` CLI for [Orcha](https://github.com/azank1/orcha) —
+The developer SDK + `emerge` CLI for [Orcha](https://github.com/solvent-labs-org/orcha) —
 an orchestration runtime that plans, routes, and executes one goal across agents
 speaking MCP, A2A, and COMPUTER_USE (ACP is accepted as an A2A-routed alias).
 
@@ -55,4 +55,4 @@ A2A-compatible HTTP endpoint (`/health`, `/.well-known/agent.json`, JSON-RPC
 generated `emerge.yaml` to the registry. The runtime's planner can then discover
 and orchestrate your agent alongside agents that speak other protocols.
 
-Apache 2.0 runtime, MIT SDK. See the [main repo](https://github.com/azank1/orcha).
+Apache 2.0 runtime, MIT SDK. See the [main repo](https://github.com/solvent-labs-org/orcha).

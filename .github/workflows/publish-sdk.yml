@@ -8,7 +8,7 @@ name: Publish orcha-sdk
 # One-time setup (repo owner, on pypi.org):
 #   1. Create the "orcha-sdk" project on PyPI (or publish v0.1.0 manually once).
 #   2. PyPI project → Settings → Publishing → add a trusted publisher:
-#      owner=azank1, repo=orcha, workflow=publish-sdk.yml, environment=pypi
+#      owner=solvent-labs-org, repo=orcha, workflow=publish-sdk.yml, environment=pypi
 on:
   push:
     tags:

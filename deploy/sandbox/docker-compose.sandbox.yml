@@ -1,7 +1,7 @@
 # Orcha Sandbox — hosted demo stack
 # Usage: make -f deploy/sandbox/Makefile up
 #
-# All secrets live in .env.sandbox (copy from .env.sandbox.example and fill in).
+# All secrets live in deploy/sandbox/.env.sandbox (copy from .env.sandbox.example in this directory and fill in).
 # Nothing in this file contains credentials.
 
 x-python-build: &python-build
@@ -15,7 +15,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg15@sha256:a20a57d7aa5217a6af0a391ccf69f4a8512406d6c14be08132f801468cc3cc62
     container_name: sandbox-postgres
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -95,7 +95,7 @@ services:
       context: ../..
       dockerfile: services/registry/Dockerfile
     container_name: sandbox-registry
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     ports:
       - "127.0.0.1:8000:8000"
     environment:
@@ -113,7 +113,7 @@ services:
       context: ../..
       dockerfile: services/planning-discovery/Dockerfile
     container_name: sandbox-pnd
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -132,7 +132,7 @@ services:
       context: ../..
       dockerfile: services/superagent/Dockerfile
     container_name: sandbox-superagent
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       REDIS_URL: redis://redis:6379/0
@@ -162,7 +162,7 @@ services:
       context: ../..
       dockerfile: services/gateway/Dockerfile
     container_name: sandbox-gateway
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/orcha
       REDIS_URL: redis://redis:6379/1
@@ -211,7 +211,7 @@ services:
       context: ../..
       dockerfile: agents/search-agent/Dockerfile
     container_name: sandbox-search-agent
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     environment:
       SERPER_API_KEY: ${SERPER_API_KEY:-}
     networks: [sandbox-net]
@@ -228,7 +228,7 @@ services:
       context: ../../agents/lead-gen-agent
       dockerfile: Dockerfile
     container_name: sandbox-lead-gen
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     networks: [sandbox-net]
 
   notion-research:
@@ -236,7 +236,7 @@ services:
       context: ../..
       dockerfile: agents/notion-research/Dockerfile
     container_name: sandbox-notion-research
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     networks: [sandbox-net]
 
   ecommerce:
@@ -244,7 +244,7 @@ services:
       context: ../../agents/ecommerce-automation
       dockerfile: Dockerfile
     container_name: sandbox-ecommerce
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     # Browser-facing Shopify OAuth: Shopify redirects the user's browser to
     # localhost:3009/auth/callback — the container serves on 8080 (Dockerfile
     # CMD --port 8080), so publish 3009 -> 8080, mirroring gws-orchestrator.
@@ -265,7 +265,7 @@ services:
       context: ../../agents/google-workspace-orchestrator
       dockerfile: Dockerfile
     container_name: sandbox-gws-orchestrator
-    env_file: ../../.env.sandbox
+    env_file: .env.sandbox
     # Browser-facing OAuth: Google redirects the user's browser to
     # localhost:3011/auth/callback — the container serves on 8080 (Dockerfile
     # CMD ${PORT:-8080}), so publish 3011 -> 8080.

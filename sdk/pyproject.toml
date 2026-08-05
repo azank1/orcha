@@ -23,9 +23,9 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/azank1/orcha"
-Repository = "https://github.com/azank1/orcha"
-Issues = "https://github.com/azank1/orcha/issues"
+Homepage = "https://github.com/solvent-labs-org/orcha"
+Repository = "https://github.com/solvent-labs-org/orcha"
+Issues = "https://github.com/solvent-labs-org/orcha/issues"
 
 [project.scripts]
 emerge = "emerge.cli:main"

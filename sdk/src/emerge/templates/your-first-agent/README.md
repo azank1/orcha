@@ -27,5 +27,5 @@ emerge run --no-register
 3. `emerge publish --registry <url>` to register against a remote registry.
 
 DID: `did:orcha:agent:{{AGENT_SLUG}}` · Manifest: generated from the decorator.
-See the [bridges guide](https://github.com/azank1/orcha/blob/main/docs/bridges.md)
+See the [bridges guide](https://metaorcha.ai/docs)
 to connect a whole other protocol.
